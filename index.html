@@ -8,152 +8,186 @@
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
-<meta name="theme-color" content="#2e7d32">
+<link rel="apple-touch-icon" href="icon.png">
+
+<!-- Automatisk versjon -->
+<script>
+const VERSION = "1.10";
+</script>
 
 <style>
 body {
-    font-family: Arial;
-    background: #f2f2f2;
-    margin: 0;
+  font-family: Arial, sans-serif;
+  margin:0;
+  background:#f2f2f2;
 }
 
-.header {
-    padding: 10px;
-    background: white;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border-bottom: 2px solid #ccc;
+.container {
+  padding:10px;
 }
 
 h1 {
-    margin: 0;
-    font-size: 20px;
+  font-size:20px;
+  margin-bottom:10px;
 }
 
 label {
-    font-weight: bold;
-    color: black;
+  font-weight:bold;
+  color:#000;
 }
 
-input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    font-size: 16px;
+input, textarea {
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:16px;
 }
 
-.btn {
-    background: #2e7d32;
-    color: white;
-    padding: 14px;
-    margin: 6px;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 16px;
+.knapp {
+  background:#2e7d32;
+  color:#fff;
+  padding:14px;
+  border:none;
+  border-radius:8px;
+  margin-bottom:8px;
+  width:100%;
+  font-size:16px;
 }
 
-.avvik {
-    background: #ddd;
-    margin: 4px;
-    padding: 10px;
-    border-radius: 6px;
+.knapp:active {
+  background:#1b5e20;
 }
 
-.ok {
-    background: #66bb6a;
+.valg {
+  background:#ddd;
+  padding:12px;
+  border-radius:6px;
+  margin-bottom:6px;
 }
 
-.hidden {
-    display: none;
+.seksjon {
+  margin-bottom:15px;
+}
+
+.bilde-preview img {
+  width:80px;
+  margin:5px;
+  border-radius:6px;
+}
+
+.mastOK {
+  background:#66bb6a;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <h1 id="versjon"></h1>
+<div class="container">
 
-    <label>Netteier</label>
-    <input id="netteier">
+<h1 id="tittel"></h1>
 
-    <label>LinjeID</label>
-    <input id="linje">
+<label>Netteier</label>
+<input id="netteier">
 
-    <label>Mast nr</label>
-    <input id="mast">
+<label>LinjeID</label>
+<input id="linje">
+
+<label>Mast nr</label>
+<input id="mast">
+
+<p id="gps"></p>
+
+<button class="knapp mastOK" onclick="mastOK()">Mast OK</button>
+
+<div id="kontroller"></div>
+
+<button class="knapp" onclick="neste()">Neste mast</button>
+<button class="knapp" onclick="lastNed()">Last ned Excel</button>
+
 </div>
 
-<div class="btn ok" onclick="mastOK()">Mast OK</div>
-
-<div id="app"></div>
-
-<div class="btn" onclick="reset()">Neste mast</div>
-
 <script>
+document.getElementById("tittel").innerText = "Linjekontroll v" + VERSION;
 
-// 🔢 Versjon (endre kun her)
-const VERSION = "1.9";
-document.getElementById("versjon").innerText = "Linjekontroll v" + VERSION;
+navigator.geolocation.getCurrentPosition(pos=>{
+  document.getElementById("gps").innerText =
+    "GPS: " + pos.coords.latitude.toFixed(6) + ", " + pos.coords.longitude.toFixed(6);
+});
 
-// 📋 Kontrollpunkt
-const data = {
-    "Skjev mast": ["Skjev", "Setning", "Fund.feil"],
-    "Barduner": ["Slakk", "Brudd", "Rust"],
-    "Stolper": ["Råte", "Sprekk"],
-    "Stålmast": ["Korrosjon", "Skade"],
-    "Topphette": ["Mangler", "Skadet"],
-    "Traversfeste": ["Løs", "Skade"],
-    "Travers": ["Skjev", "Skade"],
-    "Isolatorfeste": ["Slitasje", "Skade"],
-    "Isolator": ["Skadet"],
-    "Bendsling": ["Løs"],
-    "Liner": ["Korrosjon", "Kordelbrudd"],
-    "Strekning": ["Heng"],
-    "Skjøter/Klemmer": ["Korrosjon", "Kordelbrudd"],
-    "Toppline": ["Slakk", "Korrosjon"],
-    "Jordinger": ["Brudd"],
-    "Trasé": ["Skog", "Kratt"],
-    "Merking": ["Mangler"]
-};
+const data = [
+  {navn:"Skjev mast", avvik:["Skjev","Setning","Fund.feil"]},
+  {navn:"Barduner", avvik:["Slakk","Brudd","Rust"]},
+  {navn:"Stolper", avvik:["Råte","Sprekk"]},
+  {navn:"Stålmast", avvik:["Korrosjon","Skade"]},
+  {navn:"Topphatte", avvik:["Mangler","Skadet"]},
+  {navn:"Traversfeste", avvik:["Løs","Skade"]},
+  {navn:"Travers", avvik:["Skjev","Skade"]},
+  {navn:"Isolatorfeste", avvik:["Slitasje","Skade"]},
+  {navn:"Isolator", avvik:["Skade"]},
+  {navn:"Bendsling", avvik:["Slitt"]},
+  {navn:"Liner", avvik:["Korrosjon","Kordelbrudd"]},
+  {navn:"Strekning", avvik:["Heng"]},
+  {navn:"Skjøter/klemmer", avvik:["Korrosjon","Kordelbrudd"]},
+  {navn:"Toppline", avvik:["Slakk","Korrosjon"]},
+  {navn:"Jordinger", avvik:["Brudd"]},
+  {navn:"Trasé", avvik:["Skog","Kratt"]},
+  {navn:"Merking", avvik:["Manglende","Feil"]}
+];
 
-// 📦 UI
-const app = document.getElementById("app");
+const container = document.getElementById("kontroller");
 
-for (let key in data) {
-    let div = document.createElement("div");
+data.forEach((punkt,i)=>{
+  const div = document.createElement("div");
+  div.className="seksjon";
 
-    div.innerHTML = `
-        <div class="btn" onclick="toggle('${key}')">${key}</div>
+  div.innerHTML = `
+    <button class="knapp" onclick="toggle(${i})">${punkt.navn}</button>
+    <div id="felt${i}" style="display:none">
+      ${punkt.avvik.map(a=>`<div class="valg">${a}</div>`).join("")}
 
-        <div id="${key}" class="hidden">
-            ${data[key].map(a => `<div class="avvik">${a}</div>`).join("")}
+      <input type="file" accept="image/*" capture="environment" multiple onchange="bilder(this)">
+      <div class="bilde-preview"></div>
 
-            <input type="file" accept="image/*" capture="environment">
-            <input placeholder="Merknad">
-        </div>
-    `;
+      <textarea placeholder="Merknad"></textarea>
+    </div>
+  `;
+  container.appendChild(div);
+});
 
-    app.appendChild(div);
+function toggle(i){
+  const el = document.getElementById("felt"+i);
+  el.style.display = el.style.display==="none" ? "block" : "none";
 }
 
-// 🔘 Funksjoner
-function toggle(id) {
-    let el = document.getElementById(id);
-    el.classList.toggle("hidden");
+function bilder(input){
+  const preview = input.nextElementSibling;
+  preview.innerHTML="";
+
+  Array.from(input.files).forEach(f=>{
+    const r = new FileReader();
+    r.onload = e=>{
+      const img=document.createElement("img");
+      img.src=e.target.result;
+      preview.appendChild(img);
+    };
+    r.readAsDataURL(f);
+  });
 }
 
-function mastOK() {
-    alert("Mast registrert som OK");
+function mastOK(){
+  alert("Registrert: Mast OK");
 }
 
-function reset() {
-    document.querySelectorAll("input").forEach(i => i.value = "");
+function neste(){
+  document.querySelectorAll("input, textarea").forEach(e=>e.value="");
 }
 
+function lastNed(){
+  alert("Excel eksport kommer (kan utvides)");
+}
 </script>
 
 </body>
