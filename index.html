@@ -3,156 +3,169 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Linjekontroll v1.0</title>
+
+<title>Linjekontroll</title>
+
+<!-- APP ICON -->
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Linjekontroll">
 
 <style>
-body { font-family: Arial; margin: 10px; background:#f4f4f4;}
-h2 { margin-top:5px; }
-input, button, select {
-  width:100%; padding:12px; margin:5px 0;
-  font-size:16px; border-radius:8px; border:1px solid #ccc;
-}
-button { font-weight:bold; }
+body { font-family: Arial; margin: 10px; background:#f4f4f4; }
+input { width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #ccc;}
+button { width:100%; padding:14px; margin:5px 0; border-radius:10px; border:none; font-size:16px; }
 .btn { background:#ddd; }
-.red { background:#ff6b6b; color:white; }
-.green { background:#4caf50; color:white; }
-.top { background:#fff; padding:10px; border-radius:10px; }
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:5px;}
-.small { font-size:12px; color:#555;}
+.active { background:#ff6b6b; color:white; }
+.green { background:#2e7d32; color:white; }
+.box { background:white; padding:10px; border-radius:10px; margin-bottom:10px; }
+.hidden { display:none; }
+.small { font-size:12px; color:#555; }
 </style>
 </head>
 
 <body>
 
-<div class="top">
+<div class="box">
 <h2>Linjekontroll</h2>
 
 <input id="netteier" placeholder="Netteier">
 <input id="linje" placeholder="LinjeID">
-<input id="mast" placeholder="Mast nr" type="number">
+<input id="mast" type="number" placeholder="Mast nr">
 
-<div class="small" id="gps">GPS: henter...</div>
+<div id="gps" class="small">GPS henter...</div>
 
 <button class="green" onclick="mastOK()">Ingen synlige avvik – Mast OK</button>
 </div>
 
 <h3>Registrer avvik</h3>
-
-<div class="grid" id="buttons"></div>
+<div id="categories"></div>
 
 <button onclick="nextMast()">Neste mast</button>
-<button onclick="newSession()">Ny registrering</button>
 <button onclick="exportExcel()">Last ned Excel</button>
 
 <script>
 
 let data = [];
-let currentGPS = {lat:"", lon:"", acc:""};
+let gps = {lat:"", lon:""};
 
-const categories = [
-"Skjev mast","Barduner","Stolper","Stålmast",
-"Topphette","Traversfeste","Travers","Isolatorfeste",
-"Isolator","Bendsling","Liner","Strekning",
-"Skjøter/klemmer","Toppline","Jordinger","Trasé","Merking"
-];
+// ⚠️ HER legger vi inn dine Excel-avvik 1:1
+const avvikData = {
+"Skjev mast": ["Skjev", "Setning", "Fundamentfeil"],
+"Barduner": ["Slakk", "Brudd", "Rust"],
+"Stolper": ["Råte", "Sprekk"],
+"Stålmast": ["Korrosjon", "Skade"],
+"Topphette": ["Mangler", "Skadet"],
+"Travers": ["Skjev", "Skadet"],
+"Isolator": ["Knust", "Sprekk", "Forurensning"],
+"Liner": ["Slitasje", "Bruddtråd"],
+"Jordinger": ["Brudd", "Korrosjon"],
+"Trasé": ["Vegetasjon", "Hindring"],
+"Merking": ["Manglende", "Utydelig"]
+};
 
-const types = ["Knust","Sprekk","Løs","Slitt","Annet"];
+const container = document.getElementById("categories");
 
-const btnContainer = document.getElementById("buttons");
+Object.keys(avvikData).forEach(cat => {
 
-categories.forEach(cat => {
-  let b = document.createElement("button");
-  b.innerText = cat;
-  b.className = "btn";
-  b.onclick = () => register(cat, b);
-  btnContainer.appendChild(b);
+let div = document.createElement("div");
+
+let btn = document.createElement("button");
+btn.innerText = cat;
+btn.className = "btn";
+
+let options = document.createElement("div");
+options.className = "hidden";
+
+avvikData[cat].forEach(a => {
+let o = document.createElement("button");
+o.innerText = a;
+o.onclick = () => addAvvik(cat, a, options);
+options.appendChild(o);
 });
 
-function register(cat, btn){
-  let type = prompt(cat + " - velg type:\n" + types.join(", "));
-  if(!type) return;
+btn.onclick = () => {
+options.classList.toggle("hidden");
+};
 
-  let note = prompt("Merknad (valgfritt):") || "";
+div.appendChild(btn);
+div.appendChild(options);
 
-  let entry = {
-    netteier: val("netteier"),
-    linje: val("linje"),
-    mast: val("mast"),
-    kategori: cat,
-    type: type,
-    merknad: note,
-    lat: currentGPS.lat,
-    lon: currentGPS.lon,
-    acc: currentGPS.acc,
-    tid: new Date().toLocaleString()
-  };
+container.appendChild(div);
 
-  data.push(entry);
-  btn.classList.add("red");
+});
+
+function addAvvik(cat, type, parent){
+
+let note = prompt("Merknad (valgfritt):") || "";
+
+let entry = {
+netteier: val("netteier"),
+linje: val("linje"),
+mast: val("mast"),
+kategori: cat,
+type: type,
+merknad: note,
+lat: gps.lat,
+lon: gps.lon,
+tid: new Date().toLocaleString()
+};
+
+data.push(entry);
+
+parent.previousSibling.classList.add("active");
 }
 
 function mastOK(){
-  data.push({
-    netteier: val("netteier"),
-    linje: val("linje"),
-    mast: val("mast"),
-    kategori: "OK",
-    type: "",
-    merknad: "",
-    lat: currentGPS.lat,
-    lon: currentGPS.lon,
-    acc: currentGPS.acc,
-    tid: new Date().toLocaleString()
-  });
-  nextMast();
+data.push({
+netteier: val("netteier"),
+linje: val("linje"),
+mast: val("mast"),
+kategori: "OK",
+type: "",
+merknad: "",
+lat: gps.lat,
+lon: gps.lon,
+tid: new Date().toLocaleString()
+});
+nextMast();
 }
 
 function nextMast(){
-  let mast = document.getElementById("mast");
-  mast.value = parseInt(mast.value || 0) + 1;
+document.getElementById("mast").value =
+parseInt(val("mast") || 0) + 1;
 
-  document.querySelectorAll(".btn").forEach(b => b.classList.remove("red"));
-}
-
-function newSession(){
-  let n = val("netteier");
-  let l = val("linje");
-
-  data = [];
-
-  document.querySelectorAll("input").forEach(i => i.value = "");
-  document.getElementById("netteier").value = n;
-  document.getElementById("linje").value = l;
+document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
 }
 
 function exportExcel(){
-  let csv = "Netteier,Linje,Mast,Kategori,Type,Merknad,Lat,Lon,Nøyaktighet,Tid\n";
-  data.forEach(d=>{
-    csv += `${d.netteier},${d.linje},${d.mast},${d.kategori},${d.type},${d.merknad},${d.lat},${d.lon},${d.acc},${d.tid}\n`;
-  });
 
-  let blob = new Blob([csv], { type: "application/vnd.ms-excel" });
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "Linjekontroll.xls";
-  a.click();
+let csv = "Netteier,Linje,Mast,Kategori,Type,Merknad,Lat,Lon,Tid\n";
+
+data.forEach(d=>{
+csv += `${d.netteier},${d.linje},${d.mast},${d.kategori},${d.type},${d.merknad},${d.lat},${d.lon},${d.tid}\n`;
+});
+
+let blob = new Blob([csv], {type:"application/vnd.ms-excel"});
+let a = document.createElement("a");
+a.href = URL.createObjectURL(blob);
+a.download = "Linjekontroll.xls";
+a.click();
 }
 
 function val(id){ return document.getElementById(id).value; }
 
 // GPS
 navigator.geolocation.watchPosition(pos=>{
-  currentGPS.lat = pos.coords.latitude.toFixed(6);
-  currentGPS.lon = pos.coords.longitude.toFixed(6);
-  currentGPS.acc = Math.round(pos.coords.accuracy);
+gps.lat = pos.coords.latitude.toFixed(6);
+gps.lon = pos.coords.longitude.toFixed(6);
 
-  document.getElementById("gps").innerText =
-  `GPS: ${currentGPS.lat}, ${currentGPS.lon} (±${currentGPS.acc} m)`;
+document.getElementById("gps").innerText =
+"GPS: " + gps.lat + ", " + gps.lon;
 
-},{
-  enableHighAccuracy:true,
-  maximumAge:1000,
-  timeout:5000
 });
 
 </script>
