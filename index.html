@@ -6,6 +6,7 @@
 
 <title>Linjekontroll</title>
 
+<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
@@ -24,6 +25,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 10;
+    border-bottom: 2px solid #ccc;
 }
 
 h1 {
@@ -38,18 +40,19 @@ label {
 
 input {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     margin-bottom: 10px;
+    font-size: 16px;
 }
 
 .btn {
     background: #2e7d32;
     color: white;
-    padding: 12px;
+    padding: 14px;
     margin: 6px;
     border-radius: 8px;
     text-align: center;
-    cursor: pointer;
+    font-size: 16px;
 }
 
 .avvik {
@@ -92,11 +95,11 @@ input {
 
 <script>
 
-// ======= VERSJON =======
-const VERSION = "1.8";
+// 🔢 Versjon (endre kun her)
+const VERSION = "1.9";
 document.getElementById("versjon").innerText = "Linjekontroll v" + VERSION;
 
-// ======= DATA =======
+// 📋 Kontrollpunkt
 const data = {
     "Skjev mast": ["Skjev", "Setning", "Fund.feil"],
     "Barduner": ["Slakk", "Brudd", "Rust"],
@@ -117,7 +120,7 @@ const data = {
     "Merking": ["Mangler"]
 };
 
-// ======= UI =======
+// 📦 UI
 const app = document.getElementById("app");
 
 for (let key in data) {
@@ -137,7 +140,7 @@ for (let key in data) {
     app.appendChild(div);
 }
 
-// ======= FUNKSJONER =======
+// 🔘 Funksjoner
 function toggle(id) {
     let el = document.getElementById(id);
     el.classList.toggle("hidden");
