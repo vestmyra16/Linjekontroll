@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon.png">
 
 <script>
-const VERSION = "1.11";
+const VERSION = "1.12";
 </script>
 
 <style>
@@ -116,7 +116,7 @@ navigator.geolocation.getCurrentPosition(pos=>{
     "GPS: " + pos.coords.latitude.toFixed(6) + ", " + pos.coords.longitude.toFixed(6);
 });
 
-// Kontrollpunkter
+// Kontrollpunkter (KORRIGERT)
 const data = [
   {navn:"Skjev mast", avvik:["Skjev","Setning","Fund.feil"]},
   {navn:"Barduner", avvik:["Slakk","Brudd","Rust"]},
@@ -126,20 +126,31 @@ const data = [
   {navn:"Traversfeste", avvik:["Løs","Skade"]},
   {navn:"Travers", avvik:["Skjev","Skade"]},
   {navn:"Isolatorfeste", avvik:["Slitasje","Skade"]},
-  {navn:"Isolator", avvik:["Skade"]},
-  {navn:"Bendsling", avvik:["Slitt"]},
+
+  // KORRIGERT
+  {navn:"Isolator", avvik:["Knust","Krypestømsvei"]},
+
+  // KORRIGERT
+  {navn:"Bendsling", avvik:["Løs","Brudd"]},
+
   {navn:"Liner", avvik:["Korrosjon","Kordelbrudd"]},
   {navn:"Strekning", avvik:["Heng"]},
-  {navn:"Skjøter/klemmer", avvik:["Korrosjon","Kordelbrudd"]},
+
+  // KORRIGERT
+  {navn:"Skjøter/klemmer", avvik:["Korrodert"]},
+
   {navn:"Toppline", avvik:["Slakk","Korrosjon"]},
-  {navn:"Jordinger", avvik:["Brudd"]},
+
+  // KORRIGERT
+  {navn:"Jordinger", avvik:["Løs","Brudd"]},
+
   {navn:"Trasé", avvik:["Skog","Kratt"]},
   {navn:"Merking", avvik:["Manglende","Feil"]}
 ];
 
 const container = document.getElementById("kontroller");
 
-// Lag UI
+// UI
 data.forEach((punkt,i)=>{
   const div = document.createElement("div");
   div.className="seksjon";
@@ -203,7 +214,7 @@ function neste(){
   document.querySelectorAll(".bilde-preview").forEach(e=>e.innerHTML="");
 }
 
-// Excel (placeholder)
+// Excel (kommer senere)
 function lastNed(){
   alert("Excel eksport kommer neste steg");
 }
