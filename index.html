@@ -7,125 +7,130 @@
 <title>Linjekontroll</title>
 
 <link rel="apple-touch-icon" href="icon.png">
-<link rel="icon" href="icon.png">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Linjekontroll">
 
 <style>
-body { font-family: Arial; margin: 10px; background:#f4f4f4; }
-input { width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #ccc;}
+body { font-family: Arial; margin:0; background:#f4f4f4; }
+
+/* 🔴 FAST TOPP */
+.header {
+position:sticky;
+top:0;
+background:white;
+padding:10px;
+z-index:1000;
+border-bottom:2px solid #ccc;
+}
+
+input {
+width:100%;
+padding:8px;
+margin:3px 0;
+font-size:14px;
+}
 
 button {
 width:100%;
 padding:14px;
-margin:5px 0;
+margin:4px 0;
 border-radius:10px;
 border:none;
-font-size:16px;
+font-size:15px;
 }
 
-.cat { background:#2e7d32; color:white; }   /* grønn */
-.active { background:#d32f2f; color:white; } /* rød */
+.cat { background:#2e7d32; color:white; }
+.active { background:#c62828; color:white; }
 .option { background:#eee; }
 
-.box { background:white; padding:10px; border-radius:10px; margin-bottom:10px; }
 .hidden { display:none; }
-.small { font-size:12px; color:#555; }
+.small { font-size:12px; }
 
 </style>
 </head>
 
 <body>
 
-<div class="box">
-<h2>Linjekontroll</h2>
-
+<div class="header">
 <input id="netteier" placeholder="Netteier">
 <input id="linje" placeholder="LinjeID">
 <input id="mast" type="number" placeholder="Mast nr">
+<div id="gps" class="small">GPS...</div>
 
-<div id="gps" class="small">GPS henter...</div>
-
-<button class="cat" onclick="mastOK()">Ingen synlige avvik – Mast OK</button>
+<button class="cat" onclick="mastOK()">Mast OK</button>
 </div>
 
-<h3>Registrer avvik</h3>
 <div id="categories"></div>
 
 <button onclick="nextMast()">Neste mast</button>
-<button onclick="exportExcel()">Last ned Excel</button>
+<button onclick="exportCSV()">Last ned Excel</button>
 
 <script>
 
-let data = [];
-let gps = {lat:"", lon:""};
+let data=[];
+let gps={lat:"",lon:""};
 
-// 🔴 HER SKAL VI MATCH Excel 1:1
+/* 🔴 AVVIK (forkortet + strukturert) */
 const avvikData = {
 
-"Skjev mast": ["Skjev", "Setning", "Fundamentfeil"],
+"Skjev mast": ["Skjev","Setning","Fund.feil"],
 
-"Barduner": ["Slakk", "Brudd", "Rust", "Feil stramming"],
+"Barduner": ["Slakk","Brudd","Rust"],
 
-"Stolper": ["Råte", "Sprekk", "Skade"],
+"Stolper": ["Råte","Sprekk"],
 
-"Stålmast": ["Korrosjon", "Deformasjon"],
+"Stålmast": ["Korr","Skade"],
 
-"Topphette": ["Mangler", "Skadet"],
+"Topphette": ["Mangler","Skadet"],
 
-"Traversfeste": ["Løs", "Skadet"],
+"Traversfeste": ["Løs","Skade"],
 
-"Travers": ["Skjev", "Skadet"],
+"Travers": ["Skjev","Skade"],
 
-"Isolatorfeste": ["Løs", "Skadet"],
+"Isolatorfeste": ["Løs","Skade"],
 
-"Isolator": ["Knust", "Sprekk", "Forurensning"],
+"Isolator": ["Knust","Sprekk","Forur"],
 
-"Bendsling": ["Slakk", "Skadet"],
+"Bendsling": ["Slakk","Skade"],
 
-"Liner": ["Slitasje", "Bruddtråd"],
+"Liner": ["Slitasje","Brudd"],
 
-"Strekning": ["Avvik høyde", "Sig"],
+"Strekning": ["Sig","Høyde"],
 
-"Skjøter/klemmer": ["Løs", "Skadet"],
+"Skjøter/klemmer": ["Løs","Skade"],
 
-"Toppline": ["Slakk", "Skadet"],
+"Toppline": ["Slakk","Skade"],
 
-"Jordinger": ["Brudd", "Korrosjon"],
+"Jordinger": ["Brudd","Korr"],
 
-"Trasé": ["Vegetasjon", "Hindring"],
+"Trasé": ["Veg","Hindring"],
 
-"Merking": ["Manglende", "Utydelig"]  // ligger sist nå
+"Merking": ["Mangler","Utydelig"]
 
 };
 
-const container = document.getElementById("categories");
+const container=document.getElementById("categories");
 
-Object.keys(avvikData).forEach(cat => {
+Object.keys(avvikData).forEach(cat=>{
 
-let div = document.createElement("div");
+let div=document.createElement("div");
 
-let btn = document.createElement("button");
-btn.innerText = cat;
-btn.className = "cat";
+let btn=document.createElement("button");
+btn.innerText=cat;
+btn.className="cat";
 
-let options = document.createElement("div");
-options.className = "hidden";
+let options=document.createElement("div");
+options.className="hidden";
 
-avvikData[cat].forEach(a => {
-let o = document.createElement("button");
-o.innerText = a;
-o.className = "option";
+avvikData[cat].forEach(a=>{
+let o=document.createElement("button");
+o.innerText=a;
+o.className="option";
 
-o.onclick = () => addAvvik(cat, a, btn);
+o.onclick=()=>addAvvik(cat,a,btn);
 
 options.appendChild(o);
 });
 
-btn.onclick = () => {
-options.classList.toggle("hidden");
-};
+btn.onclick=()=>options.classList.toggle("hidden");
 
 div.appendChild(btn);
 div.appendChild(options);
@@ -134,20 +139,17 @@ container.appendChild(div);
 
 });
 
-function addAvvik(cat, type, btn){
-
-let note = prompt("Merknad (valgfritt):") || "";
+function addAvvik(cat,type,btn){
 
 data.push({
-netteier: val("netteier"),
-linje: val("linje"),
-mast: val("mast"),
-kategori: cat,
-type: type,
-merknad: note,
-lat: gps.lat,
-lon: gps.lon,
-tid: new Date().toLocaleString()
+netteier:val("netteier"),
+linje:val("linje"),
+mast:val("mast"),
+kategori:cat,
+type:type,
+lat:gps.lat,
+lon:gps.lon,
+tid:new Date().toLocaleString()
 });
 
 btn.classList.add("active");
@@ -155,51 +157,48 @@ btn.classList.add("active");
 
 function mastOK(){
 data.push({
-netteier: val("netteier"),
-linje: val("linje"),
-mast: val("mast"),
-kategori: "OK",
-type: "",
-merknad: "",
-lat: gps.lat,
-lon: gps.lon,
-tid: new Date().toLocaleString()
+netteier:val("netteier"),
+linje:val("linje"),
+mast:val("mast"),
+kategori:"OK",
+type:"",
+lat:gps.lat,
+lon:gps.lon,
+tid:new Date().toLocaleString()
 });
 nextMast();
 }
 
 function nextMast(){
 document.getElementById("mast").value =
-parseInt(val("mast") || 0) + 1;
+parseInt(val("mast")||0)+1;
 
 document.querySelectorAll(".cat").forEach(b=>b.classList.remove("active"));
 }
 
-function exportExcel(){
+function exportCSV(){
 
-let csv = "Netteier,Linje,Mast,Kategori,Type,Merknad,Lat,Lon,Tid\n";
+let csv="Netteier,Linje,Mast,Kategori,Type,Lat,Lon,Tid\n";
 
 data.forEach(d=>{
-csv += `${d.netteier},${d.linje},${d.mast},${d.kategori},${d.type},${d.merknad},${d.lat},${d.lon},${d.tid}\n`;
+csv+=`${d.netteier},${d.linje},${d.mast},${d.kategori},${d.type},${d.lat},${d.lon},${d.tid}\n`;
 });
 
-let blob = new Blob([csv], {type:"application/vnd.ms-excel"});
-let a = document.createElement("a");
-a.href = URL.createObjectURL(blob);
-a.download = "Linjekontroll.xls";
+let blob=new Blob([csv],{type:"text/csv"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="Linjekontroll.csv";
 a.click();
 }
 
-function val(id){ return document.getElementById(id).value; }
+function val(id){return document.getElementById(id).value;}
 
-// GPS
 navigator.geolocation.watchPosition(pos=>{
-gps.lat = pos.coords.latitude.toFixed(6);
-gps.lon = pos.coords.longitude.toFixed(6);
+gps.lat=pos.coords.latitude.toFixed(6);
+gps.lon=pos.coords.longitude.toFixed(6);
 
-document.getElementById("gps").innerText =
-"GPS: " + gps.lat + ", " + gps.lon;
-
+document.getElementById("gps").innerText=
+"GPS: "+gps.lat+", "+gps.lon;
 });
 
 </script>
