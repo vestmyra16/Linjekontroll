@@ -1,1 +1,161 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linjekontroll v1.0</title>
 
+<style>
+body { font-family: Arial; margin: 10px; background:#f4f4f4;}
+h2 { margin-top:5px; }
+input, button, select {
+  width:100%; padding:12px; margin:5px 0;
+  font-size:16px; border-radius:8px; border:1px solid #ccc;
+}
+button { font-weight:bold; }
+.btn { background:#ddd; }
+.red { background:#ff6b6b; color:white; }
+.green { background:#4caf50; color:white; }
+.top { background:#fff; padding:10px; border-radius:10px; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:5px;}
+.small { font-size:12px; color:#555;}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+<h2>Linjekontroll</h2>
+
+<input id="netteier" placeholder="Netteier">
+<input id="linje" placeholder="LinjeID">
+<input id="mast" placeholder="Mast nr" type="number">
+
+<div class="small" id="gps">GPS: henter...</div>
+
+<button class="green" onclick="mastOK()">Ingen synlige avvik – Mast OK</button>
+</div>
+
+<h3>Registrer avvik</h3>
+
+<div class="grid" id="buttons"></div>
+
+<button onclick="nextMast()">Neste mast</button>
+<button onclick="newSession()">Ny registrering</button>
+<button onclick="exportExcel()">Last ned Excel</button>
+
+<script>
+
+let data = [];
+let currentGPS = {lat:"", lon:"", acc:""};
+
+const categories = [
+"Skjev mast","Barduner","Stolper","Stålmast",
+"Topphette","Traversfeste","Travers","Isolatorfeste",
+"Isolator","Bendsling","Liner","Strekning",
+"Skjøter/klemmer","Toppline","Jordinger","Trasé","Merking"
+];
+
+const types = ["Knust","Sprekk","Løs","Slitt","Annet"];
+
+const btnContainer = document.getElementById("buttons");
+
+categories.forEach(cat => {
+  let b = document.createElement("button");
+  b.innerText = cat;
+  b.className = "btn";
+  b.onclick = () => register(cat, b);
+  btnContainer.appendChild(b);
+});
+
+function register(cat, btn){
+  let type = prompt(cat + " - velg type:\n" + types.join(", "));
+  if(!type) return;
+
+  let note = prompt("Merknad (valgfritt):") || "";
+
+  let entry = {
+    netteier: val("netteier"),
+    linje: val("linje"),
+    mast: val("mast"),
+    kategori: cat,
+    type: type,
+    merknad: note,
+    lat: currentGPS.lat,
+    lon: currentGPS.lon,
+    acc: currentGPS.acc,
+    tid: new Date().toLocaleString()
+  };
+
+  data.push(entry);
+  btn.classList.add("red");
+}
+
+function mastOK(){
+  data.push({
+    netteier: val("netteier"),
+    linje: val("linje"),
+    mast: val("mast"),
+    kategori: "OK",
+    type: "",
+    merknad: "",
+    lat: currentGPS.lat,
+    lon: currentGPS.lon,
+    acc: currentGPS.acc,
+    tid: new Date().toLocaleString()
+  });
+  nextMast();
+}
+
+function nextMast(){
+  let mast = document.getElementById("mast");
+  mast.value = parseInt(mast.value || 0) + 1;
+
+  document.querySelectorAll(".btn").forEach(b => b.classList.remove("red"));
+}
+
+function newSession(){
+  let n = val("netteier");
+  let l = val("linje");
+
+  data = [];
+
+  document.querySelectorAll("input").forEach(i => i.value = "");
+  document.getElementById("netteier").value = n;
+  document.getElementById("linje").value = l;
+}
+
+function exportExcel(){
+  let csv = "Netteier,Linje,Mast,Kategori,Type,Merknad,Lat,Lon,Nøyaktighet,Tid\n";
+  data.forEach(d=>{
+    csv += `${d.netteier},${d.linje},${d.mast},${d.kategori},${d.type},${d.merknad},${d.lat},${d.lon},${d.acc},${d.tid}\n`;
+  });
+
+  let blob = new Blob([csv], { type: "application/vnd.ms-excel" });
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "Linjekontroll.xls";
+  a.click();
+}
+
+function val(id){ return document.getElementById(id).value; }
+
+// GPS
+navigator.geolocation.watchPosition(pos=>{
+  currentGPS.lat = pos.coords.latitude.toFixed(6);
+  currentGPS.lon = pos.coords.longitude.toFixed(6);
+  currentGPS.acc = Math.round(pos.coords.accuracy);
+
+  document.getElementById("gps").innerText =
+  `GPS: ${currentGPS.lat}, ${currentGPS.lon} (±${currentGPS.acc} m)`;
+
+},{
+  enableHighAccuracy:true,
+  maximumAge:1000,
+  timeout:5000
+});
+
+</script>
+
+</body>
+</html>
