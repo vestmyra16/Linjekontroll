@@ -4,242 +4,163 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v1.7</title>
+<title>Linjekontroll</title>
 
-<link rel="apple-touch-icon" href="./icon-192.png">
-<link rel="icon" href="./icon-192.png">
+<link rel="manifest" href="manifest.json">
 
 <style>
-
 body {
-font-family: Arial;
-margin:0;
-background:#f2f2f2;
+    font-family: Arial;
+    background: #f2f2f2;
+    margin: 0;
 }
 
-/* HEADER */
 .header {
-background:white;
-padding:10px;
-position:sticky;
-top:0;
-z-index:10;
-border-bottom:2px solid #ccc;
+    padding: 10px;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-h2 { margin:5px 0; }
+h1 {
+    margin: 0;
+    font-size: 20px;
+}
 
 label {
-display:block;
-font-weight:bold;
-color:black;
-margin-top:6px;
+    font-weight: bold;
+    color: black;
 }
 
-input, textarea {
-width:100%;
-padding:10px;
-margin:4px 0;
-font-size:15px;
-border:1px solid #999;
-border-radius:6px;
+input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
 }
 
-#gps {
-font-size:12px;
-margin-bottom:5px;
+.btn {
+    background: #2e7d32;
+    color: white;
+    padding: 12px;
+    margin: 6px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
 }
 
-/* BUTTONS */
-button {
-width:100%;
-padding:16px;
-margin:4px 0;
-border:none;
-border-radius:8px;
-font-size:16px;
+.avvik {
+    background: #ddd;
+    margin: 4px;
+    padding: 10px;
+    border-radius: 6px;
 }
 
-.cat {
-background:#2e7d32;
-color:white;
-font-weight:bold;
+.ok {
+    background: #66bb6a;
 }
 
-.option {
-background:#e0e0e0;
+.hidden {
+    display: none;
 }
-
-.bottom {
-background:#ccc;
-}
-
-.camera {
-background:#0288d1;
-color:white;
-}
-
 </style>
 </head>
 
 <body>
 
 <div class="header">
+    <h1 id="versjon"></h1>
 
-<h2>Linjekontroll v1.7</h2>
+    <label>Netteier</label>
+    <input id="netteier">
 
-<label>Netteier</label>
-<input id="netteier">
+    <label>LinjeID</label>
+    <input id="linje">
 
-<label>LinjeID</label>
-<input id="linje">
-
-<label>Mast nr</label>
-<input id="mast">
-
-<div id="gps">GPS henter...</div>
-
-<button class="cat" onclick="mastOK()">Mast OK</button>
-
+    <label>Mast nr</label>
+    <input id="mast">
 </div>
+
+<div class="btn ok" onclick="mastOK()">Mast OK</div>
 
 <div id="app"></div>
 
-<div style="padding:10px;">
-<button class="bottom" onclick="next()">Neste mast</button>
-<button class="bottom" onclick="excel()">Last ned Excel</button>
-</div>
+<div class="btn" onclick="reset()">Neste mast</div>
 
 <script>
 
-let current = null;
-let log = [];
+// =====================
+// 🔢 SETT VERSJON HER
+// =====================
+const VERSION = "1.8";
 
+// vis versjon automatisk
+document.getElementById("versjon").innerText = "Linjekontroll v" + VERSION;
+
+
+// =====================
+// 📋 DATA (kontrollpunkt)
+// =====================
 const data = {
-
-"Skjev mast": ["Skjev", "Setning", "Fund.feil"],
-"Barduner": ["Slakk", "Brudd", "Rust"],
-"Stolper": ["Råte", "Sprekk"],
-"Stålmast": ["Korrosjon", "Skade"],
-"Topphette": ["Mangler", "Skadet"],
-"Traversfeste": ["Løs", "Skade"],
-"Travers": ["Skjev", "Skade"],
-"Isolatorfeste": ["Slitasje", "Skade"],
-"Isolator": ["Knust", "Sprekk"],
-"Bendsling": ["Slakk", "Feil"],
-"Liner": ["Korrosjon", "Kordelbrudd"],
-"Strekning": ["Lav høyde", "Hinder"],
-"Skjøter/klemmer": ["Korrosjon", "Kordelbrudd"],
-"Toppline": ["Slakk", "Korrosjon"],
-"Jordinger": ["Brudd", "Rust"],
-"Trasé": ["Skog", "Kratt"],
-"Merking": ["Manglende", "Uleselig"]
-
+    "Skjev mast": ["Skjev", "Setning", "Fund.feil"],
+    "Barduner": ["Slakk", "Brudd", "Rust"],
+    "Stolper": ["Råte", "Sprekk"],
+    "Stålmast": ["Korrosjon", "Skade"],
+    "Topphette": ["Mangler", "Skadet"],
+    "Traversfeste": ["Løs", "Skade"],
+    "Travers": ["Skjev", "Skade"],
+    "Isolatorfeste": ["Slitasje", "Skade"],
+    "Isolator": ["Skadet"],
+    "Bendsling": ["Løs"],
+    "Liner": ["Korrosjon", "Kordelbrudd"],
+    "Strekning": ["Heng"],
+    "Skjøter/Klemmer": ["Korrosjon", "Kordelbrudd"],
+    "Toppline": ["Slakk", "Korrosjon"],
+    "Jordinger": ["Brudd"],
+    "Trasé": ["Skog", "Kratt"],
+    "Merking": ["Mangler"]
 };
 
-// START
-function init(){
-let html = "";
 
-for (let key in data){
-html += `<button class="cat" onclick="openCat('${key}')">${key}</button>`;
+// =====================
+// 📦 GENERER UI
+// =====================
+const app = document.getElementById("app");
+
+for (let key in data) {
+
+    let div = document.createElement("div");
+
+    div.innerHTML = `
+        <div class="btn" onclick="toggle('${key}')">${key}</div>
+
+        <div id="${key}" class="hidden">
+            ${data[key].map(a => `<div class="avvik">${a}</div>`).join("")}
+
+            <input type="file" accept="image/*" capture="environment">
+            <input placeholder="Merknad">
+        </div>
+    `;
+
+    app.appendChild(div);
 }
 
-document.getElementById("app").innerHTML = html;
+
+// =====================
+// 🔘 FUNKSJONER
+// =====================
+function toggle(id) {
+    let el = document.getElementById(id);
+    el.classList.toggle("hidden");
 }
 
-// ÅPNE
-function openCat(name){
-current = name;
-
-let html = `<button class="cat">${name}</button>`;
-
-// AVVIK
-data[name].forEach(avvik => {
-html += `<button class="option" onclick="select('${avvik}')">${avvik}</button>`;
-});
-
-// 📸 BILDE
-html += `<button class="camera" onclick="takePhoto()">📸 Ta bilde</button>`;
-
-// 📝 MERKNAD
-html += `<textarea id="note" placeholder="Merknad..."></textarea>`;
-
-// TILBAKE
-html += `<button class="bottom" onclick="saveNote()">Lagre / tilbake</button>`;
-
-document.getElementById("app").innerHTML = html;
+function mastOK() {
+    alert("Mast registrert som OK");
 }
 
-// VELG AVVIK
-function select(avvik){
-log.push({
-punkt: current,
-avvik: avvik
-});
-init();
+function reset() {
+    document.querySelectorAll("input").forEach(i => i.value = "");
 }
-
-// LAGRE MERKNAD
-function saveNote(){
-let note = document.getElementById("note").value;
-
-if(note){
-log.push({
-punkt: current,
-merknad: note
-});
-}
-
-init();
-}
-
-// 📸
-function takePhoto(){
-let input = document.createElement("input");
-input.type = "file";
-input.accept = "image/*";
-input.capture = "environment";
-
-input.onchange = () => {
-log.push({
-punkt: current,
-bilde: "ja"
-});
-};
-
-input.click();
-}
-
-// MAST OK
-function mastOK(){
-log.push({
-mast: document.getElementById("mast").value,
-status: "OK"
-});
-alert("Mast registrert som OK");
-}
-
-// NY MAST
-function next(){
-document.getElementById("mast").value="";
-log = [];
-}
-
-// EXCEL (kommer)
-function excel(){
-console.log(log);
-alert("Excel eksport kommer i neste steg");
-}
-
-// GPS
-navigator.geolocation.getCurrentPosition(pos=>{
-document.getElementById("gps").innerHTML =
-"GPS: " + pos.coords.latitude.toFixed(6) + ", " +
-pos.coords.longitude.toFixed(6);
-});
-
-init();
 
 </script>
 
