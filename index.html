@@ -6,13 +6,11 @@
 
 <title>Linjekontroll</title>
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 
-<!-- Automatisk versjon -->
 <script>
-const VERSION = "1.10";
+const VERSION = "1.11";
 </script>
 
 <style>
@@ -112,11 +110,13 @@ input, textarea {
 <script>
 document.getElementById("tittel").innerText = "Linjekontroll v" + VERSION;
 
+// GPS
 navigator.geolocation.getCurrentPosition(pos=>{
   document.getElementById("gps").innerText =
     "GPS: " + pos.coords.latitude.toFixed(6) + ", " + pos.coords.longitude.toFixed(6);
 });
 
+// Kontrollpunkter
 const data = [
   {navn:"Skjev mast", avvik:["Skjev","Setning","Fund.feil"]},
   {navn:"Barduner", avvik:["Slakk","Brudd","Rust"]},
@@ -139,30 +139,45 @@ const data = [
 
 const container = document.getElementById("kontroller");
 
+// Lag UI
 data.forEach((punkt,i)=>{
   const div = document.createElement("div");
   div.className="seksjon";
 
   div.innerHTML = `
     <button class="knapp" onclick="toggle(${i})">${punkt.navn}</button>
+
     <div id="felt${i}" style="display:none">
+
       ${punkt.avvik.map(a=>`<div class="valg">${a}</div>`).join("")}
 
-      <input type="file" accept="image/*" capture="environment" multiple onchange="bilder(this)">
+      <button class="knapp" onclick="taBilde(this)">📸 Ta bilde</button>
+
+      <input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="lagreBilder(this)">
+
       <div class="bilde-preview"></div>
 
       <textarea placeholder="Merknad"></textarea>
+
     </div>
   `;
   container.appendChild(div);
 });
 
+// Åpne/lukke
 function toggle(i){
   const el = document.getElementById("felt"+i);
   el.style.display = el.style.display==="none" ? "block" : "none";
 }
 
-function bilder(input){
+// Kamera
+function taBilde(btn){
+  const input = btn.nextElementSibling;
+  input.click();
+}
+
+// Lagre bilder
+function lagreBilder(input){
   const preview = input.nextElementSibling;
   preview.innerHTML="";
 
@@ -177,16 +192,20 @@ function bilder(input){
   });
 }
 
+// Mast OK
 function mastOK(){
-  alert("Registrert: Mast OK");
+  alert("Mast registrert som OK");
 }
 
+// Neste mast
 function neste(){
   document.querySelectorAll("input, textarea").forEach(e=>e.value="");
+  document.querySelectorAll(".bilde-preview").forEach(e=>e.innerHTML="");
 }
 
+// Excel (placeholder)
 function lastNed(){
-  alert("Excel eksport kommer (kan utvides)");
+  alert("Excel eksport kommer neste steg");
 }
 </script>
 
