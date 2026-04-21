@@ -7,6 +7,9 @@
 <title>Linjekontroll</title>
 
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#2e7d32">
 
 <style>
 body {
@@ -89,18 +92,11 @@ input {
 
 <script>
 
-// =====================
-// 🔢 SETT VERSJON HER
-// =====================
+// ======= VERSJON =======
 const VERSION = "1.8";
-
-// vis versjon automatisk
 document.getElementById("versjon").innerText = "Linjekontroll v" + VERSION;
 
-
-// =====================
-// 📋 DATA (kontrollpunkt)
-// =====================
+// ======= DATA =======
 const data = {
     "Skjev mast": ["Skjev", "Setning", "Fund.feil"],
     "Barduner": ["Slakk", "Brudd", "Rust"],
@@ -121,14 +117,10 @@ const data = {
     "Merking": ["Mangler"]
 };
 
-
-// =====================
-// 📦 GENERER UI
-// =====================
+// ======= UI =======
 const app = document.getElementById("app");
 
 for (let key in data) {
-
     let div = document.createElement("div");
 
     div.innerHTML = `
@@ -145,10 +137,7 @@ for (let key in data) {
     app.appendChild(div);
 }
 
-
-// =====================
-// 🔘 FUNKSJONER
-// =====================
+// ======= FUNKSJONER =======
 function toggle(id) {
     let el = document.getElementById(id);
     el.classList.toggle("hidden");
