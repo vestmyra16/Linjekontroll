@@ -4,11 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v1.6</title>
+<title>Linjekontroll v1.7</title>
 
-<!-- APP ICON -->
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
 
 <style>
 
@@ -28,9 +27,7 @@ z-index:10;
 border-bottom:2px solid #ccc;
 }
 
-h2 {
-margin:5px 0;
-}
+h2 { margin:5px 0; }
 
 label {
 display:block;
@@ -39,25 +36,21 @@ color:black;
 margin-top:6px;
 }
 
-input {
+input, textarea {
 width:100%;
 padding:10px;
-margin:2px 0 6px 0;
-font-size:16px;
-color:black;
-background:white;
+margin:4px 0;
+font-size:15px;
 border:1px solid #999;
 border-radius:6px;
 }
 
-/* GPS */
 #gps {
 font-size:12px;
-color:black;
 margin-bottom:5px;
 }
 
-/* KNAPPER */
+/* BUTTONS */
 button {
 width:100%;
 padding:16px;
@@ -67,27 +60,23 @@ border-radius:8px;
 font-size:16px;
 }
 
-/* KATEGORI */
 .cat {
 background:#2e7d32;
 color:white;
 font-weight:bold;
 }
 
-/* AVVIK */
 .option {
 background:#e0e0e0;
 }
 
-/* INGEN AVVIK */
-.ok {
-background:#c8e6c9;
-font-weight:bold;
-}
-
-/* BUNN */
 .bottom {
 background:#ccc;
+}
+
+.camera {
+background:#0288d1;
+color:white;
 }
 
 </style>
@@ -97,7 +86,7 @@ background:#ccc;
 
 <div class="header">
 
-<h2>Linjekontroll v1.6</h2>
+<h2>Linjekontroll v1.7</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -106,7 +95,7 @@ background:#ccc;
 <input id="linje">
 
 <label>Mast nr</label>
-<input id="mast" type="number">
+<input id="mast">
 
 <div id="gps">GPS henter...</div>
 
@@ -124,8 +113,8 @@ background:#ccc;
 <script>
 
 let current = null;
+let log = [];
 
-// KONTROLLPUNKT + AVVIK
 const data = {
 
 "Skjev mast": ["Skjev", "Setning", "Fund.feil"],
@@ -159,50 +148,88 @@ html += `<button class="cat" onclick="openCat('${key}')">${key}</button>`;
 document.getElementById("app").innerHTML = html;
 }
 
-// ÅPNE KONTROLLPUNKT
+// ÅPNE
 function openCat(name){
 current = name;
 
 let html = `<button class="cat">${name}</button>`;
-
-// 🔥 LØSNING: Ingen avvik
-html += `<button class="ok" onclick="noAvvik()">Ingen avvik</button>`;
 
 // AVVIK
 data[name].forEach(avvik => {
 html += `<button class="option" onclick="select('${avvik}')">${avvik}</button>`;
 });
 
-html += `<button class="bottom" onclick="init()">Tilbake</button>`;
+// 📸 BILDE
+html += `<button class="camera" onclick="takePhoto()">📸 Ta bilde</button>`;
+
+// 📝 MERKNAD
+html += `<textarea id="note" placeholder="Merknad..."></textarea>`;
+
+// TILBAKE
+html += `<button class="bottom" onclick="saveNote()">Lagre / tilbake</button>`;
 
 document.getElementById("app").innerHTML = html;
 }
 
 // VELG AVVIK
 function select(avvik){
-console.log(current + ": " + avvik);
+log.push({
+punkt: current,
+avvik: avvik
+});
 init();
 }
 
-// INGEN AVVIK
-function noAvvik(){
-console.log(current + ": OK");
+// LAGRE MERKNAD
+function saveNote(){
+let note = document.getElementById("note").value;
+
+if(note){
+log.push({
+punkt: current,
+merknad: note
+});
+}
+
 init();
+}
+
+// 📸
+function takePhoto(){
+let input = document.createElement("input");
+input.type = "file";
+input.accept = "image/*";
+input.capture = "environment";
+
+input.onchange = () => {
+log.push({
+punkt: current,
+bilde: "ja"
+});
+};
+
+input.click();
 }
 
 // MAST OK
 function mastOK(){
-console.log("Mast OK");
+log.push({
+mast: document.getElementById("mast").value,
+status: "OK"
+});
+alert("Mast registrert som OK");
 }
 
 // NY MAST
 function next(){
 document.getElementById("mast").value="";
+log = [];
 }
 
-// EXCEL (kommer senere)
+// EXCEL (kommer)
 function excel(){
-alert("Excel eksport kommer i neste versjon");
+console.log(log);
+alert("Excel eksport kommer i neste steg");
 }
 
 // GPS
@@ -212,7 +239,6 @@ document.getElementById("gps").innerHTML =
 pos.coords.longitude.toFixed(6);
 });
 
-// START
 init();
 
 </script>
