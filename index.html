@@ -3,52 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Linjekontroll v1.4</title>
-
-<link rel="apple-touch-icon" href="icon.png">
+<title>Linjekontroll v1.5</title>
 
 <style>
-body { font-family: Arial; margin:0; background:#f4f4f4; }
-
-/* 🔝 FAST TOPP */
-.header {
-position:sticky;
-top:0;
-background:white;
-padding:10px;
-z-index:1000;
-border-bottom:2px solid #ccc;
+body {
+font-family: Arial;
+margin:0;
+background:#f2f2f2;
 }
 
-.header h2 {
-margin:0 0 5px 0;
+.header {
+background:white;
+padding:10px;
+position:sticky;
+top:0;
+z-index:10;
+}
+
+h2 {
+margin:5px 0;
+}
+
+label {
+display:block;
+font-weight:bold;
 color:black;
+margin-top:6px;
 }
 
 input {
 width:100%;
 padding:8px;
-margin:3px 0;
+margin:2px 0 6px 0;
 font-size:14px;
 color:black;
+background:white;
+border:1px solid #999;
+border-radius:6px;
+}
+
+#gps {
+font-size:12px;
+color:black;
+margin-bottom:5px;
 }
 
 button {
 width:100%;
 padding:14px;
 margin:4px 0;
-border-radius:10px;
 border:none;
-font-size:15px;
+border-radius:6px;
+font-size:16px;
 }
 
-.cat { background:#2e7d32; color:white; }
-.active { background:#c62828; color:white; }
-.option { background:#eee; }
+.cat {
+background:#2e7d32;
+color:white;
+font-weight:bold;
+}
 
-.hidden { display:none; }
-.small { font-size:12px; color:#000; }
+.option {
+background:#e0e0e0;
+color:black;
+}
+
+.bottom {
+background:#ccc;
+}
 
 </style>
 </head>
@@ -56,159 +78,125 @@ font-size:15px;
 <body>
 
 <div class="header">
-<h2>Linjekontroll v1.4</h2>
 
-<input id="netteier" placeholder="Netteier">
-<input id="linje" placeholder="LinjeID">
-<input id="mast" type="number" placeholder="Mast nr">
+<h2>Linjekontroll v1.5</h2>
 
-<div id="gps" class="small">GPS...</div>
+<label>Netteier</label>
+<input id="netteier">
+
+<label>LinjeID</label>
+<input id="linje">
+
+<label>Mast nr</label>
+<input id="mast" type="number">
+
+<div id="gps">GPS henter...</div>
 
 <button class="cat" onclick="mastOK()">Mast OK</button>
+
 </div>
 
-<div id="categories"></div>
+<div id="app"></div>
 
-<button onclick="nextMast()">Neste mast</button>
-<button onclick="exportCSV()">Last ned Excel</button>
+<div style="padding:10px;">
+<button class="bottom" onclick="next()">Neste mast</button>
+<button class="bottom" onclick="excel()">Last ned Excel</button>
+</div>
 
 <script>
 
-let data=[];
-let gps={lat:"",lon:""};
+let current = null;
 
-/* 🔴 OPPDATERT AVVIK */
-const avvikData = {
+// AVVIK PER KONTROLLPUNKT (riktig struktur)
+const data = {
 
-"Skjev mast": ["Skjev","Setning","Fund.feil"],
+"Skjev mast": ["Skjev", "Setning", "Fund.feil"],
 
-"Barduner": ["Slakk","Brudd","Rust"],
+"Barduner": ["Slakk", "Brudd", "Rust"],
 
-"Stolper": ["Råte","Sprekk"],
+"Stolper": ["Råte", "Sprekk"],
 
-"Stålmast": ["Korr","Skade"],
+"Stålmast": ["Korrosjon", "Skade"],
 
-"Topphette": ["Mangler","Skadet"],
+"Topphette": ["Mangler", "Skadet"],
 
-"Traversfeste": ["Løs","Skade"],
+"Traversfeste": ["Løs", "Skade"],
 
-"Travers": ["Skjev","Skade"],
+"Travers": ["Skjev", "Skade"],
 
-"Isolatorfeste": ["Slitasje","Skade"],
+"Isolatorfeste": ["Slitasje", "Skade"],
 
-"Isolator": ["Knust","Sprekk","Forur"],
+"Isolator": ["Knust", "Sprekk"],
 
-"Bendsling": ["Slakk","Skade"],
+"Bendsling": ["Slakk", "Feil"],
 
-"Liner": ["Korr","Kordelbrudd"],
+"Liner": ["Korrosjon", "Kordelbrudd"],
 
-"Strekning": ["Sig","Høyde"],
+"Strekning": ["Lav høyde", "Hinder"],
 
-"Skjøter/klemmer": ["Korr","Kordelbrudd"],
+"Skjøter/klemmer": ["Korrosjon", "Kordelbrudd"],
 
-"Toppline": ["Slakk","Korr"],
+"Toppline": ["Slakk", "Korrosjon"],
 
-"Jordinger": ["Brudd","Korr"],
+"Jordinger": ["Brudd", "Rust"],
 
-"Trasé": ["Skog","Kratt"],
+"Trasé": ["Skog", "Kratt"],
 
-"Merking": ["Mangler","Utydelig"]
+"Merking": ["Manglende", "Uleselig"]
 
 };
 
-const container=document.getElementById("categories");
+// START
+function init(){
+let html = "";
 
-Object.keys(avvikData).forEach(cat=>{
+for (let key in data){
+html += `<button class="cat" onclick="openCat('${key}')">${key}</button>`;
+}
 
-let div=document.createElement("div");
+document.getElementById("app").innerHTML = html;
+}
 
-let btn=document.createElement("button");
-btn.innerText=cat;
-btn.className="cat";
+function openCat(name){
+current = name;
 
-let options=document.createElement("div");
-options.className="hidden";
+let html = `<button class="cat">${name}</button>`;
 
-avvikData[cat].forEach(a=>{
-let o=document.createElement("button");
-o.innerText=a;
-o.className="option";
-
-o.onclick=()=>addAvvik(cat,a,btn);
-
-options.appendChild(o);
+data[name].forEach(avvik => {
+html += `<button class="option" onclick="select('${avvik}')">${avvik}</button>`;
 });
 
-btn.onclick=()=>options.classList.toggle("hidden");
+html += `<button class="bottom" onclick="init()">Tilbake</button>`;
 
-div.appendChild(btn);
-div.appendChild(options);
+document.getElementById("app").innerHTML = html;
+}
 
-container.appendChild(div);
-
-});
-
-function addAvvik(cat,type,btn){
-
-data.push({
-netteier:val("netteier"),
-linje:val("linje"),
-mast:val("mast"),
-kategori:cat,
-type:type,
-lat:gps.lat,
-lon:gps.lon,
-tid:new Date().toLocaleString()
-});
-
-btn.classList.add("active");
+function select(avvik){
+console.log(current + ": " + avvik);
+init();
 }
 
 function mastOK(){
-data.push({
-netteier:val("netteier"),
-linje:val("linje"),
-mast:val("mast"),
-kategori:"OK",
-type:"",
-lat:gps.lat,
-lon:gps.lon,
-tid:new Date().toLocaleString()
-});
-nextMast();
+console.log("Mast OK");
 }
 
-function nextMast(){
-document.getElementById("mast").value =
-parseInt(val("mast")||0)+1;
-
-document.querySelectorAll(".cat").forEach(b=>b.classList.remove("active"));
+function next(){
+document.getElementById("mast").value="";
 }
 
-function exportCSV(){
-
-let csv="Netteier,Linje,Mast,Kategori,Type,Lat,Lon,Tid\n";
-
-data.forEach(d=>{
-csv+=`${d.netteier},${d.linje},${d.mast},${d.kategori},${d.type},${d.lat},${d.lon},${d.tid}\n`;
-});
-
-let blob=new Blob([csv],{type:"text/csv"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="Linjekontroll.csv";
-a.click();
+function excel(){
+alert("Excel kommer senere");
 }
 
-function val(id){return document.getElementById(id).value;}
-
-navigator.geolocation.watchPosition(pos=>{
-gps.lat=pos.coords.latitude.toFixed(6);
-gps.lon=pos.coords.longitude.toFixed(6);
-
-document.getElementById("gps").innerText=
-"GPS: "+gps.lat+", "+gps.lon;
+// GPS
+navigator.geolocation.getCurrentPosition(pos=>{
+document.getElementById("gps").innerHTML =
+"GPS: " + pos.coords.latitude.toFixed(6) + ", " +
+pos.coords.longitude.toFixed(6);
 });
+
+// START
+init();
 
 </script>
 
