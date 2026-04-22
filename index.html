@@ -7,33 +7,32 @@
 <title>Linjekontroll</title>
 
 <style>
-body { 
-  font-family: Arial; 
-  margin:0; 
-  background:#f4f4f4; 
+body {
+  font-family: Arial, sans-serif;
+  margin:0;
+  background:#f4f4f4;
 }
 
-/* HEADER */
+/* HEADER – IKKE sticky (stabil) */
 .header {
-  position: sticky;
-  top: 0;
-  background: #ffffff;
-  padding: 10px;
-  z-index: 9999;
-  border-bottom: 3px solid #2e7d32;
+  background:#ffffff;
+  padding:12px;
+  border-bottom:3px solid #2e7d32;
 }
 
-h1 { margin:0 0 5px 0; font-size:20px; }
+h1 {
+  margin:0 0 8px 0;
+  font-size:20px;
+}
 
-/* INPUT */
+/* INPUT – tydelig svart tekst */
 input {
   width:100%;
   padding:12px;
   margin:6px 0;
-  font-size:17px;
-  font-weight:600;
-  color:#000 !important;
-  background:#fff !important;
+  font-size:16px;
+  color:#000;
+  background:#fff;
   border:2px solid #444;
 }
 
@@ -53,7 +52,7 @@ input:focus {
   margin:4px 0;
   border:none;
   border-radius:6px;
-  font-size:16px;
+  font-size:15px;
 }
 
 .green { background:#2e7d32; color:white; }
@@ -61,8 +60,11 @@ input:focus {
 .red { background:#c62828; color:white; }
 .gray { background:#e0e0e0; color:black; }
 
-.section { margin:5px; }
-.hidden { display:none; }
+.section { margin:6px; }
+
+.inner {
+  display:none;
+}
 
 textarea {
   width:100%;
@@ -75,7 +77,7 @@ textarea {
 <body>
 
 <div class="header">
-  <h1>Linjekontroll v1.21</h1>
+  <h1>Linjekontroll v1.22</h1>
 
   <input id="netteier" placeholder="Netteier">
   <input id="linje" placeholder="LinjeID">
@@ -121,7 +123,7 @@ const data = {
 
 const container = document.getElementById("kontroll");
 
-/* UI */
+/* BYGG UI */
 function lagUI(){
   container.innerHTML="";
 
@@ -130,17 +132,21 @@ function lagUI(){
     let div=document.createElement("div");
     div.className="section";
 
-    let btn=document.createElement("button");
-    btn.type="button";
-    btn.className="btn green";
-    btn.innerText=key;
+    let hoved=document.createElement("button");
+    hoved.type="button";
+    hoved.className="btn green";
+    hoved.innerText=key;
 
-    btn.onclick=()=>toggle(div);
-    div.appendChild(btn);
+    hoved.onclick=()=>{
+      inner.style.display = inner.style.display==="block" ? "none" : "block";
+    };
+
+    div.appendChild(hoved);
 
     let inner=document.createElement("div");
-    inner.className="hidden";
+    inner.className="inner";
 
+    /* AVVIK */
     data[key].forEach(avvik=>{
       let b=document.createElement("button");
       b.type="button";
@@ -148,7 +154,8 @@ function lagUI(){
       b.innerText=avvik;
 
       b.onclick=()=>{
-        setRed(btn);
+        hoved.classList.remove("green","lightgreen");
+        hoved.classList.add("red");
         b.classList.add("red");
       };
 
@@ -165,7 +172,8 @@ function lagUI(){
 
     cam.onchange=()=>{
       if(cam.files.length>0){
-        setRed(btn);
+        hoved.classList.remove("green","lightgreen");
+        hoved.classList.add("red");
       }
     };
 
@@ -184,7 +192,8 @@ function lagUI(){
 
     txt.oninput=()=>{
       if(txt.value.length>0){
-        setRed(btn);
+        hoved.classList.remove("green","lightgreen");
+        hoved.classList.add("red");
       }
     };
 
@@ -196,15 +205,6 @@ function lagUI(){
 }
 
 /* FUNKSJONER */
-function toggle(div){
-  div.children[1].classList.toggle("hidden");
-}
-
-function setRed(btn){
-  btn.classList.remove("green","lightgreen");
-  btn.classList.add("red");
-}
-
 function mastOK(){
   document.querySelectorAll(".section button:first-child").forEach(b=>{
     b.classList.remove("green","red");
@@ -214,17 +214,18 @@ function mastOK(){
 
 function nesteMast(){
 
-  /* 🔥 behold disse */
+  /* behold */
   let netteier = document.getElementById("netteier").value;
   let linje = document.getElementById("linje").value;
 
+  /* reset UI */
   lagUI();
 
-  /* 🔥 legg tilbake */
+  /* legg tilbake */
   document.getElementById("netteier").value = netteier;
   document.getElementById("linje").value = linje;
 
-  /* 🔥 nullstill mast */
+  /* nullstill mast */
   document.getElementById("mast").value = "";
 }
 
