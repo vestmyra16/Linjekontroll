@@ -29,7 +29,6 @@ input {
     margin-bottom:6px;
 }
 
-/* KNAPPER */
 .btn {
     background:#2e7d32;
     color:white;
@@ -50,10 +49,8 @@ input {
     color:black;
 }
 
-/* SKJUL */
 .hidden { display:none; }
 
-/* Kamera */
 .camera {
     background:#2e7d32;
     color:white;
@@ -68,7 +65,7 @@ input {
 <body>
 
 <div class="header">
-<h3>Linjekontroll v1.30</h3>
+<h3>Linjekontroll v1.40</h3>
 
 <label>Netteier</label>
 <input id="netteier" oninput="saveHeader()">
@@ -85,6 +82,7 @@ input {
 <div id="app"></div>
 
 <div class="btn" onclick="nextMast()">Neste mast</div>
+<div class="btn" onclick="downloadExcel()">Last ned Excel</div>
 
 <script>
 let data = {};
@@ -96,7 +94,7 @@ const controls = [
 ["Barduner", ["Slakk","Brudd","Rust"]],
 ["Stolper", ["Råte","Sprekk"]],
 ["Stålmast", ["Korrosjon","Skade"]],
-["Topphatte", ["Mangler","Skadet"]],
+["Topphette", ["Mangler","Skadet"]],
 ["Traversfeste", ["Løs","Skade"]],
 ["Travers", ["Skjev","Skade"]],
 ["Isolatorfeste", ["Slitasje","Skade"]],
@@ -108,7 +106,7 @@ const controls = [
 ["Toppline", ["Slakk","Korrosjon"]],
 ["Jordinger", ["Løs","Brudd"]],
 ["Trasé", ["Skog","Kratt"]],
-["Merking", []]
+["Merking", ["HS mangler/defekt","Mnr mangler/defekt"]]
 ];
 
 function render(){
@@ -116,11 +114,10 @@ function render(){
     controls.forEach((c,i)=>{
 
         html += `<div id="main${i}" class="btn" onclick="toggle(${i})">${c[0]}</div>`;
-
         html += `<div id="sub${i}" class="${open===i?'':'hidden'}">`;
 
         c[1].forEach((s)=>{
-            html += `<div class="sub" onclick="setAvvik(${i})">${s}</div>`;
+            html += `<div class="sub" onclick="setAvvik(${i},'${s}')">${s}</div>`;
         });
 
         html += `
@@ -142,15 +139,13 @@ function render(){
     update();
 }
 
-/* ÅPNE/LUKKE */
 function toggle(i){
     open = open===i ? null : i;
     render();
 }
 
-/* VALG */
-function setAvvik(i){
-    data[i] = {avvik:true};
+function setAvvik(i,val){
+    data[i] = {avvik:val};
     update();
 }
 
@@ -183,7 +178,6 @@ function update(){
     });
 }
 
-/* NESTE MAST */
 function nextMast(){
     document.getElementById("mast").value="";
     data = {};
@@ -191,7 +185,6 @@ function nextMast(){
     render();
 }
 
-/* LAGRING */
 function saveHeader(){
     localStorage.setItem("netteier",netteier.value);
     localStorage.setItem("linje",linje.value);
@@ -202,10 +195,24 @@ function loadHeader(){
     linje.value = localStorage.getItem("linje") || "";
 }
 
+function downloadExcel(){
+    let csv = "Netteier,LinjeID,Mast,Kontrollpunkt,Avvik,Merknad,Bilde\n";
+
+    controls.forEach((c,i)=>{
+        let d = data[i] || {};
+        csv += `${netteier.value},${linje.value},${mast.value},${c[0]},${d.avvik||""},${d.note||""},${d.img?"Ja":"Nei"}\n`;
+    });
+
+    let blob = new Blob([csv], {type:"text/csv"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "linjekontroll.csv";
+    a.click();
+}
+
 loadHeader();
 render();
 
-/* GPS */
 navigator.geolocation.getCurrentPosition(pos=>{
     document.getElementById("gps").innerHTML =
     "GPS: " + pos.coords.latitude.toFixed(5) + ", " +
