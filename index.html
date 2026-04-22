@@ -7,12 +7,34 @@
 <title>Linjekontroll</title>
 
 <style>
-body { font-family: Arial; margin:10px; background:#f5f5f5; }
+body {
+    font-family: Arial;
+    margin: 10px;
+    background:#f5f5f5;
+}
 
-.header { position:sticky; top:0; background:white; }
+/* FAST HEADER */
+.header {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1000;
+}
 
-input { width:100%; padding:8px; margin-bottom:6px; }
+/* TYDELIG SVART TEKST */
+label {
+    font-weight: bold;
+    color: black;
+}
 
+input {
+    width:100%;
+    padding:8px;
+    margin-bottom:6px;
+    color:black;
+}
+
+/* KNAPPER */
 .btn {
     background:#2e7d32;
     color:white;
@@ -22,33 +44,58 @@ input { width:100%; padding:8px; margin-bottom:6px; }
     cursor:pointer;
 }
 
-.btn.error { background:#c62828; }
-.sub { background:#e0e0e0; padding:10px; margin:2px 0; }
-.hidden { display:none; }
+.btn.active {
+    background:#c62828;
+}
+
+/* AVVIK */
+.sub {
+    background:#e0e0e0;
+    padding:10px;
+    margin:2px 0;
+    cursor:pointer;
+}
+
+/* KAMERA */
+.camera {
+    background:#1b5e20;
+    color:white;
+    padding:10px;
+    text-align:center;
+    border-radius:6px;
+    margin-top:4px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-<h3>Linjekontroll v1.50</h3>
 
-<input id="netteier" placeholder="Netteier">
-<input id="linje" placeholder="LinjeID">
-<input id="mast" placeholder="Mast nr">
+<h3>Linjekontroll v1.60</h3>
+
+<label>Netteier</label>
+<input id="netteier">
+
+<label>LinjeID</label>
+<input id="linje">
+
+<label>Mast nr</label>
+<input id="mast">
 
 <div id="gps"></div>
+
 </div>
 
 <div id="app"></div>
 
-<div class="btn" onclick="saveMast()">💾 Lagre mast</div>
-<div class="btn" onclick="nextMast()">➡ Neste mast</div>
-<div class="btn" onclick="downloadExcel()">📥 Last ned Excel</div>
+<div class="btn" onclick="nextMast()">Neste mast</div>
+<div class="btn" onclick="downloadExcel()">Last ned Excel</div>
 
 <script>
-let current = {};
+
 let allMasts = [];
+let current = {};
 let open = null;
 
 const controls = [
@@ -73,26 +120,40 @@ const controls = [
 ];
 
 function render(){
+
     let html="";
+
     controls.forEach((c,i)=>{
-        html += `<div class="btn" onclick="toggle(${i})">${c[0]}</div>`;
-        html += `<div class="${open===i?'':'hidden'}">`;
 
-        c[1].forEach(s=>{
-            html += `<div class="sub" onclick="setAvvik(${i},'${s}')">${s}</div>`;
-        });
+        let active = current[i] ? "active" : "";
 
-        html += `<textarea placeholder="Merknad" onchange="setNote(${i},this.value)"></textarea>`;
-        html += `</div>`;
+        html += `<div class="btn ${active}" onclick="toggle(${i})">${c[0]}</div>`;
+
+        if(open===i){
+
+            c[1].forEach(s=>{
+                html += `<div class="sub" onclick="setAvvik(${i},'${s}')">${s}</div>`;
+            });
+
+            html += `<div class="camera">📷 Ta bilde</div>`;
+
+            html += `<textarea placeholder="Merknad" onchange="setNote(${i},this.value)"></textarea>`;
+        }
+
     });
+
     app.innerHTML = html;
 }
 
-function toggle(i){ open = open===i ? null : i; render(); }
+function toggle(i){
+    open = open===i ? null : i;
+    render();
+}
 
 function setAvvik(i,val){
     current[i] = current[i] || {};
     current[i].avvik = val;
+    render();
 }
 
 function setNote(i,val){
@@ -100,28 +161,20 @@ function setNote(i,val){
     current[i].note = val;
 }
 
-/* LAGRE MAST */
-function saveMast(){
+/* LAGRER AUTOMATISK */
+function nextMast(){
 
-    let mastData = {
+    allMasts.push({
         netteier: netteier.value,
         linje: linje.value,
         mast: mast.value,
         data: JSON.parse(JSON.stringify(current))
-    };
-
-    allMasts.push(mastData);
-
-    alert("Mast lagret!");
-}
-
-/* NESTE MAST */
-function nextMast(){
-    saveMast();
+    });
 
     mast.value = "";
     current = {};
     open = null;
+
     render();
 }
 
@@ -138,6 +191,7 @@ function downloadExcel(){
             let avvik = d.avvik || (c[0]=="Mast OK" ? "Ingen" : "");
 
             csv += `${m.netteier},${m.linje},${m.mast},${c[0]},${avvik},${d.note||""}\n`;
+
         });
     });
 
@@ -148,13 +202,15 @@ function downloadExcel(){
     a.click();
 }
 
-render();
-
+/* GPS */
 navigator.geolocation.getCurrentPosition(pos=>{
     gps.innerHTML =
     "GPS: " + pos.coords.latitude.toFixed(5) + ", " +
     pos.coords.longitude.toFixed(5);
 });
+
+render();
+
 </script>
 
 </body>
