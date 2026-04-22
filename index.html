@@ -9,7 +9,6 @@
 <style>
 body { font-family: Arial; margin:0; background:#f4f4f4; }
 
-/* 🔒 Sticky topp */
 .header {
   position: sticky;
   top: 0;
@@ -21,15 +20,14 @@ body { font-family: Arial; margin:0; background:#f4f4f4; }
 
 h1 { margin:0 0 5px 0; font-size:20px; }
 
-/* ✨ TYDELIGE INPUT */
 input {
   width:100%;
   padding:12px;
   margin:6px 0;
   font-size:17px;
   font-weight:600;
-  color:#000000;
-  background:#ffffff;
+  color:#000;
+  background:#fff;
   border:2px solid #999;
 }
 
@@ -38,7 +36,6 @@ input::placeholder {
   font-weight:400;
 }
 
-/* Knapper */
 .btn {
   width:100%;
   padding:14px;
@@ -60,7 +57,6 @@ textarea {
   width:100%;
   height:60px;
   margin-top:5px;
-  font-size:14px;
 }
 </style>
 </head>
@@ -68,7 +64,7 @@ textarea {
 <body>
 
 <div class="header">
-  <h1>Linjekontroll v1.19</h1>
+  <h1>Linjekontroll v1.20</h1>
 
   <input id="netteier" placeholder="Netteier">
   <input id="linje" placeholder="LinjeID">
@@ -77,21 +73,19 @@ textarea {
   <div id="gps">GPS: henter...</div>
 </div>
 
-<button class="btn lightgreen" onclick="mastOK()">Mast OK</button>
+<button type="button" class="btn lightgreen" onclick="mastOK()">Mast OK</button>
 
 <div id="kontroll"></div>
 
-<button class="btn gray" onclick="nesteMast()">Neste mast</button>
+<button type="button" class="btn gray" onclick="nesteMast()">Neste mast</button>
 
 <script>
 
-// GPS
 navigator.geolocation.getCurrentPosition(pos=>{
   document.getElementById("gps").innerText =
   "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
 });
 
-// DATA
 const data = {
 "Skjev mast":["Skjev","Setning","Fund.feil"],
 "Barduner":["Slakk","Brudd","Rust"],
@@ -123,6 +117,7 @@ function lagUI(){
     div.className="section";
 
     let btn=document.createElement("button");
+    btn.type="button";
     btn.className="btn green";
     btn.innerText=key;
 
@@ -132,9 +127,9 @@ function lagUI(){
     let inner=document.createElement("div");
     inner.className="hidden";
 
-    // Avvik
     data[key].forEach(avvik=>{
       let b=document.createElement("button");
+      b.type="button";
       b.className="btn gray";
       b.innerText=avvik;
 
@@ -142,7 +137,6 @@ function lagUI(){
       inner.appendChild(b);
     });
 
-    // Kamera (skjult)
     let cam=document.createElement("input");
     cam.type="file";
     cam.accept="image/*";
@@ -156,8 +150,8 @@ function lagUI(){
       }
     };
 
-    // Kamera knapp
     let camBtn=document.createElement("button");
+    camBtn.type="button";
     camBtn.className="btn gray";
     camBtn.innerText="📸 Ta bilde";
     camBtn.onclick=()=>cam.click();
@@ -165,7 +159,6 @@ function lagUI(){
     inner.appendChild(camBtn);
     inner.appendChild(cam);
 
-    // Merknad
     let txt=document.createElement("textarea");
     txt.placeholder="Merknad";
 
