@@ -3,55 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Linjekontroll</title>
 
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.png">
-
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f4f4f4;
-}
+body { font-family: Arial; margin:0; background:#f4f4f4; }
 
-.header {
-    padding: 10px;
-    background: white;
-}
+.header { padding:10px; background:white; }
 
-h1 {
-    margin: 0;
-    font-size: 20px;
-}
+h1 { margin:0; font-size:20px; }
 
 input {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    font-size: 16px;
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  font-size:16px;
+  color:black;
 }
 
 .btn {
-    width: 100%;
-    padding: 14px;
-    margin: 4px 0;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
+  width:100%;
+  padding:14px;
+  margin:4px 0;
+  border:none;
+  border-radius:6px;
+  font-size:16px;
 }
 
 .green { background:#2e7d32; color:white; }
 .lightgreen { background:#66bb6a; color:white; }
 .red { background:#c62828; color:white; }
-.gray { background:#ccc; }
+.gray { background:#ddd; color:black; }
 
-.section {
-    margin: 5px;
-}
+.section { margin:5px; }
+.hidden { display:none; }
 
-.hidden {
-    display:none;
+textarea {
+  width:100%;
+  height:60px;
+  margin-top:5px;
 }
 </style>
 </head>
@@ -59,11 +49,13 @@ input {
 <body>
 
 <div class="header">
-    <h1>Linjekontroll</h1>
-    <input id="netteier" placeholder="Netteier">
-    <input id="linje" placeholder="LinjeID">
-    <input id="mast" placeholder="Mast nr">
-    <div id="gps">GPS: henter...</div>
+<h1>Linjekontroll v1.17</h1>
+
+<input id="netteier" placeholder="Netteier">
+<input id="linje" placeholder="LinjeID">
+<input id="mast" placeholder="Mast nr">
+
+<div id="gps">GPS: henter...</div>
 </div>
 
 <button class="btn lightgreen" onclick="mastOK()">Mast OK</button>
@@ -75,108 +67,121 @@ input {
 <script>
 
 // GPS
-navigator.geolocation.getCurrentPosition(pos => {
-    document.getElementById("gps").innerText =
-        "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
+navigator.geolocation.getCurrentPosition(pos=>{
+document.getElementById("gps").innerText =
+"GPS: "+pos.coords.latitude.toFixed(5)+", "+pos.coords.longitude.toFixed(5);
 });
 
-// Kontrollpunkter og avvik
+// DATA
 const data = {
-    "Skjev mast": ["Skjev","Setning","Fund.feil"],
-    "Barduner": ["Slakk","Brudd","Rust"],
-    "Stolper": ["Råte","Sprekk"],
-    "Stålmast": ["Korrosjon","Skade"],
-    "Topphatte": ["Mangler","Skadet"],
-    "Traversfeste": ["Løs","Skade"],
-    "Travers": ["Skjev","Skade"],
-    "Isolatorfeste": ["Slitasje","Skade"],
-    "Isolator": ["Knust","Krypestrømsvei"],
-    "Bendsling": ["Løs","Brudd"],
-    "Liner": ["Korrosjon","Kordelbrudd"],
-    "Strekking": ["Skjev"],
-    "Skjøter/Klemmer": ["Korrodert"],
-    "Toppline": ["Slakk","Korrosjon"],
-    "Jordinger": ["Løs","Brudd"],
-    "Trasé": ["Skog","Kratt"],
-    "Merking": []
+"Skjev mast":["Skjev","Setning","Fund.feil"],
+"Barduner":["Slakk","Brudd","Rust"],
+"Stolper":["Råte","Sprekk"],
+"Stålmast":["Korrosjon","Skade"],
+"Topphatte":["Mangler","Skadet"],
+"Traversfeste":["Løs","Skade"],
+"Travers":["Skjev","Skade"],
+"Isolatorfeste":["Slitasje","Skade"],
+"Isolator":["Knust","Krypestrømsvei"],
+"Bendsling":["Løs","Brudd"],
+"Liner":["Korrosjon","Kordelbrudd"],
+"Strekking":["Skjev"],
+"Skjøter/Klemmer":["Korrodert"],
+"Toppline":["Slakk","Korrosjon"],
+"Jordinger":["Løs","Brudd"],
+"Trasé":["Skog","Kratt"],
+"Merking":[]
 };
 
-const container = document.getElementById("kontroll");
+const container=document.getElementById("kontroll");
 
 function lagUI(){
-    container.innerHTML = "";
-    for (let key in data){
+container.innerHTML="";
 
-        let div = document.createElement("div");
-        div.className = "section";
+for(let key in data){
 
-        let btn = document.createElement("button");
-        btn.className = "btn green";
-        btn.innerText = key;
+let div=document.createElement("div");
+div.className="section";
 
-        btn.onclick = () => toggle(div);
+let btn=document.createElement("button");
+btn.className="btn green";
+btn.innerText=key;
 
-        div.appendChild(btn);
+btn.onclick=()=>toggle(div);
 
-        let inner = document.createElement("div");
-        inner.className = "hidden";
+div.appendChild(btn);
 
-        // avvik
-        data[key].forEach(avvik=>{
-            let b = document.createElement("button");
-            b.className = "btn gray";
-            b.innerText = avvik;
+let inner=document.createElement("div");
+inner.className="hidden";
 
-            b.onclick = () => {
-                btn.classList.remove("green");
-                btn.classList.add("red");
-            };
+data[key].forEach(avvik=>{
+let b=document.createElement("button");
+b.className="btn gray";
+b.innerText=avvik;
 
-            inner.appendChild(b);
-        });
+b.onclick=()=>{
+btn.classList.remove("green","lightgreen");
+btn.classList.add("red");
+};
 
-        // kamera
-        let cam = document.createElement("input");
-        cam.type = "file";
-        cam.accept = "image/*";
-        cam.capture = "environment";
-        cam.multiple = true;
-        inner.appendChild(cam);
+inner.appendChild(b);
+});
 
-        // merknad
-        let txt = document.createElement("textarea");
-        txt.placeholder = "Merknad";
-        txt.style.width="100%";
-        txt.style.height="60px";
-        inner.appendChild(txt);
+// kamera
+let cam=document.createElement("input");
+cam.type="file";
+cam.accept="image/*";
+cam.capture="environment";
+cam.multiple=true;
 
-        div.appendChild(inner);
-        container.appendChild(div);
-    }
+cam.onchange=()=>{
+if(cam.files.length>0){
+btn.classList.remove("green","lightgreen");
+btn.classList.add("red");
+}
+};
+
+inner.appendChild(cam);
+
+// merknad
+let txt=document.createElement("textarea");
+txt.placeholder="Merknad";
+
+txt.oninput=()=>{
+if(txt.value.length>0){
+btn.classList.remove("green","lightgreen");
+btn.classList.add("red");
+}
+};
+
+inner.appendChild(txt);
+
+div.appendChild(inner);
+container.appendChild(div);
+}
 }
 
 function toggle(div){
-    let inner = div.children[1];
-    inner.classList.toggle("hidden");
+div.children[1].classList.toggle("hidden");
 }
 
 function mastOK(){
-    document.querySelectorAll(".section button:first-child").forEach(b=>{
-        b.classList.remove("green","red");
-        b.classList.add("lightgreen");
-    });
+document.querySelectorAll(".section button:first-child").forEach(b=>{
+b.classList.remove("green","red");
+b.classList.add("lightgreen");
+});
 }
 
 function nesteMast(){
-    document.getElementById("mast").value = "";
+document.getElementById("mast").value="";
 
-    document.querySelectorAll(".section button:first-child").forEach(b=>{
-        b.classList.remove("red","lightgreen");
-        b.classList.add("green");
-    });
+document.querySelectorAll(".section button:first-child").forEach(b=>{
+b.classList.remove("red","lightgreen");
+b.classList.add("green");
+});
 
-    document.querySelectorAll("textarea").forEach(t=>t.value="");
-    document.querySelectorAll("input[type=file]").forEach(f=>f.value="");
+document.querySelectorAll("textarea").forEach(t=>t.value="");
+document.querySelectorAll("input[type=file]").forEach(f=>f.value="");
 }
 
 lagUI();
