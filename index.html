@@ -3,196 +3,184 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Linjekontroll</title>
 
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.png">
-
-<script>
-const VERSION = "1.15";
-</script>
+<link rel="icon" href="icon.png">
 
 <style>
-body { font-family: Arial; background:#f2f2f2; margin:0; }
-
-.container { padding:10px; }
-
-h1 { font-size:20px; }
-
-label { font-weight:bold; }
-
-input, textarea {
-  width:100%;
-  padding:10px;
-  margin-bottom:10px;
-  border-radius:6px;
-  border:1px solid #ccc;
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f4f4;
 }
 
-.knapp {
-  background:#2e7d32;
-  color:#fff;
-  padding:14px;
-  border:none;
-  border-radius:8px;
-  margin-bottom:8px;
-  width:100%;
+.header {
+    padding: 10px;
+    background: white;
 }
 
-.mastOK { background:#66bb6a; }
-
-.valg {
-  background:#ddd;
-  padding:12px;
-  border-radius:6px;
-  margin-bottom:6px;
-  cursor:pointer;
+h1 {
+    margin: 0;
+    font-size: 20px;
 }
 
-.valg.aktiv {
-  background:#2e7d32;
-  color:#fff;
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    font-size: 16px;
 }
 
-.bilde-preview img {
-  width:80px;
-  margin:5px;
+.btn {
+    width: 100%;
+    padding: 14px;
+    margin: 4px 0;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.green { background:#2e7d32; color:white; }
+.lightgreen { background:#66bb6a; color:white; }
+.red { background:#c62828; color:white; }
+.gray { background:#ccc; }
+
+.section {
+    margin: 5px;
+}
+
+.hidden {
+    display:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
-<h1 id="tittel"></h1>
-
-<label>Netteier</label>
-<input id="netteier">
-
-<label>LinjeID</label>
-<input id="linje">
-
-<label>Mast nr</label>
-<input id="mast">
-
-<p id="gps"></p>
-
-<button class="knapp mastOK" onclick="mastOK()">Mast OK</button>
-
-<div id="kontroller"></div>
-
-<button class="knapp" onclick="neste()">Neste mast</button>
-
+<div class="header">
+    <h1>Linjekontroll</h1>
+    <input id="netteier" placeholder="Netteier">
+    <input id="linje" placeholder="LinjeID">
+    <input id="mast" placeholder="Mast nr">
+    <div id="gps">GPS: henter...</div>
 </div>
+
+<button class="btn lightgreen" onclick="mastOK()">Mast OK</button>
+
+<div id="kontroll"></div>
+
+<button class="btn gray" onclick="nesteMast()">Neste mast</button>
 
 <script>
 
-// Versjon
-document.getElementById("tittel").innerText = "Linjekontroll v" + VERSION;
-
 // GPS
-navigator.geolocation.getCurrentPosition(pos=>{
-  document.getElementById("gps").innerText =
-    "GPS: " + pos.coords.latitude.toFixed(6) + ", " + pos.coords.longitude.toFixed(6);
+navigator.geolocation.getCurrentPosition(pos => {
+    document.getElementById("gps").innerText =
+        "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
 });
 
-// DATA
-const data = [
-  {navn:"Skjev mast", avvik:["Skjev","Setning","Fund.feil"]},
-  {navn:"Barduner", avvik:["Slakk","Brudd","Rust"]},
-  {navn:"Stolper", avvik:["Råte","Sprekk"]},
-  {navn:"Stålmast", avvik:["Korrosjon","Skade"]},
-  {navn:"Topphatte", avvik:["Mangler","Skadet"]},
-  {navn:"Traversfeste", avvik:["Løs","Skade"]},
-  {navn:"Travers", avvik:["Skjev","Skade"]},
-  {navn:"Isolatorfeste", avvik:["Slitasje","Skade"]},
-  {navn:"Isolator", avvik:["Knust","Krypestømsvei"]},
-  {navn:"Bendsling", avvik:["Løs","Brudd"]},
-  {navn:"Liner", avvik:["Korrosjon","Kordelbrudd"]},
-  {navn:"Strekning", avvik:["Skjev"]},
-  {navn:"Skjøter/klemmer", avvik:["Korrodert"]},
-  {navn:"Toppline", avvik:["Slakk","Korrosjon"]},
-  {navn:"Jordinger", avvik:["Løs","Brudd"]},
-  {navn:"Trasé", avvik:["Skog","Kratt"]},
-  {navn:"Merking", avvik:["Manglende","Feil"]}
-];
+// Kontrollpunkter og avvik
+const data = {
+    "Skjev mast": ["Skjev","Setning","Fund.feil"],
+    "Barduner": ["Slakk","Brudd","Rust"],
+    "Stolper": ["Råte","Sprekk"],
+    "Stålmast": ["Korrosjon","Skade"],
+    "Topphatte": ["Mangler","Skadet"],
+    "Traversfeste": ["Løs","Skade"],
+    "Travers": ["Skjev","Skade"],
+    "Isolatorfeste": ["Slitasje","Skade"],
+    "Isolator": ["Knust","Krypestrømsvei"],
+    "Bendsling": ["Løs","Brudd"],
+    "Liner": ["Korrosjon","Kordelbrudd"],
+    "Strekking": ["Skjev"],
+    "Skjøter/Klemmer": ["Korrodert"],
+    "Toppline": ["Slakk","Korrosjon"],
+    "Jordinger": ["Løs","Brudd"],
+    "Trasé": ["Skog","Kratt"],
+    "Merking": []
+};
 
-const container = document.getElementById("kontroller");
+const container = document.getElementById("kontroll");
 
-// LAG UI
-data.forEach((punkt,i)=>{
+function lagUI(){
+    container.innerHTML = "";
+    for (let key in data){
 
-  const div = document.createElement("div");
+        let div = document.createElement("div");
+        div.className = "section";
 
-  div.innerHTML = `
-    <button class="knapp" onclick="toggle(${i})">${punkt.navn}</button>
+        let btn = document.createElement("button");
+        btn.className = "btn green";
+        btn.innerText = key;
 
-    <div id="felt${i}" style="display:none">
+        btn.onclick = () => toggle(div);
 
-      ${punkt.avvik.map(a=>`
-        <div class="valg" onclick="velg(this)">${a}</div>
-      `).join("")}
+        div.appendChild(btn);
 
-      <button class="knapp" onclick="taBilde(this)">📸 Ta bilde</button>
+        let inner = document.createElement("div");
+        inner.className = "hidden";
 
-      <input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="lagreBilder(this)">
+        // avvik
+        data[key].forEach(avvik=>{
+            let b = document.createElement("button");
+            b.className = "btn gray";
+            b.innerText = avvik;
 
-      <div class="bilde-preview"></div>
+            b.onclick = () => {
+                btn.classList.remove("green");
+                btn.classList.add("red");
+            };
 
-      <textarea placeholder="Merknad"></textarea>
+            inner.appendChild(b);
+        });
 
-    </div>
-  `;
+        // kamera
+        let cam = document.createElement("input");
+        cam.type = "file";
+        cam.accept = "image/*";
+        cam.capture = "environment";
+        cam.multiple = true;
+        inner.appendChild(cam);
 
-  container.appendChild(div);
-});
+        // merknad
+        let txt = document.createElement("textarea");
+        txt.placeholder = "Merknad";
+        txt.style.width="100%";
+        txt.style.height="60px";
+        inner.appendChild(txt);
 
-// ÅPNE/LUKKE
-function toggle(i){
-  const el = document.getElementById("felt"+i);
-  el.style.display = el.style.display==="none" ? "block" : "none";
+        div.appendChild(inner);
+        container.appendChild(div);
+    }
 }
 
-// 🔥 KLIKK AVVIK
-function velg(el){
-  el.classList.toggle("aktiv");
+function toggle(div){
+    let inner = div.children[1];
+    inner.classList.toggle("hidden");
 }
 
-// KAMERA
-function taBilde(btn){
-  btn.nextElementSibling.click();
-}
-
-// LAGRE BILDER
-function lagreBilder(input){
-  const preview = input.nextElementSibling;
-  preview.innerHTML="";
-
-  Array.from(input.files).forEach(f=>{
-    const r = new FileReader();
-    r.onload = e=>{
-      const img=document.createElement("img");
-      img.src=e.target.result;
-      preview.appendChild(img);
-    };
-    r.readAsDataURL(f);
-  });
-}
-
-// MAST OK
 function mastOK(){
-  alert("Mast registrert OK");
+    document.querySelectorAll(".section button:first-child").forEach(b=>{
+        b.classList.remove("green","red");
+        b.classList.add("lightgreen");
+    });
 }
 
-// NESTE
-function neste(){
-  document.getElementById("mast").value="";
-  document.querySelectorAll("textarea").forEach(e=>e.value="");
-  document.querySelectorAll(".bilde-preview").forEach(e=>e.innerHTML="");
-  document.querySelectorAll(".valg").forEach(e=>e.classList.remove("aktiv"));
+function nesteMast(){
+    document.getElementById("mast").value = "";
+
+    document.querySelectorAll(".section button:first-child").forEach(b=>{
+        b.classList.remove("red","lightgreen");
+        b.classList.add("green");
+    });
+
+    document.querySelectorAll("textarea").forEach(t=>t.value="");
+    document.querySelectorAll("input[type=file]").forEach(f=>f.value="");
 }
+
+lagUI();
+
 </script>
 
 </body>
