@@ -10,16 +10,10 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 
 <meta name="theme-color" content="#2e7d32">
-<meta name="apple-mobile-web-app-capable" content="yes">
 
 <style>
-body {
-    font-family: Arial;
-    margin: 10px;
-    background:#f5f5f5;
-}
+body { font-family: Arial; margin:10px; background:#f5f5f5; }
 
-/* TOPP FELT */
 .header {
     position: sticky;
     top:0;
@@ -28,12 +22,7 @@ body {
     padding-bottom:5px;
 }
 
-label {
-    font-weight:bold;
-    color:black;
-    display:block;
-}
-
+label { font-weight:bold; color:black; }
 input {
     width:100%;
     padding:8px;
@@ -52,13 +41,8 @@ input {
     cursor:pointer;
 }
 
-.btn.active {
-    background:#66bb6a;
-}
-
-.btn.red {
-    background:#c62828;
-}
+.btn.ok { background:#66bb6a; }
+.btn.error { background:#c62828; }
 
 .sub {
     background:#e0e0e0;
@@ -66,16 +50,17 @@ input {
     margin:2px 0;
     border-radius:4px;
     cursor:pointer;
+    color:black;
 }
 
-/* BILDE */
+/* Kamera */
 .camera {
     background:#2e7d32;
     color:white;
     padding:10px;
     text-align:center;
-    margin-top:5px;
     border-radius:5px;
+    margin-top:5px;
 }
 
 textarea {
@@ -83,10 +68,7 @@ textarea {
     margin-top:5px;
 }
 
-/* BUNN */
-.footer {
-    margin-top:10px;
-}
+.footer { margin-top:10px; }
 </style>
 </head>
 
@@ -137,79 +119,90 @@ const controls = [
 ["Merking", []]
 ];
 
-function render() {
+function render(){
     let html="";
     controls.forEach((c,i)=>{
-        html += `<div class="btn" onclick="selectMain(${i})">${c[0]}</div>`;
 
-        if(c[1].length>0){
-            c[1].forEach((s,j)=>{
-                html += `<div class="sub" onclick="selectSub(${i},${j})">${s}</div>`;
-            });
-        }
+        html += `<div id="main${i}" class="btn" onclick="setOK(${i})">${c[0]}</div>`;
+
+        c[1].forEach((s,j)=>{
+            html += `<div class="sub" onclick="setAvvik(${i})">${s}</div>`;
+        });
 
         html += `
         <div class="camera">
-            <input type="file" accept="image/*" capture="environment" onchange="takePhoto(event,${i})">
+            <label style="cursor:pointer;">
+                📸 Ta bilde
+                <input type="file" accept="image/*" capture="environment"
+                style="display:none;"
+                onchange="takePhoto(${i})">
+            </label>
         </div>
-        <textarea placeholder="Merknad" onchange="note(${i},this.value)"></textarea>
+
+        <textarea placeholder="Merknad" onchange="setNote(${i},this.value)"></textarea>
         `;
     });
 
     document.getElementById("app").innerHTML = html;
 }
 
-function selectMain(i){
+/* FUNKSJONER */
+
+function setOK(i){
     data[i] = {ok:true};
-    updateColors();
+    update();
 }
 
-function selectSub(i,j){
-    data[i] = {avvik:j};
-    updateColors();
+function setAvvik(i){
+    data[i] = {avvik:true};
+    update();
 }
 
-function takePhoto(e,i){
+function takePhoto(i){
     data[i] = data[i] || {};
     data[i].img = true;
-    updateColors();
+    update();
 }
 
-function note(i,val){
+function setNote(i,val){
     data[i] = data[i] || {};
     data[i].note = val;
-    updateColors();
+    update();
 }
 
-function updateColors(){
-    document.querySelectorAll(".btn").forEach((el,i)=>{
+function update(){
+    controls.forEach((c,i)=>{
+        let el = document.getElementById("main"+i);
+        if(!el) return;
+
+        el.classList.remove("ok","error");
+
         if(data[i]){
-            if(data[i].avvik!=undefined || data[i].note || data[i].img){
-                el.classList.add("red");
-                el.classList.remove("active");
+            if(data[i].avvik || data[i].img || data[i].note){
+                el.classList.add("error");
             } else {
-                el.classList.add("active");
-                el.classList.remove("red");
+                el.classList.add("ok");
             }
         }
     });
 }
 
+/* NESTE MAST */
 function nextMast(){
     document.getElementById("mast").value="";
     data = {};
-    updateColors();
+    update();
 }
 
 /* LAGRING */
 function saveHeader(){
-    localStorage.setItem("netteier",document.getElementById("netteier").value);
-    localStorage.setItem("linje",document.getElementById("linje").value);
+    localStorage.setItem("netteier",netteier.value);
+    localStorage.setItem("linje",linje.value);
 }
 
 function loadHeader(){
-    document.getElementById("netteier").value = localStorage.getItem("netteier")||"";
-    document.getElementById("linje").value = localStorage.getItem("linje")||"";
+    netteier.value = localStorage.getItem("netteier") || "";
+    linje.value = localStorage.getItem("linje") || "";
 }
 
 loadHeader();
@@ -218,7 +211,8 @@ render();
 /* GPS */
 navigator.geolocation.getCurrentPosition(pos=>{
     document.getElementById("gps").innerHTML =
-        "GPS: "+pos.coords.latitude.toFixed(5)+", "+pos.coords.longitude.toFixed(5);
+    "GPS: " + pos.coords.latitude.toFixed(5) + ", " +
+    pos.coords.longitude.toFixed(5);
 });
 </script>
 
