@@ -19,15 +19,14 @@ body { font-family: Arial; margin:10px; background:#f5f5f5; }
     top:0;
     background:white;
     z-index:1000;
-    padding-bottom:5px;
 }
 
 label { font-weight:bold; color:black; }
+
 input {
     width:100%;
     padding:8px;
     margin-bottom:6px;
-    border:1px solid #ccc;
 }
 
 /* KNAPPER */
@@ -36,7 +35,6 @@ input {
     color:white;
     padding:12px;
     margin:4px 0;
-    text-align:center;
     border-radius:6px;
     cursor:pointer;
 }
@@ -49,9 +47,11 @@ input {
     padding:10px;
     margin:2px 0;
     border-radius:4px;
-    cursor:pointer;
     color:black;
 }
+
+/* SKJUL */
+.hidden { display:none; }
 
 /* Kamera */
 .camera {
@@ -62,20 +62,13 @@ input {
     border-radius:5px;
     margin-top:5px;
 }
-
-textarea {
-    width:100%;
-    margin-top:5px;
-}
-
-.footer { margin-top:10px; }
 </style>
 </head>
 
 <body>
 
 <div class="header">
-<h3>Linjekontroll</h3>
+<h3>Linjekontroll v1.30</h3>
 
 <label>Netteier</label>
 <input id="netteier" oninput="saveHeader()">
@@ -91,12 +84,11 @@ textarea {
 
 <div id="app"></div>
 
-<div class="footer">
 <div class="btn" onclick="nextMast()">Neste mast</div>
-</div>
 
 <script>
 let data = {};
+let open = null;
 
 const controls = [
 ["Mast OK", []],
@@ -123,9 +115,11 @@ function render(){
     let html="";
     controls.forEach((c,i)=>{
 
-        html += `<div id="main${i}" class="btn" onclick="setOK(${i})">${c[0]}</div>`;
+        html += `<div id="main${i}" class="btn" onclick="toggle(${i})">${c[0]}</div>`;
 
-        c[1].forEach((s,j)=>{
+        html += `<div id="sub${i}" class="${open===i?'':'hidden'}">`;
+
+        c[1].forEach((s)=>{
             html += `<div class="sub" onclick="setAvvik(${i})">${s}</div>`;
         });
 
@@ -135,30 +129,32 @@ function render(){
                 📸 Ta bilde
                 <input type="file" accept="image/*" capture="environment"
                 style="display:none;"
-                onchange="takePhoto(${i})">
+                onchange="setPhoto(${i})">
             </label>
         </div>
 
         <textarea placeholder="Merknad" onchange="setNote(${i},this.value)"></textarea>
+        </div>
         `;
     });
 
     document.getElementById("app").innerHTML = html;
-}
-
-/* FUNKSJONER */
-
-function setOK(i){
-    data[i] = {ok:true};
     update();
 }
 
+/* ÅPNE/LUKKE */
+function toggle(i){
+    open = open===i ? null : i;
+    render();
+}
+
+/* VALG */
 function setAvvik(i){
     data[i] = {avvik:true};
     update();
 }
 
-function takePhoto(i){
+function setPhoto(i){
     data[i] = data[i] || {};
     data[i].img = true;
     update();
@@ -191,7 +187,8 @@ function update(){
 function nextMast(){
     document.getElementById("mast").value="";
     data = {};
-    update();
+    open = null;
+    render();
 }
 
 /* LAGRING */
