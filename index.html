@@ -8,28 +8,34 @@
 
 <style>
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   margin:0;
   background:#f4f4f4;
 }
 
-/* HEADER – IKKE sticky (stabil) */
 .header {
-  background:#ffffff;
-  padding:12px;
+  background:#fff;
+  padding:10px;
   border-bottom:3px solid #2e7d32;
 }
 
 h1 {
-  margin:0 0 8px 0;
+  margin:0 0 10px 0;
   font-size:20px;
 }
 
-/* INPUT – tydelig svart tekst */
+/* 🔥 NY – label over felt */
+.label {
+  font-weight:bold;
+  color:#000;
+  margin-top:8px;
+}
+
+/* INPUT */
 input {
   width:100%;
   padding:12px;
-  margin:6px 0;
+  margin-top:2px;
   font-size:16px;
   color:#000;
   background:#fff;
@@ -37,22 +43,16 @@ input {
 }
 
 input::placeholder {
-  color:#888;
+  color:#999;
 }
 
-input:focus {
-  border:2px solid #2e7d32;
-  outline:none;
-}
-
-/* BUTTONS */
+/* BUTTON */
 .btn {
   width:100%;
   padding:14px;
   margin:4px 0;
   border:none;
   border-radius:6px;
-  font-size:15px;
 }
 
 .green { background:#2e7d32; color:white; }
@@ -61,15 +61,11 @@ input:focus {
 .gray { background:#e0e0e0; color:black; }
 
 .section { margin:6px; }
-
-.inner {
-  display:none;
-}
+.inner { display:none; }
 
 textarea {
   width:100%;
   height:60px;
-  margin-top:5px;
 }
 </style>
 </head>
@@ -77,20 +73,25 @@ textarea {
 <body>
 
 <div class="header">
-  <h1>Linjekontroll v1.22</h1>
+  <h1>Linjekontroll v1.23</h1>
 
-  <input id="netteier" placeholder="Netteier">
-  <input id="linje" placeholder="LinjeID">
-  <input id="mast" placeholder="Mast nr">
+  <div class="label">Netteier</div>
+  <input id="netteier" placeholder="Skriv netteier">
+
+  <div class="label">LinjeID</div>
+  <input id="linje" placeholder="Skriv linje">
+
+  <div class="label">Mast nr</div>
+  <input id="mast" placeholder="Skriv mast nr">
 
   <div id="gps">GPS: henter...</div>
 </div>
 
-<button type="button" class="btn lightgreen" onclick="mastOK()">Mast OK</button>
+<button class="btn lightgreen" onclick="mastOK()">Mast OK</button>
 
 <div id="kontroll"></div>
 
-<button type="button" class="btn gray" onclick="nesteMast()">Neste mast</button>
+<button class="btn gray" onclick="nesteMast()">Neste mast</button>
 
 <script>
 
@@ -123,7 +124,7 @@ const data = {
 
 const container = document.getElementById("kontroll");
 
-/* BYGG UI */
+/* UI */
 function lagUI(){
   container.innerHTML="";
 
@@ -133,12 +134,11 @@ function lagUI(){
     div.className="section";
 
     let hoved=document.createElement("button");
-    hoved.type="button";
     hoved.className="btn green";
     hoved.innerText=key;
 
     hoved.onclick=()=>{
-      inner.style.display = inner.style.display==="block" ? "none" : "block";
+      inner.style.display = inner.style.display==="block" ? "none":"block";
     };
 
     div.appendChild(hoved);
@@ -146,23 +146,20 @@ function lagUI(){
     let inner=document.createElement("div");
     inner.className="inner";
 
-    /* AVVIK */
     data[key].forEach(avvik=>{
       let b=document.createElement("button");
-      b.type="button";
       b.className="btn gray";
       b.innerText=avvik;
 
       b.onclick=()=>{
-        hoved.classList.remove("green","lightgreen");
+        hoved.classList.remove("green");
         hoved.classList.add("red");
-        b.classList.add("red");
       };
 
       inner.appendChild(b);
     });
 
-    /* 📸 TA BILDE */
+    /* BILDE */
     let cam=document.createElement("input");
     cam.type="file";
     cam.accept="image/*";
@@ -172,13 +169,12 @@ function lagUI(){
 
     cam.onchange=()=>{
       if(cam.files.length>0){
-        hoved.classList.remove("green","lightgreen");
+        hoved.classList.remove("green");
         hoved.classList.add("red");
       }
     };
 
     let camBtn=document.createElement("button");
-    camBtn.type="button";
     camBtn.className="btn gray";
     camBtn.innerText="📸 Ta bilde";
     camBtn.onclick=()=>cam.click();
@@ -192,7 +188,7 @@ function lagUI(){
 
     txt.oninput=()=>{
       if(txt.value.length>0){
-        hoved.classList.remove("green","lightgreen");
+        hoved.classList.remove("green");
         hoved.classList.add("red");
       }
     };
@@ -214,22 +210,16 @@ function mastOK(){
 
 function nesteMast(){
 
-  /* behold */
   let netteier = document.getElementById("netteier").value;
   let linje = document.getElementById("linje").value;
 
-  /* reset UI */
   lagUI();
 
-  /* legg tilbake */
   document.getElementById("netteier").value = netteier;
   document.getElementById("linje").value = linje;
-
-  /* nullstill mast */
   document.getElementById("mast").value = "";
 }
 
-/* START */
 lagUI();
 
 </script>
