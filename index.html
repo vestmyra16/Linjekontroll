@@ -6,66 +6,86 @@
 
 <title>Linjekontroll</title>
 
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+
+<meta name="theme-color" content="#2e7d32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
 <style>
 body {
-  font-family: Arial;
-  margin:0;
-  background:#f4f4f4;
+    font-family: Arial;
+    margin: 10px;
+    background:#f5f5f5;
 }
 
+/* TOPP FELT */
 .header {
-  background:#fff;
-  padding:10px;
-  border-bottom:3px solid #2e7d32;
+    position: sticky;
+    top:0;
+    background:white;
+    z-index:1000;
+    padding-bottom:5px;
 }
 
-h1 {
-  margin:0 0 10px 0;
-  font-size:20px;
+label {
+    font-weight:bold;
+    color:black;
+    display:block;
 }
 
-/* 🔥 NY – label over felt */
-.label {
-  font-weight:bold;
-  color:#000;
-  margin-top:8px;
-}
-
-/* INPUT */
 input {
-  width:100%;
-  padding:12px;
-  margin-top:2px;
-  font-size:16px;
-  color:#000;
-  background:#fff;
-  border:2px solid #444;
+    width:100%;
+    padding:8px;
+    margin-bottom:6px;
+    border:1px solid #ccc;
 }
 
-input::placeholder {
-  color:#999;
-}
-
-/* BUTTON */
+/* KNAPPER */
 .btn {
-  width:100%;
-  padding:14px;
-  margin:4px 0;
-  border:none;
-  border-radius:6px;
+    background:#2e7d32;
+    color:white;
+    padding:12px;
+    margin:4px 0;
+    text-align:center;
+    border-radius:6px;
+    cursor:pointer;
 }
 
-.green { background:#2e7d32; color:white; }
-.lightgreen { background:#66bb6a; color:white; }
-.red { background:#c62828; color:white; }
-.gray { background:#e0e0e0; color:black; }
+.btn.active {
+    background:#66bb6a;
+}
 
-.section { margin:6px; }
-.inner { display:none; }
+.btn.red {
+    background:#c62828;
+}
+
+.sub {
+    background:#e0e0e0;
+    padding:10px;
+    margin:2px 0;
+    border-radius:4px;
+    cursor:pointer;
+}
+
+/* BILDE */
+.camera {
+    background:#2e7d32;
+    color:white;
+    padding:10px;
+    text-align:center;
+    margin-top:5px;
+    border-radius:5px;
+}
 
 textarea {
-  width:100%;
-  height:60px;
+    width:100%;
+    margin-top:5px;
+}
+
+/* BUNN */
+.footer {
+    margin-top:10px;
 }
 </style>
 </head>
@@ -73,155 +93,133 @@ textarea {
 <body>
 
 <div class="header">
-  <h1>Linjekontroll v1.23</h1>
+<h3>Linjekontroll</h3>
 
-  <div class="label">Netteier</div>
-  <input id="netteier" placeholder="Skriv netteier">
+<label>Netteier</label>
+<input id="netteier" oninput="saveHeader()">
 
-  <div class="label">LinjeID</div>
-  <input id="linje" placeholder="Skriv linje">
+<label>LinjeID</label>
+<input id="linje" oninput="saveHeader()">
 
-  <div class="label">Mast nr</div>
-  <input id="mast" placeholder="Skriv mast nr">
+<label>Mast nr</label>
+<input id="mast">
 
-  <div id="gps">GPS: henter...</div>
+<div id="gps"></div>
 </div>
 
-<button class="btn lightgreen" onclick="mastOK()">Mast OK</button>
+<div id="app"></div>
 
-<div id="kontroll"></div>
-
-<button class="btn gray" onclick="nesteMast()">Neste mast</button>
+<div class="footer">
+<div class="btn" onclick="nextMast()">Neste mast</div>
+</div>
 
 <script>
+let data = {};
+
+const controls = [
+["Mast OK", []],
+["Skjev mast", ["Skjev","Setning","Fund.feil"]],
+["Barduner", ["Slakk","Brudd","Rust"]],
+["Stolper", ["Råte","Sprekk"]],
+["Stålmast", ["Korrosjon","Skade"]],
+["Topphatte", ["Mangler","Skadet"]],
+["Traversfeste", ["Løs","Skade"]],
+["Travers", ["Skjev","Skade"]],
+["Isolatorfeste", ["Slitasje","Skade"]],
+["Isolator", ["Knust","Krypestrømsvei"]],
+["Bendsling", ["Løs","Brudd"]],
+["Liner", ["Korrosjon","Kordelbrudd"]],
+["Strekking", ["Skjev"]],
+["Skjøter/Klemmer", ["Korrodert"]],
+["Toppline", ["Slakk","Korrosjon"]],
+["Jordinger", ["Løs","Brudd"]],
+["Trasé", ["Skog","Kratt"]],
+["Merking", []]
+];
+
+function render() {
+    let html="";
+    controls.forEach((c,i)=>{
+        html += `<div class="btn" onclick="selectMain(${i})">${c[0]}</div>`;
+
+        if(c[1].length>0){
+            c[1].forEach((s,j)=>{
+                html += `<div class="sub" onclick="selectSub(${i},${j})">${s}</div>`;
+            });
+        }
+
+        html += `
+        <div class="camera">
+            <input type="file" accept="image/*" capture="environment" onchange="takePhoto(event,${i})">
+        </div>
+        <textarea placeholder="Merknad" onchange="note(${i},this.value)"></textarea>
+        `;
+    });
+
+    document.getElementById("app").innerHTML = html;
+}
+
+function selectMain(i){
+    data[i] = {ok:true};
+    updateColors();
+}
+
+function selectSub(i,j){
+    data[i] = {avvik:j};
+    updateColors();
+}
+
+function takePhoto(e,i){
+    data[i] = data[i] || {};
+    data[i].img = true;
+    updateColors();
+}
+
+function note(i,val){
+    data[i] = data[i] || {};
+    data[i].note = val;
+    updateColors();
+}
+
+function updateColors(){
+    document.querySelectorAll(".btn").forEach((el,i)=>{
+        if(data[i]){
+            if(data[i].avvik!=undefined || data[i].note || data[i].img){
+                el.classList.add("red");
+                el.classList.remove("active");
+            } else {
+                el.classList.add("active");
+                el.classList.remove("red");
+            }
+        }
+    });
+}
+
+function nextMast(){
+    document.getElementById("mast").value="";
+    data = {};
+    updateColors();
+}
+
+/* LAGRING */
+function saveHeader(){
+    localStorage.setItem("netteier",document.getElementById("netteier").value);
+    localStorage.setItem("linje",document.getElementById("linje").value);
+}
+
+function loadHeader(){
+    document.getElementById("netteier").value = localStorage.getItem("netteier")||"";
+    document.getElementById("linje").value = localStorage.getItem("linje")||"";
+}
+
+loadHeader();
+render();
 
 /* GPS */
 navigator.geolocation.getCurrentPosition(pos=>{
-  document.getElementById("gps").innerText =
-  "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
+    document.getElementById("gps").innerHTML =
+        "GPS: "+pos.coords.latitude.toFixed(5)+", "+pos.coords.longitude.toFixed(5);
 });
-
-/* DATA */
-const data = {
-"Skjev mast":["Skjev","Setning","Fund.feil"],
-"Barduner":["Slakk","Brudd","Rust"],
-"Stolper":["Råte","Sprekk"],
-"Stålmast":["Korrosjon","Skade"],
-"Topphatte":["Mangler","Skadet"],
-"Traversfeste":["Løs","Skade"],
-"Travers":["Skjev","Skade"],
-"Isolatorfeste":["Slitasje","Skade"],
-"Isolator":["Knust","Krypestrømsvei"],
-"Bendsling":["Løs","Brudd"],
-"Liner":["Korrosjon","Kordelbrudd"],
-"Strekking":["Skjev"],
-"Skjøter/Klemmer":["Korrodert"],
-"Toppline":["Slakk","Korrosjon"],
-"Jordinger":["Løs","Brudd"],
-"Trasé":["Skog","Kratt"],
-"Merking":[]
-};
-
-const container = document.getElementById("kontroll");
-
-/* UI */
-function lagUI(){
-  container.innerHTML="";
-
-  for(let key in data){
-
-    let div=document.createElement("div");
-    div.className="section";
-
-    let hoved=document.createElement("button");
-    hoved.className="btn green";
-    hoved.innerText=key;
-
-    hoved.onclick=()=>{
-      inner.style.display = inner.style.display==="block" ? "none":"block";
-    };
-
-    div.appendChild(hoved);
-
-    let inner=document.createElement("div");
-    inner.className="inner";
-
-    data[key].forEach(avvik=>{
-      let b=document.createElement("button");
-      b.className="btn gray";
-      b.innerText=avvik;
-
-      b.onclick=()=>{
-        hoved.classList.remove("green");
-        hoved.classList.add("red");
-      };
-
-      inner.appendChild(b);
-    });
-
-    /* BILDE */
-    let cam=document.createElement("input");
-    cam.type="file";
-    cam.accept="image/*";
-    cam.capture="environment";
-    cam.multiple=true;
-    cam.style.display="none";
-
-    cam.onchange=()=>{
-      if(cam.files.length>0){
-        hoved.classList.remove("green");
-        hoved.classList.add("red");
-      }
-    };
-
-    let camBtn=document.createElement("button");
-    camBtn.className="btn gray";
-    camBtn.innerText="📸 Ta bilde";
-    camBtn.onclick=()=>cam.click();
-
-    inner.appendChild(camBtn);
-    inner.appendChild(cam);
-
-    /* MERKNAD */
-    let txt=document.createElement("textarea");
-    txt.placeholder="Merknad";
-
-    txt.oninput=()=>{
-      if(txt.value.length>0){
-        hoved.classList.remove("green");
-        hoved.classList.add("red");
-      }
-    };
-
-    inner.appendChild(txt);
-
-    div.appendChild(inner);
-    container.appendChild(div);
-  }
-}
-
-/* FUNKSJONER */
-function mastOK(){
-  document.querySelectorAll(".section button:first-child").forEach(b=>{
-    b.classList.remove("green","red");
-    b.classList.add("lightgreen");
-  });
-}
-
-function nesteMast(){
-
-  let netteier = document.getElementById("netteier").value;
-  let linje = document.getElementById("linje").value;
-
-  lagUI();
-
-  document.getElementById("netteier").value = netteier;
-  document.getElementById("linje").value = linje;
-  document.getElementById("mast").value = "";
-}
-
-lagUI();
-
 </script>
 
 </body>
