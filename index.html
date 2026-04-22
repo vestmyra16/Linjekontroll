@@ -7,36 +7,23 @@
 <title>Linjekontroll</title>
 
 <style>
-body {
-    font-family: Arial;
-    margin:10px;
-    background:#f5f5f5;
-}
+body { font-family: Arial; margin:10px; background:#f5f5f5; }
 
-/* HEADER */
 .header {
     position: sticky;
     top:0;
     background:white;
-    z-index:1000;
 }
 
-/* SVART FAST TEKST */
-.label {
-    font-weight:bold;
-    color:black;
-    margin-top:5px;
-}
+.label { font-weight:bold; color:black; margin-top:5px; }
 
-/* INPUT */
 input {
     width:100%;
     padding:8px;
     margin-bottom:6px;
-    color:black;
 }
 
-/* KNAPPER */
+/* STANDARD GRØNN */
 .btn {
     background:#2e7d32;
     color:white;
@@ -46,12 +33,16 @@ input {
     cursor:pointer;
 }
 
+/* RØD NÅR AVVIK */
+.btn.red {
+    background:#c62828;
+}
+
 /* AVVIK */
 .sub {
     background:#e0e0e0;
     padding:10px;
     margin:2px 0;
-    cursor:pointer;
 }
 
 /* KAMERA */
@@ -64,7 +55,6 @@ input {
     margin-top:5px;
 }
 
-/* MERKNAD */
 textarea {
     width:100%;
     padding:8px;
@@ -77,16 +67,16 @@ textarea {
 
 <div class="header">
 
-<h3>Linjekontroll v1.70</h3>
+<h3>Linjekontroll v1.71</h3>
 
 <div class="label">Netteier</div>
-<input id="netteier" placeholder="Netteier">
+<input id="netteier">
 
 <div class="label">LinjeID</div>
-<input id="linje" placeholder="LinjeID">
+<input id="linje">
 
 <div class="label">Mast nr</div>
-<input id="mast" placeholder="Mast nr">
+<input id="mast">
 
 <div id="gps"></div>
 
@@ -130,7 +120,10 @@ function render(){
 
     controls.forEach((c,i)=>{
 
-        html += `<div class="btn" onclick="toggle(${i})">${c[0]}</div>`;
+        let isRed = current[i] && current[i].avvik;
+        let colorClass = isRed ? "red" : "";
+
+        html += `<div class="btn ${colorClass}" onclick="toggle(${i})">${c[0]}</div>`;
 
         if(open===i){
 
@@ -139,7 +132,6 @@ function render(){
             });
 
             html += `<div class="camera">📷 Ta bilde</div>`;
-
             html += `<textarea placeholder="Merknad" onchange="setNote(${i},this.value)"></textarea>`;
         }
 
@@ -156,6 +148,7 @@ function toggle(i){
 function setAvvik(i,val){
     current[i] = current[i] || {};
     current[i].avvik = val;
+    render(); /* VIKTIG: oppdater farge */
 }
 
 function setNote(i,val){
