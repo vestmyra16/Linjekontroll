@@ -6,10 +6,12 @@
 
 <title>Linjekontroll</title>
 
-<!-- RIKTIGE IKONER -->
+<!-- IKON -->
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#2e7d32">
 
 <style>
 body {
@@ -23,14 +25,12 @@ body {
     position: sticky;
     top:0;
     background:white;
-    z-index:1000;
 }
 
-/* SVART TEKST OVER FELT */
+/* LABEL */
 .label {
     font-weight:bold;
     color:black;
-    margin-top:5px;
 }
 
 /* INPUT */
@@ -38,7 +38,6 @@ input {
     width:100%;
     padding:8px;
     margin-bottom:6px;
-    color:black;
 }
 
 /* KNAPPER */
@@ -85,7 +84,7 @@ textarea {
 
 <div class="header">
 
-<h3>Linjekontroll v1.80</h3>
+<h3>Linjekontroll v2.00</h3>
 
 <div class="label">Netteier</div>
 <input id="netteier">
@@ -139,7 +138,7 @@ function render(){
 
     controls.forEach((c,i)=>{
 
-        let isRed = current[i] && current[i].avvik;
+        let isRed = current[i] && (current[i].avvik || current[i].img || current[i].note);
         let color = isRed ? "red" : "";
 
         html += `<div class="btn ${color}" onclick="toggle(${i})">${c[0]}</div>`;
@@ -150,7 +149,17 @@ function render(){
                 html += `<div class="sub" onclick="setAvvik(${i},'${s}')">${s}</div>`;
             });
 
-            html += `<div class="camera">📷 Ta bilde</div>`;
+            html += `
+            <div class="camera">
+                <label style="cursor:pointer;">
+                    📸 Ta bilde
+                    <input type="file" accept="image/*" capture="environment"
+                    style="display:none;"
+                    onchange="setPhoto(${i})">
+                </label>
+            </div>
+            `;
+
             html += `<textarea placeholder="Merknad" onchange="setNote(${i},this.value)"></textarea>`;
         }
 
@@ -170,12 +179,18 @@ function setAvvik(i,val){
     render();
 }
 
+function setPhoto(i){
+    current[i] = current[i] || {};
+    current[i].img = true;
+    render();
+}
+
 function setNote(i,val){
     current[i] = current[i] || {};
     current[i].note = val;
+    render();
 }
 
-/* LAGRE */
 function saveMast(){
 
     allMasts.push({
@@ -188,7 +203,6 @@ function saveMast(){
     alert("Mast lagret");
 }
 
-/* NESTE */
 function nextMast(){
 
     saveMast();
@@ -200,18 +214,24 @@ function nextMast(){
     render();
 }
 
-/* EXCEL */
 function downloadExcel(){
 
-    let csv = "Netteier,LinjeID,Mast,Kontrollpunkt,Avvik,Merknad\n";
+    let csv = "Netteier,LinjeID,Mast,Kontrollpunkt,Avvik,Merknad,Bilde\n";
 
     allMasts.forEach(m=>{
         controls.forEach((c,i)=>{
 
-            let d = m.data[i] || {};
-            let avvik = d.avvik || (c[0]=="Mast OK" ? "Ingen" : "");
+            let d = m.data[i];
 
-            csv += `${m.netteier},${m.linje},${m.mast},${c[0]},${avvik},${d.note||""}\n`;
+            if(d && (d.avvik || d.note || d.img)){
+
+                csv += `${m.netteier},${m.linje},${m.mast},${c[0]},${d.avvik||""},${d.note||""},${d.img?"Ja":"Nei"}\n`;
+
+            } else if(c[0] === "Mast OK"){
+
+                csv += `${m.netteier},${m.linje},${m.mast},Mast OK,Ingen,,\n`;
+
+            }
 
         });
     });
