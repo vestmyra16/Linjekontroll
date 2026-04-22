@@ -7,35 +7,46 @@
 <title>Linjekontroll</title>
 
 <style>
-body { font-family: Arial; margin:0; background:#f4f4f4; }
+body { 
+  font-family: Arial; 
+  margin:0; 
+  background:#f4f4f4; 
+}
 
+/* HEADER */
 .header {
   position: sticky;
   top: 0;
   background: #ffffff;
   padding: 10px;
-  z-index: 1000;
+  z-index: 9999;
   border-bottom: 3px solid #2e7d32;
 }
 
 h1 { margin:0 0 5px 0; font-size:20px; }
 
+/* INPUT */
 input {
   width:100%;
   padding:12px;
   margin:6px 0;
   font-size:17px;
   font-weight:600;
-  color:#000;
-  background:#fff;
-  border:2px solid #999;
+  color:#000 !important;
+  background:#fff !important;
+  border:2px solid #444;
 }
 
 input::placeholder {
-  color:#999;
-  font-weight:400;
+  color:#888;
 }
 
+input:focus {
+  border:2px solid #2e7d32;
+  outline:none;
+}
+
+/* BUTTONS */
 .btn {
   width:100%;
   padding:14px;
@@ -64,7 +75,7 @@ textarea {
 <body>
 
 <div class="header">
-  <h1>Linjekontroll v1.20</h1>
+  <h1>Linjekontroll v1.21</h1>
 
   <input id="netteier" placeholder="Netteier">
   <input id="linje" placeholder="LinjeID">
@@ -81,11 +92,13 @@ textarea {
 
 <script>
 
+/* GPS */
 navigator.geolocation.getCurrentPosition(pos=>{
   document.getElementById("gps").innerText =
   "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
 });
 
+/* DATA */
 const data = {
 "Skjev mast":["Skjev","Setning","Fund.feil"],
 "Barduner":["Slakk","Brudd","Rust"],
@@ -108,6 +121,7 @@ const data = {
 
 const container = document.getElementById("kontroll");
 
+/* UI */
 function lagUI(){
   container.innerHTML="";
 
@@ -133,10 +147,15 @@ function lagUI(){
       b.className="btn gray";
       b.innerText=avvik;
 
-      b.onclick=()=>setRed(btn);
+      b.onclick=()=>{
+        setRed(btn);
+        b.classList.add("red");
+      };
+
       inner.appendChild(b);
     });
 
+    /* 📸 TA BILDE */
     let cam=document.createElement("input");
     cam.type="file";
     cam.accept="image/*";
@@ -159,6 +178,7 @@ function lagUI(){
     inner.appendChild(camBtn);
     inner.appendChild(cam);
 
+    /* MERKNAD */
     let txt=document.createElement("textarea");
     txt.placeholder="Merknad";
 
@@ -175,6 +195,7 @@ function lagUI(){
   }
 }
 
+/* FUNKSJONER */
 function toggle(div){
   div.children[1].classList.toggle("hidden");
 }
@@ -193,16 +214,21 @@ function mastOK(){
 
 function nesteMast(){
 
+  /* 🔥 behold disse */
   let netteier = document.getElementById("netteier").value;
   let linje = document.getElementById("linje").value;
 
   lagUI();
 
+  /* 🔥 legg tilbake */
   document.getElementById("netteier").value = netteier;
   document.getElementById("linje").value = linje;
+
+  /* 🔥 nullstill mast */
   document.getElementById("mast").value = "";
 }
 
+/* START */
 lagUI();
 
 </script>
