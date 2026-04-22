@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon.png">
 
 <script>
-const VERSION = "1.13";
+const VERSION = "1.14";
 </script>
 
 <style>
@@ -108,6 +108,8 @@ input, textarea {
 </div>
 
 <script>
+
+// Versjon
 document.getElementById("tittel").innerText = "Linjekontroll v" + VERSION;
 
 // GPS
@@ -116,7 +118,7 @@ navigator.geolocation.getCurrentPosition(pos=>{
     "GPS: " + pos.coords.latitude.toFixed(6) + ", " + pos.coords.longitude.toFixed(6);
 });
 
-// Kontrollpunkter (KORRIGERT)
+// Kontrollpunkter (OPPDATERT)
 const data = [
   {navn:"Skjev mast", avvik:["Skjev","Setning","Fund.feil"]},
   {navn:"Barduner", avvik:["Slakk","Brudd","Rust"]},
@@ -130,7 +132,6 @@ const data = [
   {navn:"Bendsling", avvik:["Løs","Brudd"]},
   {navn:"Liner", avvik:["Korrosjon","Kordelbrudd"]},
 
-  // 🔧 HER ER RETTINGEN
   {navn:"Strekning", avvik:["Skjev"]},
 
   {navn:"Skjøter/klemmer", avvik:["Korrodert"]},
@@ -200,16 +201,26 @@ function mastOK(){
   alert("Mast registrert som OK");
 }
 
-// Neste mast
+// 🔥 KORRIGERT NESTE MAST
 function neste(){
-  document.querySelectorAll("input, textarea").forEach(e=>e.value="");
+
+  // Tøm kun mastnr
+  document.getElementById("mast").value = "";
+
+  // Tøm merknader
+  document.querySelectorAll("textarea").forEach(e=>e.value="");
+
+  // Tøm bilder
   document.querySelectorAll(".bilde-preview").forEach(e=>e.innerHTML="");
+
+  // IKKE rør Netteier og LinjeID
 }
 
-// Excel (kommer senere)
+// Excel placeholder
 function lastNed(){
   alert("Excel eksport kommer neste steg");
 }
+
 </script>
 
 </body>
