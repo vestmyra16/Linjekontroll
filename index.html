@@ -9,24 +9,26 @@
 <style>
 body {
     font-family: Arial;
-    margin: 10px;
+    margin:10px;
     background:#f5f5f5;
 }
 
-/* FAST HEADER */
+/* HEADER */
 .header {
     position: sticky;
-    top: 0;
-    background: white;
-    z-index: 1000;
+    top:0;
+    background:white;
+    z-index:1000;
 }
 
-/* TYDELIG SVART TEKST */
-label {
-    font-weight: bold;
-    color: black;
+/* SVART FAST TEKST */
+.label {
+    font-weight:bold;
+    color:black;
+    margin-top:5px;
 }
 
+/* INPUT */
 input {
     width:100%;
     padding:8px;
@@ -44,10 +46,6 @@ input {
     cursor:pointer;
 }
 
-.btn.active {
-    background:#c62828;
-}
-
 /* AVVIK */
 .sub {
     background:#e0e0e0;
@@ -63,6 +61,13 @@ input {
     padding:10px;
     text-align:center;
     border-radius:6px;
+    margin-top:5px;
+}
+
+/* MERKNAD */
+textarea {
+    width:100%;
+    padding:8px;
     margin-top:4px;
 }
 </style>
@@ -72,16 +77,16 @@ input {
 
 <div class="header">
 
-<h3>Linjekontroll v1.60</h3>
+<h3>Linjekontroll v1.70</h3>
 
-<label>Netteier</label>
-<input id="netteier">
+<div class="label">Netteier</div>
+<input id="netteier" placeholder="Netteier">
 
-<label>LinjeID</label>
-<input id="linje">
+<div class="label">LinjeID</div>
+<input id="linje" placeholder="LinjeID">
 
-<label>Mast nr</label>
-<input id="mast">
+<div class="label">Mast nr</div>
+<input id="mast" placeholder="Mast nr">
 
 <div id="gps"></div>
 
@@ -125,9 +130,7 @@ function render(){
 
     controls.forEach((c,i)=>{
 
-        let active = current[i] ? "active" : "";
-
-        html += `<div class="btn ${active}" onclick="toggle(${i})">${c[0]}</div>`;
+        html += `<div class="btn" onclick="toggle(${i})">${c[0]}</div>`;
 
         if(open===i){
 
@@ -153,7 +156,6 @@ function toggle(i){
 function setAvvik(i,val){
     current[i] = current[i] || {};
     current[i].avvik = val;
-    render();
 }
 
 function setNote(i,val){
@@ -161,7 +163,6 @@ function setNote(i,val){
     current[i].note = val;
 }
 
-/* LAGRER AUTOMATISK */
 function nextMast(){
 
     allMasts.push({
@@ -178,7 +179,6 @@ function nextMast(){
     render();
 }
 
-/* EXCEL */
 function downloadExcel(){
 
     let csv = "Netteier,LinjeID,Mast,Kontrollpunkt,Avvik,Merknad\n";
@@ -187,11 +187,9 @@ function downloadExcel(){
         controls.forEach((c,i)=>{
 
             let d = m.data[i] || {};
-
             let avvik = d.avvik || (c[0]=="Mast OK" ? "Ingen" : "");
 
             csv += `${m.netteier},${m.linje},${m.mast},${c[0]},${avvik},${d.note||""}\n`;
-
         });
     });
 
@@ -202,7 +200,6 @@ function downloadExcel(){
     a.click();
 }
 
-/* GPS */
 navigator.geolocation.getCurrentPosition(pos=>{
     gps.innerHTML =
     "GPS: " + pos.coords.latitude.toFixed(5) + ", " +
