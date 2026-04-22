@@ -10,29 +10,17 @@
 <link rel="apple-touch-icon" href="icon.png">
 
 <script>
-const VERSION = "1.14";
+const VERSION = "1.15";
 </script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  margin:0;
-  background:#f2f2f2;
-}
+body { font-family: Arial; background:#f2f2f2; margin:0; }
 
-.container {
-  padding:10px;
-}
+.container { padding:10px; }
 
-h1 {
-  font-size:20px;
-  margin-bottom:10px;
-}
+h1 { font-size:20px; }
 
-label {
-  font-weight:bold;
-  color:#000;
-}
+label { font-weight:bold; }
 
 input, textarea {
   width:100%;
@@ -40,7 +28,6 @@ input, textarea {
   margin-bottom:10px;
   border-radius:6px;
   border:1px solid #ccc;
-  font-size:16px;
 }
 
 .knapp {
@@ -51,32 +38,26 @@ input, textarea {
   border-radius:8px;
   margin-bottom:8px;
   width:100%;
-  font-size:16px;
 }
 
-.knapp:active {
-  background:#1b5e20;
-}
+.mastOK { background:#66bb6a; }
 
 .valg {
   background:#ddd;
   padding:12px;
   border-radius:6px;
   margin-bottom:6px;
+  cursor:pointer;
 }
 
-.seksjon {
-  margin-bottom:15px;
+.valg.aktiv {
+  background:#2e7d32;
+  color:#fff;
 }
 
 .bilde-preview img {
   width:80px;
   margin:5px;
-  border-radius:6px;
-}
-
-.mastOK {
-  background:#66bb6a;
 }
 </style>
 </head>
@@ -103,7 +84,6 @@ input, textarea {
 <div id="kontroller"></div>
 
 <button class="knapp" onclick="neste()">Neste mast</button>
-<button class="knapp" onclick="lastNed()">Last ned Excel</button>
 
 </div>
 
@@ -118,7 +98,7 @@ navigator.geolocation.getCurrentPosition(pos=>{
     "GPS: " + pos.coords.latitude.toFixed(6) + ", " + pos.coords.longitude.toFixed(6);
 });
 
-// Kontrollpunkter (OPPDATERT)
+// DATA
 const data = [
   {navn:"Skjev mast", avvik:["Skjev","Setning","Fund.feil"]},
   {navn:"Barduner", avvik:["Slakk","Brudd","Rust"]},
@@ -131,9 +111,7 @@ const data = [
   {navn:"Isolator", avvik:["Knust","Krypestømsvei"]},
   {navn:"Bendsling", avvik:["Løs","Brudd"]},
   {navn:"Liner", avvik:["Korrosjon","Kordelbrudd"]},
-
   {navn:"Strekning", avvik:["Skjev"]},
-
   {navn:"Skjøter/klemmer", avvik:["Korrodert"]},
   {navn:"Toppline", avvik:["Slakk","Korrosjon"]},
   {navn:"Jordinger", avvik:["Løs","Brudd"]},
@@ -143,17 +121,19 @@ const data = [
 
 const container = document.getElementById("kontroller");
 
-// UI
+// LAG UI
 data.forEach((punkt,i)=>{
+
   const div = document.createElement("div");
-  div.className="seksjon";
 
   div.innerHTML = `
     <button class="knapp" onclick="toggle(${i})">${punkt.navn}</button>
 
     <div id="felt${i}" style="display:none">
 
-      ${punkt.avvik.map(a=>`<div class="valg">${a}</div>`).join("")}
+      ${punkt.avvik.map(a=>`
+        <div class="valg" onclick="velg(this)">${a}</div>
+      `).join("")}
 
       <button class="knapp" onclick="taBilde(this)">📸 Ta bilde</button>
 
@@ -165,22 +145,27 @@ data.forEach((punkt,i)=>{
 
     </div>
   `;
+
   container.appendChild(div);
 });
 
-// Åpne/lukke
+// ÅPNE/LUKKE
 function toggle(i){
   const el = document.getElementById("felt"+i);
   el.style.display = el.style.display==="none" ? "block" : "none";
 }
 
-// Kamera
-function taBilde(btn){
-  const input = btn.nextElementSibling;
-  input.click();
+// 🔥 KLIKK AVVIK
+function velg(el){
+  el.classList.toggle("aktiv");
 }
 
-// Lagre bilder
+// KAMERA
+function taBilde(btn){
+  btn.nextElementSibling.click();
+}
+
+// LAGRE BILDER
 function lagreBilder(input){
   const preview = input.nextElementSibling;
   preview.innerHTML="";
@@ -196,31 +181,18 @@ function lagreBilder(input){
   });
 }
 
-// Mast OK
+// MAST OK
 function mastOK(){
-  alert("Mast registrert som OK");
+  alert("Mast registrert OK");
 }
 
-// 🔥 KORRIGERT NESTE MAST
+// NESTE
 function neste(){
-
-  // Tøm kun mastnr
-  document.getElementById("mast").value = "";
-
-  // Tøm merknader
+  document.getElementById("mast").value="";
   document.querySelectorAll("textarea").forEach(e=>e.value="");
-
-  // Tøm bilder
   document.querySelectorAll(".bilde-preview").forEach(e=>e.innerHTML="");
-
-  // IKKE rør Netteier og LinjeID
+  document.querySelectorAll(".valg").forEach(e=>e.classList.remove("aktiv"));
 }
-
-// Excel placeholder
-function lastNed(){
-  alert("Excel eksport kommer neste steg");
-}
-
 </script>
 
 </body>
