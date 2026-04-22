@@ -3,24 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Linjekontroll</title>
 
 <style>
 body { font-family: Arial; margin:0; background:#f4f4f4; }
 
-.header { padding:10px; background:white; }
+/* 🔒 Sticky topp */
+.header {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  padding: 10px;
+  z-index: 1000;
+  border-bottom: 2px solid #ddd;
+}
 
-h1 { margin:0; font-size:20px; }
+h1 { margin:0 0 5px 0; font-size:20px; }
 
+/* Input tydelig og svart */
 input {
   width:100%;
   padding:10px;
   margin:5px 0;
   font-size:16px;
-  color:black;
+  color:#000;
+  background:#fff;
+  border:1px solid #ccc;
 }
 
+/* Knapper */
 .btn {
   width:100%;
   padding:14px;
@@ -33,7 +44,7 @@ input {
 .green { background:#2e7d32; color:white; }
 .lightgreen { background:#66bb6a; color:white; }
 .red { background:#c62828; color:white; }
-.gray { background:#ddd; color:black; }
+.gray { background:#e0e0e0; color:black; }
 
 .section { margin:5px; }
 .hidden { display:none; }
@@ -42,6 +53,7 @@ textarea {
   width:100%;
   height:60px;
   margin-top:5px;
+  font-size:14px;
 }
 </style>
 </head>
@@ -49,13 +61,13 @@ textarea {
 <body>
 
 <div class="header">
-<h1>Linjekontroll v1.17</h1>
+  <h1>Linjekontroll v1.18</h1>
 
-<input id="netteier" placeholder="Netteier">
-<input id="linje" placeholder="LinjeID">
-<input id="mast" placeholder="Mast nr">
+  <input id="netteier" placeholder="Netteier">
+  <input id="linje" placeholder="LinjeID">
+  <input id="mast" placeholder="Mast nr">
 
-<div id="gps">GPS: henter...</div>
+  <div id="gps">GPS: henter...</div>
 </div>
 
 <button class="btn lightgreen" onclick="mastOK()">Mast OK</button>
@@ -66,13 +78,13 @@ textarea {
 
 <script>
 
-// GPS
+// 📍 GPS
 navigator.geolocation.getCurrentPosition(pos=>{
-document.getElementById("gps").innerText =
-"GPS: "+pos.coords.latitude.toFixed(5)+", "+pos.coords.longitude.toFixed(5);
+  document.getElementById("gps").innerText =
+  "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
 });
 
-// DATA
+// 📊 Data
 const data = {
 "Skjev mast":["Skjev","Setning","Fund.feil"],
 "Barduner":["Slakk","Brudd","Rust"],
@@ -93,95 +105,115 @@ const data = {
 "Merking":[]
 };
 
-const container=document.getElementById("kontroll");
+const container = document.getElementById("kontroll");
 
 function lagUI(){
-container.innerHTML="";
+  container.innerHTML = "";
 
-for(let key in data){
+  for(let key in data){
 
-let div=document.createElement("div");
-div.className="section";
+    let div = document.createElement("div");
+    div.className = "section";
 
-let btn=document.createElement("button");
-btn.className="btn green";
-btn.innerText=key;
+    let btn = document.createElement("button");
+    btn.className = "btn green";
+    btn.innerText = key;
 
-btn.onclick=()=>toggle(div);
+    btn.onclick = () => toggle(div);
+    div.appendChild(btn);
 
-div.appendChild(btn);
+    let inner = document.createElement("div");
+    inner.className = "hidden";
 
-let inner=document.createElement("div");
-inner.className="hidden";
+    // 🔴 Avvik
+    data[key].forEach(avvik=>{
+      let b = document.createElement("button");
+      b.className = "btn gray";
+      b.innerText = avvik;
 
-data[key].forEach(avvik=>{
-let b=document.createElement("button");
-b.className="btn gray";
-b.innerText=avvik;
+      b.onclick = ()=>{
+        setRed(btn);
+      };
 
-b.onclick=()=>{
-btn.classList.remove("green","lightgreen");
-btn.classList.add("red");
-};
+      inner.appendChild(b);
+    });
 
-inner.appendChild(b);
-});
+    // 📸 Kamera (skjult input)
+    let cam = document.createElement("input");
+    cam.type = "file";
+    cam.accept = "image/*";
+    cam.capture = "environment";
+    cam.multiple = true;
+    cam.style.display = "none";
 
-// kamera
-let cam=document.createElement("input");
-cam.type="file";
-cam.accept="image/*";
-cam.capture="environment";
-cam.multiple=true;
+    cam.onchange = ()=>{
+      if(cam.files.length > 0){
+        setRed(btn);
+      }
+    };
 
-cam.onchange=()=>{
-if(cam.files.length>0){
-btn.classList.remove("green","lightgreen");
-btn.classList.add("red");
-}
-};
+    // 📸 Knapp
+    let camBtn = document.createElement("button");
+    camBtn.className = "btn gray";
+    camBtn.innerText = "📸 Ta bilde";
 
-inner.appendChild(cam);
+    camBtn.onclick = ()=>{
+      cam.click();
+    };
 
-// merknad
-let txt=document.createElement("textarea");
-txt.placeholder="Merknad";
+    inner.appendChild(camBtn);
+    inner.appendChild(cam);
 
-txt.oninput=()=>{
-if(txt.value.length>0){
-btn.classList.remove("green","lightgreen");
-btn.classList.add("red");
-}
-};
+    // 📝 Merknad
+    let txt = document.createElement("textarea");
+    txt.placeholder = "Merknad";
 
-inner.appendChild(txt);
+    txt.oninput = ()=>{
+      if(txt.value.length > 0){
+        setRed(btn);
+      }
+    };
 
-div.appendChild(inner);
-container.appendChild(div);
-}
+    inner.appendChild(txt);
+
+    div.appendChild(inner);
+    container.appendChild(div);
+  }
 }
 
 function toggle(div){
-div.children[1].classList.toggle("hidden");
+  div.children[1].classList.toggle("hidden");
 }
 
+function setRed(btn){
+  btn.classList.remove("green","lightgreen");
+  btn.classList.add("red");
+}
+
+// 🟢 Mast OK
 function mastOK(){
-document.querySelectorAll(".section button:first-child").forEach(b=>{
-b.classList.remove("green","red");
-b.classList.add("lightgreen");
-});
+  document.querySelectorAll(".section button:first-child").forEach(b=>{
+    b.classList.remove("green","red");
+    b.classList.add("lightgreen");
+  });
 }
 
+// 🔄 Neste mast
 function nesteMast(){
-document.getElementById("mast").value="";
 
-document.querySelectorAll(".section button:first-child").forEach(b=>{
-b.classList.remove("red","lightgreen");
-b.classList.add("green");
-});
+  // behold Netteier + LinjeID
+  let netteier = document.getElementById("netteier").value;
+  let linje = document.getElementById("linje").value;
 
-document.querySelectorAll("textarea").forEach(t=>t.value="");
-document.querySelectorAll("input[type=file]").forEach(f=>f.value="");
+  // reset UI
+  lagUI();
+
+  // sett tilbake verdier
+  document.getElementById("netteier").value = netteier;
+  document.getElementById("linje").value = linje;
+
+  // nullstill mast
+  document.getElementById("mast").value = "";
 }
 
 lagUI();
