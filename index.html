@@ -6,70 +6,56 @@
 
 <title>Linjekontroll</title>
 
-<!-- IKONER -->
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
+
 <meta name="theme-color" content="#2e7d32">
 
 <style>
 body { font-family: Arial; margin:10px; background:#f5f5f5; }
 
-/* HEADER */
 .header {
   position: sticky;
   top:0;
-  background:#fff;
-  z-index:1000;
-  padding-bottom:6px;
+  background:white;
 }
 
-/* LABELS (svart, alltid synlig) */
-.label {
-  font-weight:bold;
-  color:#000;
-  margin-top:6px;
-}
+.label { font-weight:bold; color:black; }
 
-/* INPUT */
 input {
   width:100%;
   padding:8px;
   margin-bottom:6px;
-  color:#000;
 }
 
-/* KNAPPER */
 .btn {
   background:#2e7d32;
-  color:#fff;
+  color:white;
   padding:12px;
   margin:4px 0;
   border-radius:6px;
   cursor:pointer;
 }
 
-/* RØD når registrert avvik/bilde/merknad */
 .btn.red { background:#c62828; }
+.btn.ok { background:#66bb6a; }
 
-/* AVVIK */
 .sub {
   background:#e0e0e0;
   padding:10px;
   margin:2px 0;
 }
 
-/* KAMERA */
 .camera {
   background:#1b5e20;
-  color:#fff;
+  color:white;
   padding:10px;
   text-align:center;
   border-radius:6px;
   margin-top:5px;
 }
 
-/* MERKNAD */
 textarea {
   width:100%;
   padding:8px;
@@ -81,18 +67,20 @@ textarea {
 <body>
 
 <div class="header">
-  <h3>Linjekontroll v2.10</h3>
 
-  <div class="label">Netteier</div>
-  <input id="netteier">
+<h3>Linjekontroll v2.20</h3>
 
-  <div class="label">LinjeID</div>
-  <input id="linje">
+<div class="label">Netteier</div>
+<input id="netteier">
 
-  <div class="label">Mast nr</div>
-  <input id="mast">
+<div class="label">LinjeID</div>
+<input id="linje">
 
-  <div id="gps"></div>
+<div class="label">Mast nr</div>
+<input id="mast">
+
+<div id="gps"></div>
+
 </div>
 
 <div id="app"></div>
@@ -103,6 +91,7 @@ textarea {
 <div class="btn" onclick="resetAll()">🆕 Ny kontroll</div>
 
 <script>
+
 let allMasts = [];
 let current = {};
 let open = null;
@@ -129,39 +118,58 @@ const controls = [
 ];
 
 function render(){
-  let html = "";
+
+  let html="";
 
   controls.forEach((c,i)=>{
-    const has = current[i] && (current[i].avvik || current[i].img || current[i].note);
-    const color = has ? "red" : "";
+
+    let state = current[i];
+    let color = "";
+
+    if(state){
+      if(state.ok) color = "ok";
+      if(state.avvik || state.note || state.img) color = "red";
+    }
 
     html += `<div class="btn ${color}" onclick="toggle(${i})">${c[0]}</div>`;
 
-    if(open === i){
-      c[1].forEach(s=>{
-        html += `<div class="sub" onclick="setAvvik(${i},'${s}')">${s}</div>`;
-      });
+    if(open===i){
 
-      html += `
+      if(c[0] === "Mast OK"){
+        html += `<div class="sub" onclick="setMastOK()">Sett Mast OK</div>`;
+      } else {
+
+        c[1].forEach(s=>{
+          html += `<div class="sub" onclick="setAvvik(${i},'${s}')">${s}</div>`;
+        });
+
+        html += `
         <div class="camera">
-          <label style="cursor:pointer;">
+          <label>
             📸 Ta bilde
             <input type="file" accept="image/*" capture="environment"
-                   style="display:none;"
-                   onchange="setPhoto(${i})">
+            style="display:none;"
+            onchange="setPhoto(${i})">
           </label>
         </div>
-      `;
+        `;
 
-      html += `<textarea placeholder="Merknad" onchange="setNote(${i},this.value)"></textarea>`;
+        html += `<textarea placeholder="Merknad" onchange="setNote(${i},this.value)"></textarea>`;
+      }
     }
+
   });
 
   app.innerHTML = html;
 }
 
 function toggle(i){
-  open = open === i ? null : i;
+  open = open===i ? null : i;
+  render();
+}
+
+function setMastOK(){
+  current = { mastOK: true };
   render();
 }
 
@@ -183,70 +191,76 @@ function setNote(i,val){
   render();
 }
 
-/* LAGRE MAST */
 function saveMast(){
+
   allMasts.push({
     netteier: netteier.value,
     linje: linje.value,
     mast: mast.value,
     data: JSON.parse(JSON.stringify(current))
   });
+
   alert("Mast lagret");
 }
 
-/* NESTE MAST (lagrer automatisk) */
 function nextMast(){
   saveMast();
-  mast.value = "";
+  mast.value="";
   current = {};
   open = null;
   render();
 }
 
-/* NY KONTROLL – nullstill ALT */
 function resetAll(){
-  if(confirm("Start ny kontroll? Alle lagrede data slettes.")){
-    allMasts = [];
-    current = {};
-    open = null;
-    netteier.value = "";
-    linje.value = "";
-    mast.value = "";
+  if(confirm("Start ny kontroll?")){
+    allMasts=[];
+    current={};
+    open=null;
+    netteier.value="";
+    linje.value="";
+    mast.value="";
     render();
   }
 }
 
-/* EXCEL – kun avvik + Mast OK */
 function downloadExcel(){
-  let csv = "Netteier,LinjeID,Mast,Kontrollpunkt,Avvik,Merknad,Bilde\n";
+
+  let csv = "Netteier,LinjeID,Mast,Kontrollpunkt,Avvik,Merknad\n";
 
   allMasts.forEach(m=>{
+
+    if(m.data.mastOK){
+      csv += `${m.netteier},${m.linje},${m.mast},Mast OK,Ingen,\n`;
+      return;
+    }
+
     controls.forEach((c,i)=>{
-      const d = m.data[i];
+
+      let d = m.data[i];
 
       if(d && (d.avvik || d.note || d.img)){
-        csv += `${m.netteier},${m.linje},${m.mast},${c[0]},${d.avvik||""},${d.note||""},${d.img?"Ja":"Nei"}\n`;
-      } else if(c[0] === "Mast OK"){
-        csv += `${m.netteier},${m.linje},${m.mast},Mast OK,Ingen,,\n`;
+        csv += `${m.netteier},${m.linje},${m.mast},${c[0]},${d.avvik||""},${d.note||""}\n`;
       }
+
     });
+
   });
 
-  const blob = new Blob([csv], {type:"text/csv"});
-  const a = document.createElement("a");
+  let blob = new Blob([csv], {type:"text/csv"});
+  let a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "linjekontroll.csv";
   a.click();
 }
 
-/* GPS */
 navigator.geolocation.getCurrentPosition(pos=>{
   gps.innerHTML =
-    "GPS: " + pos.coords.latitude.toFixed(5) + ", " +
-    pos.coords.longitude.toFixed(5);
+  "GPS: " + pos.coords.latitude.toFixed(5) + ", " +
+  pos.coords.longitude.toFixed(5);
 });
 
 render();
+
 </script>
 
 </body>
