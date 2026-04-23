@@ -6,8 +6,8 @@
 
 <title>Linjekontroll</title>
 
-<link rel="icon" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 
 <style>
 body { font-family: Arial; background:#f2f2f2; padding:10px; }
@@ -22,34 +22,31 @@ input {
 
 button {
   width:100%;
-  padding:14px;
+  padding:16px;
   margin-top:6px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   font-size:16px;
+  text-align:left;
 }
-
-.ok { background:#2e7d32; color:#fff; }
-.avvik { background:#c62828; color:#fff; }
 
 .kp { background:#2e7d32; color:#fff; }
-.kp.active { background:#66bb6a; }
+.kp.feil { background:#c62828; }
 
-.avvikBtn {
-  background:#ddd;
-  color:#000;
-}
+.avvikBtn { background:#ddd; color:#000; }
+.avvikBtn.active { background:#999; }
 
-.avvikBtn.active {
-  background:#c62828;
+.camBtn {
+  background:#2e7d32;
   color:#fff;
+  text-align:center;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Linjekontroll v2.31</h2>
+<h2>Linjekontroll v2.32</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -70,7 +67,6 @@ button {
 
 <script>
 
-// DATA
 let registreringer = [];
 let current = {};
 
@@ -101,29 +97,24 @@ const struktur = {
   "Merking": ["HS mangler/defekt","Mnr mangler/defekt"]
 };
 
-// UI
 const app = document.getElementById("app");
 
 Object.keys(struktur).forEach(kp=>{
+
   let btn = document.createElement("button");
   btn.innerText = kp;
   btn.className = "kp";
 
   let container = document.createElement("div");
+  container.style.display = "none";
 
   btn.onclick = () => {
-    btn.classList.toggle("active");
-
-    if (!current[kp]) current[kp] = [];
-
     container.style.display =
       container.style.display === "none" ? "block" : "none";
   };
 
   app.appendChild(btn);
   app.appendChild(container);
-
-  container.style.display = "none";
 
   // AVVIK
   struktur[kp].forEach(a=>{
@@ -132,6 +123,7 @@ Object.keys(struktur).forEach(kp=>{
     ab.className = "avvikBtn";
 
     ab.onclick = ()=>{
+
       ab.classList.toggle("active");
 
       if (!current[kp]) current[kp] = [];
@@ -141,26 +133,39 @@ Object.keys(struktur).forEach(kp=>{
       } else {
         current[kp].push(a);
       }
+
+      // farge kontrollpunkt
+      if (current[kp].length > 0){
+        btn.classList.add("feil");
+      } else {
+        btn.classList.remove("feil");
+      }
     };
 
     container.appendChild(ab);
   });
 
-  // KAMERA
-  let cam = document.createElement("input");
-  cam.type = "file";
-  cam.accept = "image/*";
-  cam.capture = "environment";
-  cam.multiple = true;
+  // 📸 Kamera
+  let camInput = document.createElement("input");
+  camInput.type = "file";
+  camInput.accept = "image/*";
+  camInput.capture = "environment";
+  camInput.style.display = "none";
 
-  container.appendChild(cam);
+  let camBtn = document.createElement("button");
+  camBtn.innerText = "📸 Ta bilde";
+  camBtn.className = "camBtn";
 
-  // MERKNAD
+  camBtn.onclick = () => camInput.click();
+
+  container.appendChild(camBtn);
+  container.appendChild(camInput);
+
+  // 📝 Merknad
   let note = document.createElement("input");
   note.placeholder = "Merknad";
 
   note.oninput = ()=>{
-    if (!current[kp]) current[kp] = [];
     current[kp+"_merknad"] = note.value;
   };
 
@@ -170,18 +175,19 @@ Object.keys(struktur).forEach(kp=>{
 // NESTE MAST
 function nesteMast(){
 
-  let netteierVal = netteier.value;
-  let linjeVal = linje.value;
-
   registreringer.push({
-    netteier: netteierVal,
-    linje: linjeVal,
+    netteier: netteier.value,
+    linje: linje.value,
     mast: mast.value,
     data: current
   });
 
   mast.value = "";
   current = {};
+
+  document.querySelectorAll(".kp").forEach(k=>{
+    k.classList.remove("feil");
+  });
 
   alert("Mast lagret");
 }
@@ -213,7 +219,7 @@ function lastNed(){
   a.click();
 }
 
-// NY KONTROLL
+// NY
 function nyKontroll(){
 
   registreringer = [];
