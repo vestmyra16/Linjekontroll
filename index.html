@@ -30,37 +30,21 @@ button {
   text-align:left;
 }
 
-/* Kontrollpunkt */
-.kp {
-  background:#2e7d32;
-  color:#fff;
-}
+.kp { background:#2e7d32; color:#fff; }
+.kp.feil { background:#c62828; }
 
-.kp.feil {
-  background:#c62828;
-}
+.avvikBtn { background:#ddd; color:#000; }
+.avvikBtn.active { background:#999; }
 
-/* Avvik */
-.avvikBtn {
-  background:#ddd;
-  color:#000;
-}
+.camBtn { background:#2e7d32; color:#fff; }
 
-.avvikBtn.active {
-  background:#999;
-}
-
-/* Kamera */
-.camBtn {
-  background:#2e7d32;
-  color:#fff;
-}
+.saveBtn { background:#1565c0; color:#fff; }
 </style>
 </head>
 
 <body>
 
-<h2>Linjekontroll v2.33</h2>
+<h2>Linjekontroll v2.34</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -76,6 +60,7 @@ button {
 <div id="app"></div>
 
 <button onclick="nesteMast()">➡️ Neste mast</button>
+<button class="saveBtn" onclick="lagreMast()">💾 Lagre mast</button>
 <button onclick="lastNed()">📥 Last ned Excel</button>
 <button onclick="nyKontroll()">🆕 Ny kontroll</button>
 
@@ -83,6 +68,7 @@ button {
 
 let registreringer = [];
 let current = {};
+let sistLagretMast = "";
 
 // GPS
 navigator.geolocation.getCurrentPosition(p=>{
@@ -149,7 +135,7 @@ Object.keys(struktur).forEach(kp=>{
         current[kp].push(a);
       }
 
-      // Farge kontrollpunkt
+      // farge kontrollpunkt
       if (current[kp].length > 0){
         btn.classList.add("feil");
       } else {
@@ -160,7 +146,7 @@ Object.keys(struktur).forEach(kp=>{
     container.appendChild(ab);
   });
 
-  // 📸 Kamera (riktig løsning)
+  // 📸 Kamera
   let camInput = document.createElement("input");
   camInput.type = "file";
   camInput.accept = "image/*";
@@ -192,8 +178,18 @@ Object.keys(struktur).forEach(kp=>{
   container.appendChild(note);
 });
 
-// NESTE MAST
-function nesteMast(){
+// 💾 LAGRE MAST
+function lagreMast(){
+
+  if (!mast.value){
+    alert("Mastnr mangler");
+    return;
+  }
+
+  if (mast.value === sistLagretMast){
+    alert("Allerede lagret");
+    return;
+  }
 
   registreringer.push({
     netteier: netteier.value,
@@ -202,17 +198,25 @@ function nesteMast(){
     data: current
   });
 
+  sistLagretMast = mast.value;
+
+  alert("Mast lagret");
+}
+
+// ➡️ NESTE MAST
+function nesteMast(){
+
+  lagreMast();
+
   mast.value = "";
   current = {};
 
   document.querySelectorAll(".kp").forEach(k=>{
     k.classList.remove("feil");
   });
-
-  alert("Mast lagret");
 }
 
-// EXCEL
+// 📥 EXCEL
 function lastNed(){
 
   let csv = "Netteier,Linje,Mast,Kontrollpunkt,Avvik,Merknad\n";
@@ -239,11 +243,12 @@ function lastNed(){
   a.click();
 }
 
-// NY KONTROLL
+// 🆕 NY KONTROLL
 function nyKontroll(){
 
   registreringer = [];
   current = {};
+  sistLagretMast = "";
 
   document.querySelectorAll("input").forEach(i=>{
     if (i.id !== "netteier" && i.id !== "linje") i.value = "";
