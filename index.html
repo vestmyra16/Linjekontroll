@@ -30,23 +30,37 @@ button {
   text-align:left;
 }
 
-.kp { background:#2e7d32; color:#fff; }
-.kp.feil { background:#c62828; }
+/* Kontrollpunkt */
+.kp {
+  background:#2e7d32;
+  color:#fff;
+}
 
-.avvikBtn { background:#ddd; color:#000; }
-.avvikBtn.active { background:#999; }
+.kp.feil {
+  background:#c62828;
+}
 
+/* Avvik */
+.avvikBtn {
+  background:#ddd;
+  color:#000;
+}
+
+.avvikBtn.active {
+  background:#999;
+}
+
+/* Kamera */
 .camBtn {
   background:#2e7d32;
   color:#fff;
-  text-align:center;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Linjekontroll v2.32</h2>
+<h2>Linjekontroll v2.33</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -118,6 +132,7 @@ Object.keys(struktur).forEach(kp=>{
 
   // AVVIK
   struktur[kp].forEach(a=>{
+
     let ab = document.createElement("button");
     ab.innerText = a;
     ab.className = "avvikBtn";
@@ -134,7 +149,7 @@ Object.keys(struktur).forEach(kp=>{
         current[kp].push(a);
       }
 
-      // farge kontrollpunkt
+      // Farge kontrollpunkt
       if (current[kp].length > 0){
         btn.classList.add("feil");
       } else {
@@ -145,18 +160,23 @@ Object.keys(struktur).forEach(kp=>{
     container.appendChild(ab);
   });
 
-  // 📸 Kamera
+  // 📸 Kamera (riktig løsning)
   let camInput = document.createElement("input");
   camInput.type = "file";
   camInput.accept = "image/*";
   camInput.capture = "environment";
+  camInput.multiple = true;
   camInput.style.display = "none";
 
   let camBtn = document.createElement("button");
-  camBtn.innerText = "📸 Ta bilde";
+  camBtn.innerHTML = "📸 Ta bilde";
   camBtn.className = "camBtn";
 
   camBtn.onclick = () => camInput.click();
+
+  camInput.onchange = () => {
+    current[kp+"_bilder"] = camInput.files.length;
+  };
 
   container.appendChild(camBtn);
   container.appendChild(camInput);
@@ -219,7 +239,7 @@ function lastNed(){
   a.click();
 }
 
-// NY
+// NY KONTROLL
 function nyKontroll(){
 
   registreringer = [];
