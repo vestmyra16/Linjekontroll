@@ -3,14 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Linjekontroll v2.21</title>
+
+<title>Linjekontroll v2.22</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 body { font-family: Arial; max-width:700px; margin:auto; padding:15px; }
 label { font-weight:bold; display:block; margin-top:10px; }
-input, textarea { width:100%; padding:10px; margin-top:5px; }
+
+input, textarea {
+  width:100%;
+  padding:10px;
+  margin-top:5px;
+}
 
 button {
   width:100%;
@@ -18,24 +24,19 @@ button {
   margin-top:8px;
   font-size:18px;
   border:none;
-  border-radius:6px;
+  border-radius:10px;
   background:green;
   color:white;
 }
 
-.okBtn {
-  background:green;
-}
-
-.hidden {
-  display:none;
-}
+.okBtn { background:green; }
+.hidden { display:none; }
 </style>
 </head>
 
 <body>
 
-<h2>Linjekontroll v2.21</h2>
+<h2>Linjekontroll v2.22</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -48,9 +49,13 @@ button {
 
 <p id="gps"></p>
 
-<button id="mastOKbtn" class="okBtn" onclick="mastOK()">Mast OK</button>
+<!-- Mast OK -->
+<button id="mastOKbtn" class="okBtn" onclick="mastOK()">
+Ingen synlige avvik - Mast OK
+</button>
 
-<button onclick="registrerAvvik('Skjev mast')">Skjev mast</button>
+<!-- Kontrollpunkter -->
+<button onclick="registrerAvvik('Skjev mast/fundament')">Skjev mast/fundament</button>
 <button onclick="registrerAvvik('Barduner')">Barduner</button>
 <button onclick="registrerAvvik('Stolper')">Stolper</button>
 <button onclick="registrerAvvik('Stålmast')">Stålmast</button>
@@ -59,19 +64,28 @@ button {
 <button onclick="registrerAvvik('Travers')">Travers</button>
 <button onclick="registrerAvvik('Isolatorfeste')">Isolatorfeste</button>
 <button onclick="registrerAvvik('Isolator')">Isolator</button>
-<button onclick="registrerAvvik('Bendsling')">Bendsling</button>
+<button onclick="registrerAvvik('Bendsling, heng, avspenning')">Bendsling, heng, avspenning</button>
+<button onclick="registrerAvvik('Liner')">Liner</button>
+<button onclick="registrerAvvik('Strekking')">Strekking</button>
+<button onclick="registrerAvvik('Skjøter/klemmer')">Skjøter/klemmer</button>
+<button onclick="registrerAvvik('Topp/jordline og beslag')">Topp/jordline og beslag</button>
+<button onclick="registrerAvvik('Jordinger')">Jordinger</button>
+<button onclick="registrerAvvik('Trasé')">Trasé</button>
+<button onclick="registrerAvvik('Merking')">Merking</button>
 
+<!-- Bilde -->
 <div id="bildeContainer">
-<button onclick="taBilde()">📷 Ta bilde</button>
-<input type="file" id="kamera" accept="image/*" capture="environment" class="hidden">
+  <button onclick="taBilde()">📷 Ta bilde</button>
+  <input type="file" id="kamera" accept="image/*" capture="environment" class="hidden">
 </div>
 
+<!-- Merknad -->
 <div id="merknadContainer">
-<label>Merknad</label>
-<textarea id="merknad"></textarea>
+  <label>Merknad</label>
+  <textarea id="merknad"></textarea>
 </div>
 
-<button onclick="lagre()">Lagre</button>
+<button onclick="nyMast()">Ny mast</button>
 <button onclick="lastNed()">Last ned Excel</button>
 
 <script>
@@ -110,7 +124,7 @@ function mastOK(){
   alert("Mast registrert som OK");
 }
 
-/* Avvik */
+/* Registrer avvik */
 function registrerAvvik(punkt){
 
   harAvvik = true;
@@ -132,8 +146,8 @@ function taBilde(){
   document.getElementById("kamera").click();
 }
 
-/* Lagre */
-function lagre(){
+/* Ny mast */
+function nyMast(){
 
   mast.value="";
   document.getElementById("merknad").value="";
@@ -153,9 +167,9 @@ function lastNed(){
 
   XLSX.utils.book_append_sheet(wb, ws, "Data");
 
-  let filnavn = linje.value ? linje.value + "_linjekontroll.xlsx" : "linjekontroll.xlsx";
+  let navn = linje.value ? linje.value + "_linjekontroll.xlsx" : "linjekontroll.xlsx";
 
-  XLSX.writeFile(wb, filnavn);
+  XLSX.writeFile(wb, navn);
 }
 
 </script>
