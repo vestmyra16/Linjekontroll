@@ -3,50 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Linjekontroll v2.23</title>
+
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body {font-family:Arial; max-width:700px; margin:auto; padding:10px;}
+body {
+  font-family: Arial;
+  max-width: 700px;
+  margin: auto;
+  padding: 10px;
+}
 
 input, textarea {
-  width:100%;
-  padding:10px;
-  margin-top:5px;
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
 }
 
-button {
-  width:100%;
-  padding:12px;
-  margin-top:5px;
-  border:none;
-  color:white;
-  font-size:16px;
+/* Kontrollpunkt */
+.kp {
+  background: #2e7d32;
+  color: white;
+  text-align: left;
+  padding: 14px;
+  margin-top: 6px;
+  border: none;
+  font-size: 16px;
 }
 
-.kp {background:#2e7d32; text-align:left;}
-.kp.red {background:red;}
+/* Kontrollpunkt brukt */
+.kp.red {
+  background: red;
+}
 
+/* Avvik */
 .avvikBtn {
-  background:#ddd;
-  color:black;
-  text-align:left;
-}
-.avvikBtn.red {
-  background:red;
-  color:white;
+  background: #e0e0e0;
+  color: black;
+  text-align: left;
+  padding: 12px;
+  margin-top: 3px;
+  border: none;
 }
 
+/* Mast OK */
 .mastok {
-  background:#4CAF50;
-  font-weight:bold;
+  background: #4CAF50;
+  color: white;
+  font-weight: bold;
+  padding: 14px;
+  margin-top: 10px;
 }
 
 .section {
-  border-bottom:1px solid #ccc;
-  margin-bottom:10px;
-  padding-bottom:10px;
+  margin-bottom: 10px;
 }
 </style>
 </head>
@@ -76,7 +92,7 @@ button {
 <script>
 
 let data = [];
-let currentMastOK = false;
+let mastOKvalgt = false;
 
 const kontrollpunkter = [
   {navn:"Skjev mast/fundament", avvik:["Skjev","Setning","Fundament feil"]},
@@ -99,6 +115,7 @@ const kontrollpunkter = [
 ];
 
 function byggListe(){
+
   let container = document.getElementById("kontrollListe");
   container.innerHTML = "";
 
@@ -108,13 +125,17 @@ function byggListe(){
     div.className = "section";
 
     div.innerHTML = `
-      <button class="kp" id="kp_${i}">${kp.navn}</button>
+      <button class="kp" id="kp_${i}" onclick="toggle(${i})">${kp.navn}</button>
 
-      <div id="under_${i}">
-        ${kp.avvik.map(a => `<button class="avvikBtn" onclick="velgAvvik(this,${i},'${a}')">${a}</button>`).join("")}
+      <div id="under_${i}" style="display:none">
+
+        ${kp.avvik.map(a =>
+          `<button class="avvikBtn" onclick="registrer(${i}, '${a}')">${a}</button>`
+        ).join("")}
 
         <button onclick="taBilde()">📷 Ta bilde</button>
         <textarea placeholder="Merknad"></textarea>
+
       </div>
     `;
 
@@ -122,11 +143,16 @@ function byggListe(){
   });
 }
 
-function velgAvvik(btn,i,avvik){
-  currentMastOK = false;
+function toggle(i){
+  let el = document.getElementById("under_" + i);
+  el.style.display = el.style.display === "none" ? "block" : "none";
+}
 
-  btn.classList.add("red");
-  document.getElementById("kp_"+i).classList.add("red");
+function registrer(i,avvik){
+
+  mastOKvalgt = false;
+
+  document.getElementById("kp_" + i).classList.add("red");
 
   data.push({
     netteier: netteier.value,
@@ -138,7 +164,9 @@ function velgAvvik(btn,i,avvik){
 }
 
 function mastOK(){
-  currentMastOK = true;
+
+  mastOKvalgt = true;
+  data = []; // fjerner avvik
 
   data.push({
     netteier: netteier.value,
@@ -154,7 +182,10 @@ function lagre(){
 }
 
 function lastExcel(){
-  let ws = XLSX.utils.json_to_sheet(data);
+
+  let exportData = mastOKvalgt ? data.filter(d => d.kontrollpunkt === "Mast OK") : data;
+
+  let ws = XLSX.utils.json_to_sheet(exportData);
   let wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Kontroll");
 
@@ -162,7 +193,7 @@ function lastExcel(){
 }
 
 function taBilde(){
-  alert("Bruk mobilkamera direkte (lagres med mastnr)");
+  alert("Ta bilde med mobilkamera og lagre med mastnr");
 }
 
 navigator.geolocation.getCurrentPosition(pos=>{
