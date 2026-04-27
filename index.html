@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v2</title>
+<title>Linjekontroll v2.1</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -12,8 +12,17 @@
 body{font-family:Arial;max-width:700px;margin:auto;padding:15px;}
 label{font-weight:bold;display:block;margin-top:10px;}
 input,select,textarea{width:100%;padding:10px;margin-top:4px;}
-button{margin-top:10px;padding:16px;width:100%;background:green;color:white;border:none;font-size:16px;}
-.avvik-btn{background:#ddd;color:black;}
+button{margin-top:10px;padding:16px;width:100%;border:none;font-size:16px;}
+
+.mastok{
+    background:darkgreen;
+    color:white;
+}
+
+.standard{
+    background:green;
+    color:white;
+}
 </style>
 </head>
 
@@ -30,7 +39,9 @@ button{margin-top:10px;padding:16px;width:100%;background:green;color:white;bord
 <label>Mastnr</label>
 <input id="mast">
 
-<button onclick="nyMast()">Ny mast</button>
+<button class="standard" onclick="nyMast()">Ny mast</button>
+
+<button class="mastok" onclick="mastOK()">✔ Mast OK</button>
 
 <hr>
 
@@ -52,7 +63,6 @@ button{margin-top:10px;padding:16px;width:100%;background:green;color:white;bord
 <label>Avvik</label>
 <select id="avvik" onchange="visAvvik()">
 <option value="">Velg</option>
-<option>Mast OK</option>
 <option>Brudd</option>
 <option>Rust</option>
 <option>Slakk</option>
@@ -63,7 +73,7 @@ button{margin-top:10px;padding:16px;width:100%;background:green;color:white;bord
 </select>
 
 <div id="bildeDiv" style="display:none;">
-<button onclick="taBilde()">📷 Ta bilde</button>
+<button class="standard" onclick="taBilde()">📷 Ta bilde</button>
 <input type="file" id="kamera" accept="image/*" capture="environment" style="display:none">
 </div>
 
@@ -72,51 +82,73 @@ button{margin-top:10px;padding:16px;width:100%;background:green;color:white;bord
 <textarea id="merknad"></textarea>
 </div>
 
-<button onclick="leggTil()">Legg til avvik</button>
+<button class="standard" onclick="leggTil()">Legg til avvik</button>
 
 <hr>
 
-<button onclick="lagreMast()">Lagre mast</button>
-<button onclick="lastNed()">Last ned Excel</button>
+<button class="standard" onclick="lagreMast()">Lagre mast</button>
+<button class="standard" onclick="lastNed()">Last ned Excel</button>
 
 <script>
 
 let avvikListe=[];
 let alleData=[];
 
+/* Mast OK – hovedfunksjon */
+function mastOK(){
+
+let netteier=netteierEl.value;
+let linje=linjeEl.value;
+let mast=mastEl.value;
+
+if(!mast){
+    alert("Mangler mastnr");
+    return;
+}
+
+alleData.push({
+    netteier:netteier,
+    linje:linje,
+    mast:mast,
+    punkt:"Mast OK",
+    avvik:"Ingen",
+    merknad:""
+});
+
+avvikListe=[];
+mastEl.value="";
+
+alert("Mast OK lagret");
+}
+
 /* Vis/skjul bilde og merknad */
 function visAvvik(){
-    let valg = document.getElementById("avvik").value;
 
-    if(valg === "Mast OK" || valg === ""){
-        bildeDiv.style.display="none";
-        merknadDiv.style.display="none";
-    } else {
-        bildeDiv.style.display="block";
-        merknadDiv.style.display="block";
-    }
+let valg=avvikEl.value;
+
+if(valg===""){
+    bildeDiv.style.display="none";
+    merknadDiv.style.display="none";
+}else{
+    bildeDiv.style.display="block";
+    merknadDiv.style.display="block";
+}
 }
 
 /* Kamera */
 function taBilde(){
-    kamera.click();
+kamera.click();
 }
 
 /* Legg til avvik */
 function leggTil(){
 
-let punkt = document.getElementById("punkt").value;
-let avvik = document.getElementById("avvik").value;
-let merknad = document.getElementById("merknad").value;
+let punkt=punktEl.value;
+let avvik=avvikEl.value;
+let merknad=merknadEl.value;
 
-if(!punkt || !avvik){
+if(!punkt||!avvik){
     alert("Velg kontrollpunkt og avvik");
-    return;
-}
-
-if(avvik === "Mast OK"){
-    avvikListe = []; // nullstill hvis OK
-    alert("Mast satt til OK");
     return;
 }
 
@@ -126,9 +158,8 @@ avvikListe.push({
     merknad:merknad
 });
 
-/* Nullstill felt */
-document.getElementById("avvik").value="";
-document.getElementById("merknad").value="";
+avvikEl.value="";
+merknadEl.value="";
 bildeDiv.style.display="none";
 merknadDiv.style.display="none";
 
@@ -137,17 +168,17 @@ merknadDiv.style.display="none";
 /* Lagre mast */
 function lagreMast(){
 
-let netteier = document.getElementById("netteier").value;
-let linje = document.getElementById("linje").value;
-let mast = document.getElementById("mast").value;
+let netteier=netteierEl.value;
+let linje=linjeEl.value;
+let mast=mastEl.value;
 
 if(!mast){
     alert("Mangler mastnr");
     return;
 }
 
-/* Ingen avvik → Mast OK */
-if(avvikListe.length === 0){
+/* Kun Mast OK hvis ingen avvik */
+if(avvikListe.length===0){
     alleData.push({
         netteier:netteier,
         linje:linje,
@@ -156,45 +187,53 @@ if(avvikListe.length === 0){
         avvik:"Ingen",
         merknad:""
     });
-} else {
-/* Lagre kun avvik */
-avvikListe.forEach(a=>{
-    alleData.push({
-        netteier:netteier,
-        linje:linje,
-        mast:mast,
-        punkt:a.punkt,
-        avvik:a.avvik,
-        merknad:a.merknad
+}else{
+    avvikListe.forEach(a=>{
+        alleData.push({
+            netteier:netteier,
+            linje:linje,
+            mast:mast,
+            punkt:a.punkt,
+            avvik:a.avvik,
+            merknad:a.merknad
+        });
     });
-});
 }
 
-/* Nullstill for neste mast */
 avvikListe=[];
-document.getElementById("mast").value="";
-alert("Mast lagret");
+mastEl.value="";
 
+alert("Mast lagret");
 }
 
 /* Ny mast */
 function nyMast(){
-    avvikListe=[];
-    document.getElementById("mast").value="";
+avvikListe=[];
+mastEl.value="";
 }
 
 /* Excel */
 function lastNed(){
 
-let wb = XLSX.utils.book_new();
-let ws = XLSX.utils.json_to_sheet(alleData);
+let wb=XLSX.utils.book_new();
+let ws=XLSX.utils.json_to_sheet(alleData);
 
-XLSX.utils.book_append_sheet(wb, ws, "Kontroll");
+XLSX.utils.book_append_sheet(wb,ws,"Kontroll");
 
-let navn = document.getElementById("linje").value || "Linjekontroll";
-XLSX.writeFile(wb, navn + ".xlsx");
-
+let navn=linjeEl.value||"Linjekontroll";
+XLSX.writeFile(wb,navn+".xlsx");
 }
+
+/* Element referanser */
+let netteierEl=document.getElementById("netteier");
+let linjeEl=document.getElementById("linje");
+let mastEl=document.getElementById("mast");
+let punktEl=document.getElementById("punkt");
+let avvikEl=document.getElementById("avvik");
+let merknadEl=document.getElementById("merknad");
+let bildeDiv=document.getElementById("bildeDiv");
+let merknadDiv=document.getElementById("merknadDiv");
+let kamera=document.getElementById("kamera");
 
 </script>
 
