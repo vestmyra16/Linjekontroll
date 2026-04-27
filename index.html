@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Linjekontroll v2.22</title>
+<title>Linjekontroll v2.23</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body { font-family: Arial; max-width:700px; margin:auto; padding:15px; }
-label { font-weight:bold; display:block; margin-top:10px; }
+body {font-family:Arial; max-width:700px; margin:auto; padding:10px;}
 
 input, textarea {
   width:100%;
@@ -20,23 +18,42 @@ input, textarea {
 
 button {
   width:100%;
-  padding:14px;
-  margin-top:8px;
-  font-size:18px;
+  padding:12px;
+  margin-top:5px;
   border:none;
-  border-radius:10px;
-  background:green;
+  color:white;
+  font-size:16px;
+}
+
+.kp {background:#2e7d32; text-align:left;}
+.kp.red {background:red;}
+
+.avvikBtn {
+  background:#ddd;
+  color:black;
+  text-align:left;
+}
+.avvikBtn.red {
+  background:red;
   color:white;
 }
 
-.okBtn { background:green; }
-.hidden { display:none; }
+.mastok {
+  background:#4CAF50;
+  font-weight:bold;
+}
+
+.section {
+  border-bottom:1px solid #ccc;
+  margin-bottom:10px;
+  padding-bottom:10px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Linjekontroll v2.22</h2>
+<h2>Linjekontroll v2.23</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -47,130 +64,113 @@ button {
 <label>Mast nr</label>
 <input id="mast">
 
-<p id="gps"></p>
+<div id="gps"></div>
 
-<!-- Mast OK -->
-<button id="mastOKbtn" class="okBtn" onclick="mastOK()">
-Ingen synlige avvik - Mast OK
-</button>
+<button class="mastok" onclick="mastOK()">Ingen synlige avvik - Mast OK</button>
 
-<!-- Kontrollpunkter -->
-<button onclick="registrerAvvik('Skjev mast/fundament')">Skjev mast/fundament</button>
-<button onclick="registrerAvvik('Barduner')">Barduner</button>
-<button onclick="registrerAvvik('Stolper')">Stolper</button>
-<button onclick="registrerAvvik('Stålmast')">Stålmast</button>
-<button onclick="registrerAvvik('Topphette')">Topphette</button>
-<button onclick="registrerAvvik('Traversfeste')">Traversfeste</button>
-<button onclick="registrerAvvik('Travers')">Travers</button>
-<button onclick="registrerAvvik('Isolatorfeste')">Isolatorfeste</button>
-<button onclick="registrerAvvik('Isolator')">Isolator</button>
-<button onclick="registrerAvvik('Bendsling, heng, avspenning')">Bendsling, heng, avspenning</button>
-<button onclick="registrerAvvik('Liner')">Liner</button>
-<button onclick="registrerAvvik('Strekking')">Strekking</button>
-<button onclick="registrerAvvik('Skjøter/klemmer')">Skjøter/klemmer</button>
-<button onclick="registrerAvvik('Topp/jordline og beslag')">Topp/jordline og beslag</button>
-<button onclick="registrerAvvik('Jordinger')">Jordinger</button>
-<button onclick="registrerAvvik('Trasé')">Trasé</button>
-<button onclick="registrerAvvik('Merking')">Merking</button>
+<div id="kontrollListe"></div>
 
-<!-- Bilde -->
-<div id="bildeContainer">
-  <button onclick="taBilde()">📷 Ta bilde</button>
-  <input type="file" id="kamera" accept="image/*" capture="environment" class="hidden">
-</div>
-
-<!-- Merknad -->
-<div id="merknadContainer">
-  <label>Merknad</label>
-  <textarea id="merknad"></textarea>
-</div>
-
-<button onclick="nyMast()">Ny mast</button>
-<button onclick="lastNed()">Last ned Excel</button>
+<button onclick="lagre()">Lagre</button>
+<button onclick="lastExcel()">Last ned Excel</button>
 
 <script>
 
-let alleData = [];
-let harAvvik = false;
+let data = [];
+let currentMastOK = false;
 
-/* GPS */
-if(navigator.geolocation){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    document.getElementById("gps").innerText =
-      "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
+const kontrollpunkter = [
+  {navn:"Skjev mast/fundament", avvik:["Skjev","Setning","Fundament feil"]},
+  {navn:"Barduner", avvik:["Slakk","Brudd","Rust"]},
+  {navn:"Stolper", avvik:["Råte","Sprekk"]},
+  {navn:"Stålmast", avvik:["Korrosjon","Skade"]},
+  {navn:"Topphette", avvik:["Mangler","Skade"]},
+  {navn:"Traversfeste", avvik:["Løs","Skade"]},
+  {navn:"Travers", avvik:["Skjev","Skade"]},
+  {navn:"Isolatorfeste", avvik:["Løs","Skade"]},
+  {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
+  {navn:"Bendsling, heng, avspenning", avvik:["Løs","Brudd"]},
+  {navn:"Liner", avvik:["Kordelbrudd","Korrosjon"]},
+  {navn:"Strekking", avvik:["Skjev"]},
+  {navn:"Skjøter/klemmer", avvik:["Korrosjon","Brudd"]},
+  {navn:"Topp/jordline og beslag", avvik:["Slakk","Skade"]},
+  {navn:"Jordinger", avvik:["Løs","Brudd"]},
+  {navn:"Trasé", avvik:["Skog","Kratt"]},
+  {navn:"Merking", avvik:["Mangler","Defekt"]}
+];
+
+function byggListe(){
+  let container = document.getElementById("kontrollListe");
+  container.innerHTML = "";
+
+  kontrollpunkter.forEach((kp,i)=>{
+
+    let div = document.createElement("div");
+    div.className = "section";
+
+    div.innerHTML = `
+      <button class="kp" id="kp_${i}">${kp.navn}</button>
+
+      <div id="under_${i}">
+        ${kp.avvik.map(a => `<button class="avvikBtn" onclick="velgAvvik(this,${i},'${a}')">${a}</button>`).join("")}
+
+        <button onclick="taBilde()">📷 Ta bilde</button>
+        <textarea placeholder="Merknad"></textarea>
+      </div>
+    `;
+
+    container.appendChild(div);
   });
 }
 
-/* Mast OK */
+function velgAvvik(btn,i,avvik){
+  currentMastOK = false;
+
+  btn.classList.add("red");
+  document.getElementById("kp_"+i).classList.add("red");
+
+  data.push({
+    netteier: netteier.value,
+    linje: linje.value,
+    mast: mast.value,
+    kontrollpunkt: kontrollpunkter[i].navn,
+    avvik: avvik
+  });
+}
+
 function mastOK(){
+  currentMastOK = true;
 
-  if(harAvvik){
-    alert("Mast har avvik – Mast OK kan ikke brukes");
-    return;
-  }
-
-  alleData.push({
+  data.push({
     netteier: netteier.value,
     linje: linje.value,
     mast: mast.value,
-    punkt: "Mast OK",
-    avvik: "Ingen",
-    merknad: ""
-  });
-
-  document.getElementById("bildeContainer").style.display = "none";
-  document.getElementById("merknadContainer").style.display = "none";
-
-  alert("Mast registrert som OK");
-}
-
-/* Registrer avvik */
-function registrerAvvik(punkt){
-
-  harAvvik = true;
-
-  document.getElementById("mastOKbtn").style.display = "none";
-
-  alleData.push({
-    netteier: netteier.value,
-    linje: linje.value,
-    mast: mast.value,
-    punkt: punkt,
-    avvik: "Registrert",
-    merknad: document.getElementById("merknad").value
+    kontrollpunkt: "Mast OK",
+    avvik: "Ingen"
   });
 }
 
-/* Kamera */
-function taBilde(){
-  document.getElementById("kamera").click();
+function lagre(){
+  alert("Lagret");
 }
 
-/* Ny mast */
-function nyMast(){
-
-  mast.value="";
-  document.getElementById("merknad").value="";
-
-  document.getElementById("mastOKbtn").style.display = "block";
-  document.getElementById("bildeContainer").style.display = "block";
-  document.getElementById("merknadContainer").style.display = "block";
-
-  harAvvik = false;
-}
-
-/* Excel */
-function lastNed(){
-
+function lastExcel(){
+  let ws = XLSX.utils.json_to_sheet(data);
   let wb = XLSX.utils.book_new();
-  let ws = XLSX.utils.json_to_sheet(alleData);
+  XLSX.utils.book_append_sheet(wb, ws, "Kontroll");
 
-  XLSX.utils.book_append_sheet(wb, ws, "Data");
-
-  let navn = linje.value ? linje.value + "_linjekontroll.xlsx" : "linjekontroll.xlsx";
-
-  XLSX.writeFile(wb, navn);
+  XLSX.writeFile(wb, linje.value + "_" + mast.value + ".xlsx");
 }
+
+function taBilde(){
+  alert("Bruk mobilkamera direkte (lagres med mastnr)");
+}
+
+navigator.geolocation.getCurrentPosition(pos=>{
+  document.getElementById("gps").innerHTML =
+    "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
+});
+
+byggListe();
 
 </script>
 
