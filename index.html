@@ -4,257 +4,196 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll</title>
+<title>Linjekontroll v2</title>
 
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-180.png">
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body { font-family: Arial; background:#f2f2f2; padding:10px; }
-
-input {
-  width:100%;
-  padding:10px;
-  margin-bottom:8px;
-  border:2px solid #999;
-  border-radius:6px;
-}
-
-button {
-  width:100%;
-  padding:16px;
-  margin-top:6px;
-  border:none;
-  border-radius:10px;
-  font-size:16px;
-  text-align:left;
-}
-
-.kp { background:#2e7d32; color:#fff; }
-.kp.feil { background:#c62828; }
-
-.avvikBtn { background:#ddd; color:#000; }
-.avvikBtn.active { background:#999; }
-
-.camBtn { background:#2e7d32; color:#fff; }
-
-.saveBtn { background:#1565c0; color:#fff; }
+body{font-family:Arial;max-width:700px;margin:auto;padding:15px;}
+label{font-weight:bold;display:block;margin-top:10px;}
+input,select,textarea{width:100%;padding:10px;margin-top:4px;}
+button{margin-top:10px;padding:16px;width:100%;background:green;color:white;border:none;font-size:16px;}
+.avvik-btn{background:#ddd;color:black;}
 </style>
 </head>
 
 <body>
 
-<h2>Linjekontroll v2.34</h2>
+<h2>Grunnlagsdata</h2>
 
 <label>Netteier</label>
 <input id="netteier">
 
-<label>LinjeID</label>
+<label>Linje</label>
 <input id="linje">
 
-<label>Mast nr</label>
+<label>Mastnr</label>
 <input id="mast">
 
-<p id="gps"></p>
+<button onclick="nyMast()">Ny mast</button>
 
-<div id="app"></div>
+<hr>
 
-<button onclick="nesteMast()">➡️ Neste mast</button>
-<button class="saveBtn" onclick="lagreMast()">💾 Lagre mast</button>
-<button onclick="lastNed()">📥 Last ned Excel</button>
-<button onclick="nyKontroll()">🆕 Ny kontroll</button>
+<h2>Kontrollpunkt</h2>
+
+<label>Kontrollpunkt</label>
+<select id="punkt">
+<option value="">Velg</option>
+<option>Barduner</option>
+<option>Toppline</option>
+<option>Jordinger</option>
+<option>Merking</option>
+<option>Stolper</option>
+<option>Topphatte</option>
+<option>Bendsling</option>
+<option>Skjev mast</option>
+</select>
+
+<label>Avvik</label>
+<select id="avvik" onchange="visAvvik()">
+<option value="">Velg</option>
+<option>Mast OK</option>
+<option>Brudd</option>
+<option>Rust</option>
+<option>Slakk</option>
+<option>Løs</option>
+<option>Mangler</option>
+<option>Råte</option>
+<option>Skjev</option>
+</select>
+
+<div id="bildeDiv" style="display:none;">
+<button onclick="taBilde()">📷 Ta bilde</button>
+<input type="file" id="kamera" accept="image/*" capture="environment" style="display:none">
+</div>
+
+<div id="merknadDiv" style="display:none;">
+<label>Merknad</label>
+<textarea id="merknad"></textarea>
+</div>
+
+<button onclick="leggTil()">Legg til avvik</button>
+
+<hr>
+
+<button onclick="lagreMast()">Lagre mast</button>
+<button onclick="lastNed()">Last ned Excel</button>
 
 <script>
 
-let registreringer = [];
-let current = {};
-let sistLagretMast = "";
+let avvikListe=[];
+let alleData=[];
 
-// GPS
-navigator.geolocation.getCurrentPosition(p=>{
-  gps.innerText = "GPS: " + p.coords.latitude.toFixed(5) + ", " + p.coords.longitude.toFixed(5);
+/* Vis/skjul bilde og merknad */
+function visAvvik(){
+    let valg = document.getElementById("avvik").value;
+
+    if(valg === "Mast OK" || valg === ""){
+        bildeDiv.style.display="none";
+        merknadDiv.style.display="none";
+    } else {
+        bildeDiv.style.display="block";
+        merknadDiv.style.display="block";
+    }
+}
+
+/* Kamera */
+function taBilde(){
+    kamera.click();
+}
+
+/* Legg til avvik */
+function leggTil(){
+
+let punkt = document.getElementById("punkt").value;
+let avvik = document.getElementById("avvik").value;
+let merknad = document.getElementById("merknad").value;
+
+if(!punkt || !avvik){
+    alert("Velg kontrollpunkt og avvik");
+    return;
+}
+
+if(avvik === "Mast OK"){
+    avvikListe = []; // nullstill hvis OK
+    alert("Mast satt til OK");
+    return;
+}
+
+avvikListe.push({
+    punkt:punkt,
+    avvik:avvik,
+    merknad:merknad
 });
 
-// STRUKTUR
-const struktur = {
-  "Mast OK": [],
-  "Skjev mast": ["Skjev","Setning","Fund.feil"],
-  "Barduner": ["Slakk","Brudd","Rust"],
-  "Stolper": ["Råte","Sprekk"],
-  "Stålmast": ["Korrosjon","Skade"],
-  "Topphette": ["Mangler","Skadet"],
-  "Traversfeste": ["Løs"],
-  "Travers": ["Skade"],
-  "Isolatorfeste": ["Skade"],
-  "Isolator": ["Knust","Krypestrøm"],
-  "Bendsling": ["Løs","Brudd"],
-  "Liner": ["Korrosjon","Kordelbrudd"],
-  "Strekking": ["Skjev"],
-  "Skjøter/Klemmer": ["Korrosjon","Kordelbrudd"],
-  "Toppline": ["Slakk","Korrosjon"],
-  "Jordinger": ["Løs","Brudd"],
-  "Trasé": ["Skog","Kratt"],
-  "Merking": ["HS mangler/defekt","Mnr mangler/defekt"]
-};
+/* Nullstill felt */
+document.getElementById("avvik").value="";
+document.getElementById("merknad").value="";
+bildeDiv.style.display="none";
+merknadDiv.style.display="none";
 
-const app = document.getElementById("app");
+}
 
-Object.keys(struktur).forEach(kp=>{
-
-  let btn = document.createElement("button");
-  btn.innerText = kp;
-  btn.className = "kp";
-
-  let container = document.createElement("div");
-  container.style.display = "none";
-
-  btn.onclick = () => {
-    container.style.display =
-      container.style.display === "none" ? "block" : "none";
-  };
-
-  app.appendChild(btn);
-  app.appendChild(container);
-
-  // AVVIK
-  struktur[kp].forEach(a=>{
-
-    let ab = document.createElement("button");
-    ab.innerText = a;
-    ab.className = "avvikBtn";
-
-    ab.onclick = ()=>{
-
-      ab.classList.toggle("active");
-
-      if (!current[kp]) current[kp] = [];
-
-      if (current[kp].includes(a)) {
-        current[kp] = current[kp].filter(x=>x!==a);
-      } else {
-        current[kp].push(a);
-      }
-
-      // farge kontrollpunkt
-      if (current[kp].length > 0){
-        btn.classList.add("feil");
-      } else {
-        btn.classList.remove("feil");
-      }
-    };
-
-    container.appendChild(ab);
-  });
-
-  // 📸 Kamera
-  let camInput = document.createElement("input");
-  camInput.type = "file";
-  camInput.accept = "image/*";
-  camInput.capture = "environment";
-  camInput.multiple = true;
-  camInput.style.display = "none";
-
-  let camBtn = document.createElement("button");
-  camBtn.innerHTML = "📸 Ta bilde";
-  camBtn.className = "camBtn";
-
-  camBtn.onclick = () => camInput.click();
-
-  camInput.onchange = () => {
-    current[kp+"_bilder"] = camInput.files.length;
-  };
-
-  container.appendChild(camBtn);
-  container.appendChild(camInput);
-
-  // 📝 Merknad
-  let note = document.createElement("input");
-  note.placeholder = "Merknad";
-
-  note.oninput = ()=>{
-    current[kp+"_merknad"] = note.value;
-  };
-
-  container.appendChild(note);
-});
-
-// 💾 LAGRE MAST
+/* Lagre mast */
 function lagreMast(){
 
-  if (!mast.value){
-    alert("Mastnr mangler");
+let netteier = document.getElementById("netteier").value;
+let linje = document.getElementById("linje").value;
+let mast = document.getElementById("mast").value;
+
+if(!mast){
+    alert("Mangler mastnr");
     return;
-  }
-
-  if (mast.value === sistLagretMast){
-    alert("Allerede lagret");
-    return;
-  }
-
-  registreringer.push({
-    netteier: netteier.value,
-    linje: linje.value,
-    mast: mast.value,
-    data: current
-  });
-
-  sistLagretMast = mast.value;
-
-  alert("Mast lagret");
 }
 
-// ➡️ NESTE MAST
-function nesteMast(){
-
-  lagreMast();
-
-  mast.value = "";
-  current = {};
-
-  document.querySelectorAll(".kp").forEach(k=>{
-    k.classList.remove("feil");
-  });
+/* Ingen avvik → Mast OK */
+if(avvikListe.length === 0){
+    alleData.push({
+        netteier:netteier,
+        linje:linje,
+        mast:mast,
+        punkt:"Mast OK",
+        avvik:"Ingen",
+        merknad:""
+    });
+} else {
+/* Lagre kun avvik */
+avvikListe.forEach(a=>{
+    alleData.push({
+        netteier:netteier,
+        linje:linje,
+        mast:mast,
+        punkt:a.punkt,
+        avvik:a.avvik,
+        merknad:a.merknad
+    });
+});
 }
 
-// 📥 EXCEL
+/* Nullstill for neste mast */
+avvikListe=[];
+document.getElementById("mast").value="";
+alert("Mast lagret");
+
+}
+
+/* Ny mast */
+function nyMast(){
+    avvikListe=[];
+    document.getElementById("mast").value="";
+}
+
+/* Excel */
 function lastNed(){
 
-  let csv = "Netteier,Linje,Mast,Kontrollpunkt,Avvik,Merknad\n";
+let wb = XLSX.utils.book_new();
+let ws = XLSX.utils.json_to_sheet(alleData);
 
-  registreringer.forEach(r=>{
-    Object.keys(struktur).forEach(kp=>{
+XLSX.utils.book_append_sheet(wb, ws, "Kontroll");
 
-      let avvik = r.data[kp] || [];
+let navn = document.getElementById("linje").value || "Linjekontroll";
+XLSX.writeFile(wb, navn + ".xlsx");
 
-      if (kp === "Mast OK" && avvik.length === 0){
-        csv += `${r.netteier},${r.linje},${r.mast},Mast OK,Ingen,\n`;
-      }
-
-      if (avvik.length > 0){
-        csv += `${r.netteier},${r.linje},${r.mast},${kp},${avvik.join("|")},${r.data[kp+"_merknad"]||""}\n`;
-      }
-    });
-  });
-
-  let blob = new Blob([csv], {type:"text/csv"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "linjekontroll.csv";
-  a.click();
-}
-
-// 🆕 NY KONTROLL
-function nyKontroll(){
-
-  registreringer = [];
-  current = {};
-  sistLagretMast = "";
-
-  document.querySelectorAll("input").forEach(i=>{
-    if (i.id !== "netteier" && i.id !== "linje") i.value = "";
-  });
-
-  alert("Ny kontroll startet");
 }
 
 </script>
