@@ -4,23 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v2.1</title>
+<title>Linjekontroll v3</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 body{font-family:Arial;max-width:700px;margin:auto;padding:15px;}
-label{font-weight:bold;display:block;margin-top:10px;}
-input,select,textarea{width:100%;padding:10px;margin-top:4px;}
-button{margin-top:10px;padding:16px;width:100%;border:none;font-size:16px;}
+h3{margin-top:20px;}
 
-.mastok{
-    background:darkgreen;
+button{
+    width:100%;
+    padding:14px;
+    margin-top:5px;
+    font-size:16px;
+    border:none;
+}
+
+/* Kontrollpunkt */
+.punkt{
+    background:#ddd;
+}
+
+/* Avvik */
+.avvik{
+    background:#eee;
+}
+
+/* Registrert avvik */
+.registrert{
+    background:red;
     color:white;
 }
 
-.standard{
-    background:green;
+/* Mast OK */
+.ok{
+    background:darkgreen;
     color:white;
 }
 </style>
@@ -39,177 +57,92 @@ button{margin-top:10px;padding:16px;width:100%;border:none;font-size:16px;}
 <label>Mastnr</label>
 <input id="mast">
 
-<button class="standard" onclick="nyMast()">Ny mast</button>
-
-<button class="mastok" onclick="mastOK()">✔ Mast OK</button>
+<button class="ok" onclick="mastOK()">✔ Mast OK</button>
 
 <hr>
 
-<h2>Kontrollpunkt</h2>
+<div id="container"></div>
 
-<label>Kontrollpunkt</label>
-<select id="punkt">
-<option value="">Velg</option>
-<option>Barduner</option>
-<option>Toppline</option>
-<option>Jordinger</option>
-<option>Merking</option>
-<option>Stolper</option>
-<option>Topphatte</option>
-<option>Bendsling</option>
-<option>Skjev mast</option>
-</select>
-
-<label>Avvik</label>
-<select id="avvik" onchange="visAvvik()">
-<option value="">Velg</option>
-<option>Brudd</option>
-<option>Rust</option>
-<option>Slakk</option>
-<option>Løs</option>
-<option>Mangler</option>
-<option>Råte</option>
-<option>Skjev</option>
-</select>
-
-<div id="bildeDiv" style="display:none;">
-<button class="standard" onclick="taBilde()">📷 Ta bilde</button>
-<input type="file" id="kamera" accept="image/*" capture="environment" style="display:none">
-</div>
-
-<div id="merknadDiv" style="display:none;">
-<label>Merknad</label>
-<textarea id="merknad"></textarea>
-</div>
-
-<button class="standard" onclick="leggTil()">Legg til avvik</button>
-
-<hr>
-
-<button class="standard" onclick="lagreMast()">Lagre mast</button>
-<button class="standard" onclick="lastNed()">Last ned Excel</button>
+<button onclick="lastNed()">Last ned Excel</button>
 
 <script>
 
-let avvikListe=[];
 let alleData=[];
 
-/* Mast OK – hovedfunksjon */
-function mastOK(){
+/* Definisjon av kontrollpunkter */
+let punkter = {
+    "Barduner": ["Brudd","Rust","Løs"],
+    "Toppline": ["Slakk","Korrosjon"],
+    "Jording": ["Brudd","Løs"],
+    "Merking": ["Mangler","Utydelig"]
+};
 
-let netteier=netteierEl.value;
-let linje=linjeEl.value;
-let mast=mastEl.value;
+/* Bygg UI */
+let container=document.getElementById("container");
 
-if(!mast){
-    alert("Mangler mastnr");
-    return;
-}
+Object.keys(punkter).forEach(punkt=>{
+
+    let div=document.createElement("div");
+
+    let pBtn=document.createElement("button");
+    pBtn.innerText=punkt;
+    pBtn.className="punkt";
+
+    div.appendChild(pBtn);
+
+    punkter[punkt].forEach(avvik=>{
+
+        let btn=document.createElement("button");
+        btn.innerText=avvik;
+        btn.className="avvik";
+
+        btn.onclick=function(){
+            registrer(punkt,avvik,btn,pBtn);
+        }
+
+        div.appendChild(btn);
+    });
+
+    /* bilde + merknad */
+    let textarea=document.createElement("textarea");
+    textarea.placeholder="Merknad";
+
+    let bildeBtn=document.createElement("button");
+    bildeBtn.innerText="📷 Ta bilde";
+
+    div.appendChild(bildeBtn);
+    div.appendChild(textarea);
+
+    container.appendChild(div);
+});
+
+/* Registrer */
+function registrer(punkt,avvik,btn,pBtn){
+
+btn.classList.add("registrert");
+pBtn.classList.add("registrert");
 
 alleData.push({
-    netteier:netteier,
-    linje:linje,
-    mast:mast,
-    punkt:"Mast OK",
-    avvik:"Ingen",
-    merknad:""
-});
-
-avvikListe=[];
-mastEl.value="";
-
-alert("Mast OK lagret");
-}
-
-/* Vis/skjul bilde og merknad */
-function visAvvik(){
-
-let valg=avvikEl.value;
-
-if(valg===""){
-    bildeDiv.style.display="none";
-    merknadDiv.style.display="none";
-}else{
-    bildeDiv.style.display="block";
-    merknadDiv.style.display="block";
-}
-}
-
-/* Kamera */
-function taBilde(){
-kamera.click();
-}
-
-/* Legg til avvik */
-function leggTil(){
-
-let punkt=punktEl.value;
-let avvik=avvikEl.value;
-let merknad=merknadEl.value;
-
-if(!punkt||!avvik){
-    alert("Velg kontrollpunkt og avvik");
-    return;
-}
-
-avvikListe.push({
+    netteier:netteier.value,
+    linje:linje.value,
+    mast:mast.value,
     punkt:punkt,
-    avvik:avvik,
-    merknad:merknad
+    avvik:avvik
+});
+}
+
+/* Mast OK */
+function mastOK(){
+
+alleData.push({
+    netteier:netteier.value,
+    linje:linje.value,
+    mast:mast.value,
+    punkt:"Mast OK",
+    avvik:"Ingen"
 });
 
-avvikEl.value="";
-merknadEl.value="";
-bildeDiv.style.display="none";
-merknadDiv.style.display="none";
-
-}
-
-/* Lagre mast */
-function lagreMast(){
-
-let netteier=netteierEl.value;
-let linje=linjeEl.value;
-let mast=mastEl.value;
-
-if(!mast){
-    alert("Mangler mastnr");
-    return;
-}
-
-/* Kun Mast OK hvis ingen avvik */
-if(avvikListe.length===0){
-    alleData.push({
-        netteier:netteier,
-        linje:linje,
-        mast:mast,
-        punkt:"Mast OK",
-        avvik:"Ingen",
-        merknad:""
-    });
-}else{
-    avvikListe.forEach(a=>{
-        alleData.push({
-            netteier:netteier,
-            linje:linje,
-            mast:mast,
-            punkt:a.punkt,
-            avvik:a.avvik,
-            merknad:a.merknad
-        });
-    });
-}
-
-avvikListe=[];
-mastEl.value="";
-
-alert("Mast lagret");
-}
-
-/* Ny mast */
-function nyMast(){
-avvikListe=[];
-mastEl.value="";
+mast.value="";
 }
 
 /* Excel */
@@ -218,22 +151,10 @@ function lastNed(){
 let wb=XLSX.utils.book_new();
 let ws=XLSX.utils.json_to_sheet(alleData);
 
-XLSX.utils.book_append_sheet(wb,ws,"Kontroll");
+XLSX.utils.book_append_sheet(wb,ws,"Data");
 
-let navn=linjeEl.value||"Linjekontroll";
-XLSX.writeFile(wb,navn+".xlsx");
+XLSX.writeFile(wb,"linjekontroll.xlsx");
 }
-
-/* Element referanser */
-let netteierEl=document.getElementById("netteier");
-let linjeEl=document.getElementById("linje");
-let mastEl=document.getElementById("mast");
-let punktEl=document.getElementById("punkt");
-let avvikEl=document.getElementById("avvik");
-let merknadEl=document.getElementById("merknad");
-let bildeDiv=document.getElementById("bildeDiv");
-let merknadDiv=document.getElementById("merknadDiv");
-let kamera=document.getElementById("kamera");
 
 </script>
 
