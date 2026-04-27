@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v2.23</title>
+<title>Linjekontroll v2.24</title>
 
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
@@ -15,15 +15,24 @@
 <style>
 body {
   font-family: Arial;
-  max-width: 700px;
+  max-width: 500px;
   margin: auto;
   padding: 10px;
 }
 
 input, textarea {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin-top: 5px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 6px;
+  border: none;
+  font-size: 16px;
+  border-radius: 6px;
 }
 
 /* Kontrollpunkt */
@@ -31,13 +40,8 @@ input, textarea {
   background: #2e7d32;
   color: white;
   text-align: left;
-  padding: 14px;
-  margin-top: 6px;
-  border: none;
-  font-size: 16px;
 }
 
-/* Kontrollpunkt brukt */
 .kp.red {
   background: red;
 }
@@ -47,9 +51,6 @@ input, textarea {
   background: #e0e0e0;
   color: black;
   text-align: left;
-  padding: 12px;
-  margin-top: 3px;
-  border: none;
 }
 
 /* Mast OK */
@@ -57,19 +58,18 @@ input, textarea {
   background: #4CAF50;
   color: white;
   font-weight: bold;
-  padding: 14px;
-  margin-top: 10px;
 }
 
-.section {
-  margin-bottom: 10px;
+.topbtn {
+  background: #1976d2;
+  color: white;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Linjekontroll v2.23</h2>
+<h3>Linjekontroll v2.24</h3>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -81,6 +81,8 @@ input, textarea {
 <input id="mast">
 
 <div id="gps"></div>
+
+<button class="topbtn" onclick="nyMast()">Ny mast</button>
 
 <button class="mastok" onclick="mastOK()">Ingen synlige avvik - Mast OK</button>
 
@@ -122,7 +124,6 @@ function byggListe(){
   kontrollpunkter.forEach((kp,i)=>{
 
     let div = document.createElement("div");
-    div.className = "section";
 
     div.innerHTML = `
       <button class="kp" id="kp_${i}" onclick="toggle(${i})">${kp.navn}</button>
@@ -161,12 +162,14 @@ function registrer(i,avvik){
     kontrollpunkt: kontrollpunkter[i].navn,
     avvik: avvik
   });
+
+  autosave();
 }
 
 function mastOK(){
 
   mastOKvalgt = true;
-  data = []; // fjerner avvik
+  data = [];
 
   data.push({
     netteier: netteier.value,
@@ -175,10 +178,30 @@ function mastOK(){
     kontrollpunkt: "Mast OK",
     avvik: "Ingen"
   });
+
+  autosave();
+}
+
+function nyMast(){
+
+  document.getElementById("mast").value = "";
+
+  data = [];
+  mastOKvalgt = false;
+
+  // reset knapper
+  document.querySelectorAll(".kp").forEach(b => b.classList.remove("red"));
+  document.querySelectorAll("[id^=under_]").forEach(d => d.style.display="none");
+
 }
 
 function lagre(){
+  autosave();
   alert("Lagret");
+}
+
+function autosave(){
+  localStorage.setItem("linjekontroll", JSON.stringify(data));
 }
 
 function lastExcel(){
