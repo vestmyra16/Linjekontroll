@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v2.24</title>
+<title>Linjekontroll v2.24 PRO</title>
 
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
@@ -13,63 +13,30 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body {
-  font-family: Arial;
-  max-width: 500px;
-  margin: auto;
-  padding: 10px;
+body {font-family: Arial; max-width: 500px; margin:auto; padding:10px;}
+input {width:100%; padding:10px; margin:5px 0;}
+
+.btn {
+  width:100%;
+  padding:14px;
+  margin:6px 0;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  text-align:left;
 }
 
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  margin-top: 5px;
-}
+.gronn {background:#2e7d32; color:white;}
+.rod {background:#c62828; color:white;}
+.graa {background:#ddd; color:black;}
 
-button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 6px;
-  border: none;
-  font-size: 16px;
-  border-radius: 6px;
-}
-
-/* Kontrollpunkt */
-.kp {
-  background: #2e7d32;
-  color: white;
-  text-align: left;
-}
-
-.kp.red {
-  background: red;
-}
-
-/* Avvik */
-.avvikBtn {
-  background: #e0e0e0;
-  color: black;
-  text-align: left;
-}
-
-/* Mast OK */
-.mastok {
-  background: #4CAF50;
-  color: white;
-  font-weight: bold;
-}
-
-.topbtn {
-  background: #1976d2;
-  color: white;
-}
+.skult {display:none;}
 </style>
 </head>
 
 <body>
 
-<h3>Linjekontroll v2.24</h3>
+<h2>Linjekontroll v2.24 PRO</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -82,149 +49,163 @@ button {
 
 <div id="gps"></div>
 
-<button class="topbtn" onclick="nyMast()">Ny mast</button>
+<button class="btn gronn" onclick="nyMast()">Ny mast</button>
 
-<button class="mastok" onclick="mastOK()">Ingen synlige avvik - Mast OK</button>
+<button class="btn gronn" onclick="mastOK()" id="mastok">
+Ingen synlige avvik - Mast OK
+</button>
 
-<div id="kontrollListe"></div>
+<div id="kontrollpunkter"></div>
 
-<button onclick="lagre()">Lagre</button>
-<button onclick="lastExcel()">Last ned Excel</button>
+<button class="btn gronn" onclick="lagre()">Lagre</button>
+<button class="btn gronn" onclick="excel()">Last ned Excel</button>
+
+<input type="file" id="kamera" accept="image/*" capture="environment" class="skult">
 
 <script>
 
+// DATA
 let data = [];
-let mastOKvalgt = false;
+let aktiv = {};
+let bilder = {};
 
-const kontrollpunkter = [
-  {navn:"Skjev mast/fundament", avvik:["Skjev","Setning","Fundament feil"]},
-  {navn:"Barduner", avvik:["Slakk","Brudd","Rust"]},
-  {navn:"Stolper", avvik:["Råte","Sprekk"]},
-  {navn:"Stålmast", avvik:["Korrosjon","Skade"]},
-  {navn:"Topphette", avvik:["Mangler","Skade"]},
-  {navn:"Traversfeste", avvik:["Løs","Skade"]},
-  {navn:"Travers", avvik:["Skjev","Skade"]},
-  {navn:"Isolatorfeste", avvik:["Løs","Skade"]},
-  {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
-  {navn:"Bendsling, heng, avspenning", avvik:["Løs","Brudd"]},
-  {navn:"Liner", avvik:["Kordelbrudd","Korrosjon"]},
-  {navn:"Strekking", avvik:["Skjev"]},
-  {navn:"Skjøter/klemmer", avvik:["Korrosjon","Brudd"]},
-  {navn:"Topp/jordline og beslag", avvik:["Slakk","Skade"]},
-  {navn:"Jordinger", avvik:["Løs","Brudd"]},
-  {navn:"Trasé", avvik:["Skog","Kratt"]},
-  {navn:"Merking", avvik:["Mangler","Defekt"]}
-];
-
-function byggListe(){
-
-  let container = document.getElementById("kontrollListe");
-  container.innerHTML = "";
-
-  kontrollpunkter.forEach((kp,i)=>{
-
-    let div = document.createElement("div");
-
-    div.innerHTML = `
-      <button class="kp" id="kp_${i}" onclick="toggle(${i})">${kp.navn}</button>
-
-      <div id="under_${i}" style="display:none">
-
-        ${kp.avvik.map(a =>
-          `<button class="avvikBtn" onclick="registrer(${i}, '${a}')">${a}</button>`
-        ).join("")}
-
-        <button onclick="taBilde()">📷 Ta bilde</button>
-        <textarea placeholder="Merknad"></textarea>
-
-      </div>
-    `;
-
-    container.appendChild(div);
-  });
-}
-
-function toggle(i){
-  let el = document.getElementById("under_" + i);
-  el.style.display = el.style.display === "none" ? "block" : "none";
-}
-
-function registrer(i,avvik){
-
-  mastOKvalgt = false;
-
-  document.getElementById("kp_" + i).classList.add("red");
-
-  data.push({
-    netteier: netteier.value,
-    linje: linje.value,
-    mast: mast.value,
-    kontrollpunkt: kontrollpunkter[i].navn,
-    avvik: avvik
-  });
-
-  autosave();
-}
-
-function mastOK(){
-
-  mastOKvalgt = true;
-  data = [];
-
-  data.push({
-    netteier: netteier.value,
-    linje: linje.value,
-    mast: mast.value,
-    kontrollpunkt: "Mast OK",
-    avvik: "Ingen"
-  });
-
-  autosave();
-}
-
-function nyMast(){
-
-  document.getElementById("mast").value = "";
-
-  data = [];
-  mastOKvalgt = false;
-
-  // reset knapper
-  document.querySelectorAll(".kp").forEach(b => b.classList.remove("red"));
-  document.querySelectorAll("[id^=under_]").forEach(d => d.style.display="none");
-
-}
-
-function lagre(){
-  autosave();
-  alert("Lagret");
-}
-
-function autosave(){
-  localStorage.setItem("linjekontroll", JSON.stringify(data));
-}
-
-function lastExcel(){
-
-  let exportData = mastOKvalgt ? data.filter(d => d.kontrollpunkt === "Mast OK") : data;
-
-  let ws = XLSX.utils.json_to_sheet(exportData);
-  let wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Kontroll");
-
-  XLSX.writeFile(wb, linje.value + "_" + mast.value + ".xlsx");
-}
-
-function taBilde(){
-  alert("Ta bilde med mobilkamera og lagre med mastnr");
-}
-
+// GPS
 navigator.geolocation.getCurrentPosition(pos=>{
-  document.getElementById("gps").innerHTML =
-    "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
+ document.getElementById("gps").innerText =
+ "GPS: "+pos.coords.latitude.toFixed(5)+", "+pos.coords.longitude.toFixed(5);
 });
 
-byggListe();
+// KONTROLLPUNKT
+const punkter = {
+"Skjev mast/fundament":["Skjev","Setning","Fundament feil"],
+"Barduner":["Slakk","Brudd","Rust"],
+"Stolper":["Råte","Sprekk"],
+"Stålmast":[],
+"Topphette":[],
+"Traversfeste":[],
+"Travers":[],
+"Isolatorfeste":[],
+"Isolator":["Knust","Krypestrøm"],
+"Bendsling, heng, avspenning":["Løs","Brudd"],
+"Liner":["Kordelbrudd","Korrosjon"],
+"Strekking":["Skjev"],
+"Skjøter/klemmer":["Korrosjon","Brudd"],
+"Topp/jordline og beslag":[],
+"Jordinger":["Løs","Brudd"],
+"Trasé":["Skog","Kratt"],
+"Merking":["HS mangler","Mnr mangler"]
+};
+
+// BYGG UI
+const container = document.getElementById("kontrollpunkter");
+
+for(let p in punkter){
+ let btn = document.createElement("button");
+ btn.className="btn gronn";
+ btn.innerText=p;
+ btn.onclick=()=>vis(p,btn);
+ container.appendChild(btn);
+
+ let div=document.createElement("div");
+ div.id="div_"+p;
+ div.className="skult";
+
+ punkter[p].forEach(a=>{
+   let b=document.createElement("button");
+   b.className="btn graa";
+   b.innerText=a;
+   b.onclick=()=>{
+     b.classList.toggle("rod");
+     registrer(p,a);
+     btn.classList.add("rod");
+   };
+   div.appendChild(b);
+ });
+
+ let cam=document.createElement("button");
+ cam.className="btn graa";
+ cam.innerText="📷 Ta bilde";
+ cam.onclick=()=>kamera(p);
+ div.appendChild(cam);
+
+ let merknad=document.createElement("input");
+ merknad.placeholder="Merknad";
+ merknad.onchange=()=>registrer(p,"Merknad: "+merknad.value);
+ div.appendChild(merknad);
+
+ container.appendChild(div);
+}
+
+// VIS/HIDE
+function vis(p){
+ let d=document.getElementById("div_"+p);
+ d.classList.toggle("skult");
+}
+
+// REGISTRER
+function registrer(p,a){
+ data.push({
+  netteier:netteier.value,
+  linje:linje.value,
+  mast:mast.value,
+  punkt:p,
+  avvik:a,
+  bilde:bilder[p]||""
+ });
+}
+
+// MAST OK
+function mastOK(){
+ data.push({
+  netteier:netteier.value,
+  linje:linje.value,
+  mast:mast.value,
+  punkt:"Mast OK",
+  avvik:"Ingen",
+  bilde:""
+ });
+ alert("Mast OK registrert");
+}
+
+// KAMERA
+function kamera(p){
+ aktiv.punkt=p;
+ document.getElementById("kamera").click();
+}
+
+document.getElementById("kamera").addEventListener("change", e=>{
+ let file=e.target.files[0];
+ let reader=new FileReader();
+ reader.onload=ev=>{
+   bilder[aktiv.punkt]=ev.target.result;
+   alert("Bilde lagret");
+ };
+ reader.readAsDataURL(file);
+});
+
+// NY MAST
+function nyMast(){
+ mast.value="";
+ data=[];
+ bilder={};
+
+ document.querySelectorAll(".rod").forEach(e=>e.classList.remove("rod"));
+ document.querySelectorAll(".skult").forEach(e=>e.classList.add("skult"));
+}
+
+// LAGRE
+function lagre(){
+ localStorage.setItem("linjeData",JSON.stringify(data));
+ alert("Lagret ✔");
+}
+
+// EXCEL
+function excel(){
+ let ws=XLSX.utils.json_to_sheet(data);
+ let wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"Rapport");
+ XLSX.writeFile(wb,"Linjekontroll.xlsx");
+}
 
 </script>
 
