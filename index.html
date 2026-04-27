@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v2.24 PRO</title>
+<title>Linjekontroll v2.25</title>
 
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
@@ -32,59 +33,57 @@ input {width:100%; padding:10px; margin:5px 0;}
 
 .skult {display:none;}
 </style>
+
 </head>
 
 <body>
 
-<h2>Linjekontroll v2.24 PRO</h2>
+<h2>Linjekontroll v2.25</h2>
 
-<label>Netteier</label>
-<input id="netteier">
+<label>Netteier</label> <input id="netteier">
 
-<label>LinjeID</label>
-<input id="linje">
+<label>LinjeID</label> <input id="linje">
 
-<label>Mast nr</label>
-<input id="mast">
+<label>Mast nr</label> <input id="mast">
 
 <div id="gps"></div>
 
 <button class="btn gronn" onclick="nyMast()">Ny mast</button>
 
-<button class="btn gronn" onclick="mastOK()" id="mastok">
+<button class="btn gronn" onclick="mastOK()">
 Ingen synlige avvik - Mast OK
 </button>
 
 <div id="kontrollpunkter"></div>
 
-<button class="btn gronn" onclick="lagre()">Lagre</button>
-<button class="btn gronn" onclick="excel()">Last ned Excel</button>
+<button class="btn gronn" onclick="lagre()">Lagre</button> <button class="btn gronn" onclick="excel()">Last ned Excel</button>
 
 <input type="file" id="kamera" accept="image/*" capture="environment" class="skult">
 
 <script>
 
-// DATA
 let data = [];
-let aktiv = {};
 let bilder = {};
+let aktiv = {};
 
-// GPS
 navigator.geolocation.getCurrentPosition(pos=>{
  document.getElementById("gps").innerText =
  "GPS: "+pos.coords.latitude.toFixed(5)+", "+pos.coords.longitude.toFixed(5);
 });
 
-// KONTROLLPUNKT
 const punkter = {
+
 "Skjev mast/fundament":["Skjev","Setning","Fundament feil"],
 "Barduner":["Slakk","Brudd","Rust"],
 "Stolper":["Råte","Sprekk"],
-"Stålmast":[],
-"Topphette":[],
-"Traversfeste":[],
-"Travers":[],
-"Isolatorfeste":[],
+
+"Stålmast":["Fundamentfeil","Rust"],
+"Topphette":["Mangler","Defekt"],
+"Traversfeste":["Sprukket","Defekt"],
+"Travers":["Skade","Mosegrodd"],
+"Isolatorfeste":["Slitasje","Rust"],
+"Toppline":["Korrodert"],
+
 "Isolator":["Knust","Krypestrøm"],
 "Bendsling, heng, avspenning":["Løs","Brudd"],
 "Liner":["Kordelbrudd","Korrosjon"],
@@ -94,16 +93,17 @@ const punkter = {
 "Jordinger":["Løs","Brudd"],
 "Trasé":["Skog","Kratt"],
 "Merking":["HS mangler","Mnr mangler"]
+
 };
 
-// BYGG UI
 const container = document.getElementById("kontrollpunkter");
 
 for(let p in punkter){
+
  let btn = document.createElement("button");
  btn.className="btn gronn";
  btn.innerText=p;
- btn.onclick=()=>vis(p,btn);
+ btn.onclick=()=>toggle(p,btn);
  container.appendChild(btn);
 
  let div=document.createElement("div");
@@ -114,11 +114,13 @@ for(let p in punkter){
    let b=document.createElement("button");
    b.className="btn graa";
    b.innerText=a;
+
    b.onclick=()=>{
      b.classList.toggle("rod");
      registrer(p,a);
      btn.classList.add("rod");
    };
+
    div.appendChild(b);
  });
 
@@ -136,13 +138,10 @@ for(let p in punkter){
  container.appendChild(div);
 }
 
-// VIS/HIDE
-function vis(p){
- let d=document.getElementById("div_"+p);
- d.classList.toggle("skult");
+function toggle(p){
+ document.getElementById("div_"+p).classList.toggle("skult");
 }
 
-// REGISTRER
 function registrer(p,a){
  data.push({
   netteier:netteier.value,
@@ -154,7 +153,6 @@ function registrer(p,a){
  });
 }
 
-// MAST OK
 function mastOK(){
  data.push({
   netteier:netteier.value,
@@ -167,7 +165,6 @@ function mastOK(){
  alert("Mast OK registrert");
 }
 
-// KAMERA
 function kamera(p){
  aktiv.punkt=p;
  document.getElementById("kamera").click();
@@ -176,14 +173,15 @@ function kamera(p){
 document.getElementById("kamera").addEventListener("change", e=>{
  let file=e.target.files[0];
  let reader=new FileReader();
+
  reader.onload=ev=>{
    bilder[aktiv.punkt]=ev.target.result;
-   alert("Bilde lagret");
+   alert("Bilde lagret ✔");
  };
+
  reader.readAsDataURL(file);
 });
 
-// NY MAST
 function nyMast(){
  mast.value="";
  data=[];
@@ -193,13 +191,11 @@ function nyMast(){
  document.querySelectorAll(".skult").forEach(e=>e.classList.add("skult"));
 }
 
-// LAGRE
 function lagre(){
  localStorage.setItem("linjeData",JSON.stringify(data));
  alert("Lagret ✔");
 }
 
-// EXCEL
 function excel(){
  let ws=XLSX.utils.json_to_sheet(data);
  let wb=XLSX.utils.book_new();
