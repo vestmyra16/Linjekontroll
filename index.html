@@ -3,157 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Linjekontroll v3</title>
+<title>Linjekontroll v2.21</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body{font-family:Arial;max-width:700px;margin:auto;padding:15px;}
-h3{margin-top:20px;}
+body { font-family: Arial; max-width:700px; margin:auto; padding:15px; }
+label { font-weight:bold; display:block; margin-top:10px; }
+input, textarea { width:100%; padding:10px; margin-top:5px; }
 
-button{
-    width:100%;
-    padding:14px;
-    margin-top:5px;
-    font-size:16px;
-    border:none;
+button {
+  width:100%;
+  padding:14px;
+  margin-top:8px;
+  font-size:18px;
+  border:none;
+  border-radius:6px;
+  background:green;
+  color:white;
 }
 
-/* Kontrollpunkt */
-.punkt{
-    background:#ddd;
+.okBtn {
+  background:green;
 }
 
-/* Avvik */
-.avvik{
-    background:#eee;
-}
-
-/* Registrert avvik */
-.registrert{
-    background:red;
-    color:white;
-}
-
-/* Mast OK */
-.ok{
-    background:darkgreen;
-    color:white;
+.hidden {
+  display:none;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Grunnlagsdata</h2>
+<h2>Linjekontroll v2.21</h2>
 
 <label>Netteier</label>
 <input id="netteier">
 
-<label>Linje</label>
+<label>LinjeID</label>
 <input id="linje">
 
-<label>Mastnr</label>
+<label>Mast nr</label>
 <input id="mast">
 
-<button class="ok" onclick="mastOK()">✔ Mast OK</button>
+<p id="gps"></p>
 
-<hr>
+<button id="mastOKbtn" class="okBtn" onclick="mastOK()">Mast OK</button>
 
-<div id="container"></div>
+<button onclick="registrerAvvik('Skjev mast')">Skjev mast</button>
+<button onclick="registrerAvvik('Barduner')">Barduner</button>
+<button onclick="registrerAvvik('Stolper')">Stolper</button>
+<button onclick="registrerAvvik('Stålmast')">Stålmast</button>
+<button onclick="registrerAvvik('Topphette')">Topphette</button>
+<button onclick="registrerAvvik('Traversfeste')">Traversfeste</button>
+<button onclick="registrerAvvik('Travers')">Travers</button>
+<button onclick="registrerAvvik('Isolatorfeste')">Isolatorfeste</button>
+<button onclick="registrerAvvik('Isolator')">Isolator</button>
+<button onclick="registrerAvvik('Bendsling')">Bendsling</button>
 
+<div id="bildeContainer">
+<button onclick="taBilde()">📷 Ta bilde</button>
+<input type="file" id="kamera" accept="image/*" capture="environment" class="hidden">
+</div>
+
+<div id="merknadContainer">
+<label>Merknad</label>
+<textarea id="merknad"></textarea>
+</div>
+
+<button onclick="lagre()">Lagre</button>
 <button onclick="lastNed()">Last ned Excel</button>
 
 <script>
 
-let alleData=[];
+let alleData = [];
+let harAvvik = false;
 
-/* Definisjon av kontrollpunkter */
-let punkter = {
-    "Barduner": ["Brudd","Rust","Løs"],
-    "Toppline": ["Slakk","Korrosjon"],
-    "Jording": ["Brudd","Løs"],
-    "Merking": ["Mangler","Utydelig"]
-};
-
-/* Bygg UI */
-let container=document.getElementById("container");
-
-Object.keys(punkter).forEach(punkt=>{
-
-    let div=document.createElement("div");
-
-    let pBtn=document.createElement("button");
-    pBtn.innerText=punkt;
-    pBtn.className="punkt";
-
-    div.appendChild(pBtn);
-
-    punkter[punkt].forEach(avvik=>{
-
-        let btn=document.createElement("button");
-        btn.innerText=avvik;
-        btn.className="avvik";
-
-        btn.onclick=function(){
-            registrer(punkt,avvik,btn,pBtn);
-        }
-
-        div.appendChild(btn);
-    });
-
-    /* bilde + merknad */
-    let textarea=document.createElement("textarea");
-    textarea.placeholder="Merknad";
-
-    let bildeBtn=document.createElement("button");
-    bildeBtn.innerText="📷 Ta bilde";
-
-    div.appendChild(bildeBtn);
-    div.appendChild(textarea);
-
-    container.appendChild(div);
-});
-
-/* Registrer */
-function registrer(punkt,avvik,btn,pBtn){
-
-btn.classList.add("registrert");
-pBtn.classList.add("registrert");
-
-alleData.push({
-    netteier:netteier.value,
-    linje:linje.value,
-    mast:mast.value,
-    punkt:punkt,
-    avvik:avvik
-});
+/* GPS */
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(pos=>{
+    document.getElementById("gps").innerText =
+      "GPS: " + pos.coords.latitude.toFixed(5) + ", " + pos.coords.longitude.toFixed(5);
+  });
 }
 
 /* Mast OK */
 function mastOK(){
 
-alleData.push({
-    netteier:netteier.value,
-    linje:linje.value,
-    mast:mast.value,
-    punkt:"Mast OK",
-    avvik:"Ingen"
-});
+  if(harAvvik){
+    alert("Mast har avvik – Mast OK kan ikke brukes");
+    return;
+  }
 
-mast.value="";
+  alleData.push({
+    netteier: netteier.value,
+    linje: linje.value,
+    mast: mast.value,
+    punkt: "Mast OK",
+    avvik: "Ingen",
+    merknad: ""
+  });
+
+  document.getElementById("bildeContainer").style.display = "none";
+  document.getElementById("merknadContainer").style.display = "none";
+
+  alert("Mast registrert som OK");
+}
+
+/* Avvik */
+function registrerAvvik(punkt){
+
+  harAvvik = true;
+
+  document.getElementById("mastOKbtn").style.display = "none";
+
+  alleData.push({
+    netteier: netteier.value,
+    linje: linje.value,
+    mast: mast.value,
+    punkt: punkt,
+    avvik: "Registrert",
+    merknad: document.getElementById("merknad").value
+  });
+}
+
+/* Kamera */
+function taBilde(){
+  document.getElementById("kamera").click();
+}
+
+/* Lagre */
+function lagre(){
+
+  mast.value="";
+  document.getElementById("merknad").value="";
+
+  document.getElementById("mastOKbtn").style.display = "block";
+  document.getElementById("bildeContainer").style.display = "block";
+  document.getElementById("merknadContainer").style.display = "block";
+
+  harAvvik = false;
 }
 
 /* Excel */
 function lastNed(){
 
-let wb=XLSX.utils.book_new();
-let ws=XLSX.utils.json_to_sheet(alleData);
+  let wb = XLSX.utils.book_new();
+  let ws = XLSX.utils.json_to_sheet(alleData);
 
-XLSX.utils.book_append_sheet(wb,ws,"Data");
+  XLSX.utils.book_append_sheet(wb, ws, "Data");
 
-XLSX.writeFile(wb,"linjekontroll.xlsx");
+  let filnavn = linje.value ? linje.value + "_linjekontroll.xlsx" : "linjekontroll.xlsx";
+
+  XLSX.writeFile(wb, filnavn);
 }
 
 </script>
