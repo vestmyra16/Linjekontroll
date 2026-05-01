@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Linjekontroll v10</title>
+<title>Linjekontroll v11</title>
 
 <style>
 body {
@@ -13,60 +13,73 @@ body {
 }
 
 .container {
-    max-width:500px;
+    max-width:520px;
     margin:auto;
-    padding:10px;
+    padding:12px;
 }
 
-h2 {
-    text-align:center;
-}
-
+/* INPUT */
 input {
     width:100%;
-    padding:10px;
-    margin:5px 0;
-    font-size:16px;
+    padding:14px;
+    margin:6px 0;
+    font-size:18px;
 }
 
-.knapp {
+/* KONTROLLPUNKT */
+.kontroll {
     width:100%;
-    padding:16px;
-    margin:6px 0;
+    padding:18px;
+    margin:8px 0;
+    border:none;
+    border-radius:12px;
+    background:#2e7d32;
+    color:white;
+    font-size:18px;
+}
+
+/* AVVIK */
+.avvik button {
+    width:100%;
+    padding:14px;
+    margin:4px 0;
     border:none;
     border-radius:10px;
     background:#e0e0e0;
     font-size:16px;
 }
 
-.knapp.rød {
-    background:#d32f2f;
-    color:white;
-}
-
-.knapp.grønn {
-    background:#2e7d32;
-    color:white;
-}
-
-.valg {
-    display:none;
-    margin-bottom:10px;
-}
-
-.valg button {
+/* KAMERA */
+.kamera {
     width:100%;
-    padding:12px;
-    margin:3px 0;
+    padding:16px;
+    margin-top:6px;
     border:none;
-    border-radius:8px;
-    background:#f0f0f0;
+    border-radius:10px;
+    background:#43a047;
+    color:white;
+    font-size:18px;
 }
 
+/* MERKNAD */
 textarea {
     width:100%;
-    padding:8px;
-    margin-top:5px;
+    padding:12px;
+    margin-top:6px;
+    font-size:16px;
+}
+
+.hidden { display:none; }
+
+.mastok {
+    background:#66bb6a;
+    color:white;
+    font-size:18px;
+    padding:16px;
+    border:none;
+    border-radius:12px;
+    width:100%;
+    margin:8px 0;
 }
 
 </style>
@@ -76,22 +89,24 @@ textarea {
 
 <div class="container">
 
-<h2>Linjekontroll v10</h2>
+<h2 style="text-align:center;">Linjekontroll v11</h2>
 
-<input placeholder="Netteier" id="netteier">
-<input placeholder="LinjeID" id="linje">
-<input placeholder="Mast nr" id="mast">
+<input placeholder="Netteier">
+<input placeholder="LinjeID">
+<input placeholder="Mast nr">
 
-<button id="mastok" class="knapp" onclick="mastOK()">✔ Mast OK</button>
+<button id="mastok" class="mastok" onclick="mastOK()">✔ Mast OK</button>
 
-<div id="punkter"></div>
+<div id="liste"></div>
 
-<button class="knapp" onclick="lagre()">Lagre mast</button>
-<button class="knapp" onclick="nyMast()">Ny mast</button>
+<button class="kontroll" onclick="lagre()">Lagre mast</button>
+<button class="kontroll" onclick="nyMast()">Ny mast</button>
 
 </div>
 
 <script>
+
+const data = {};
 
 const kontrollpunkter = {
 "Skjev mast/fundament":["Skjev"],
@@ -113,68 +128,69 @@ const kontrollpunkter = {
 "Merking":["Hinderlys","HS mangler","Mnr mangler","Farvannskilt"]
 };
 
-const container = document.getElementById("punkter");
+const container = document.getElementById("liste");
 
 Object.keys(kontrollpunkter).forEach(navn => {
 
     let wrapper = document.createElement("div");
 
     let knapp = document.createElement("button");
-    knapp.className = "knapp";
+    knapp.className = "kontroll";
     knapp.innerText = navn;
 
-    let valgDiv = document.createElement("div");
-    valgDiv.className = "valg";
+    let avvikDiv = document.createElement("div");
+    avvikDiv.className = "avvik hidden";
 
     kontrollpunkter[navn].forEach(avvik => {
         let b = document.createElement("button");
         b.innerText = avvik;
 
         b.onclick = () => {
-            knapp.classList.add("rød");   // 🔴 HER skjer riktig farging
-            valgtData[navn] = avvik;
-            valgDiv.style.display = "none";
+            knapp.style.background = "#c62828"; // 🔴 kontrollpunkt blir rødt
+            data[navn] = avvik;
+            avvikDiv.classList.add("hidden");
         };
 
-        valgDiv.appendChild(b);
+        avvikDiv.appendChild(b);
     });
+
+    let kamera = document.createElement("input");
+    kamera.type = "file";
+    kamera.accept = "image/*";
+    kamera.capture = "environment";
+    kamera.className = "kamera hidden";
 
     let merknad = document.createElement("textarea");
     merknad.placeholder = "Merknad";
-    merknad.oninput = () => {
-        valgtMerknad[navn] = merknad.value;
-    };
+    merknad.classList.add("hidden");
 
     knapp.onclick = () => {
-        valgDiv.style.display =
-            valgDiv.style.display === "block" ? "none" : "block";
+        avvikDiv.classList.toggle("hidden");
+        kamera.classList.toggle("hidden");
+        merknad.classList.toggle("hidden");
     };
 
     wrapper.appendChild(knapp);
-    wrapper.appendChild(valgDiv);
+    wrapper.appendChild(avvikDiv);
+    wrapper.appendChild(kamera);
     wrapper.appendChild(merknad);
 
     container.appendChild(wrapper);
 });
 
-let valgtData = {};
-let valgtMerknad = {};
-
 function mastOK(){
-    document.getElementById("mastok").classList.add("grønn");
+    document.getElementById("mastok").style.background = "#2e7d32";
 }
 
 function lagre(){
-    alert("Mast lagret (Excel kommer neste steg)");
+    alert("Lagring kommer i Excel neste steg");
 }
 
 function nyMast(){
     document.querySelectorAll("textarea").forEach(t=>t.value="");
-    document.querySelectorAll(".knapp").forEach(k=>{
-        k.classList.remove("rød","grønn");
+    document.querySelectorAll(".kontroll").forEach(k=>{
+        k.style.background="#2e7d32";
     });
-    valgtData = {};
-    valgtMerknad = {};
 }
 
 </script>
