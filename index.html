@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Linjekontroll v11</title>
+<title>Linjekontroll v12</title>
 
 <style>
 body {
@@ -16,6 +16,10 @@ body {
     max-width:520px;
     margin:auto;
     padding:12px;
+}
+
+h2 {
+    text-align:center;
 }
 
 /* INPUT */
@@ -56,7 +60,7 @@ input {
     margin-top:6px;
     border:none;
     border-radius:10px;
-    background:#43a047;
+    background:#2e7d32;
     color:white;
     font-size:18px;
 }
@@ -71,6 +75,7 @@ textarea {
 
 .hidden { display:none; }
 
+/* MAST OK */
 .mastok {
     background:#66bb6a;
     color:white;
@@ -81,7 +86,6 @@ textarea {
     width:100%;
     margin:8px 0;
 }
-
 </style>
 </head>
 
@@ -89,11 +93,11 @@ textarea {
 
 <div class="container">
 
-<h2 style="text-align:center;">Linjekontroll v11</h2>
+<h2>Linjekontroll v12</h2>
 
-<input placeholder="Netteier">
-<input placeholder="LinjeID">
-<input placeholder="Mast nr">
+<input placeholder="Netteier" id="netteier">
+<input placeholder="LinjeID" id="linje">
+<input placeholder="Mast nr" id="mast">
 
 <button id="mastok" class="mastok" onclick="mastOK()">✔ Mast OK</button>
 
@@ -101,12 +105,16 @@ textarea {
 
 <button class="kontroll" onclick="lagre()">Lagre mast</button>
 <button class="kontroll" onclick="nyMast()">Ny mast</button>
+<button class="kontroll" onclick="lastNed()">Last ned Excel</button>
 
 </div>
 
 <script>
 
-const data = {};
+let alleMaster = [];
+
+let valgtData = {};
+let valgtMerknad = {};
 
 const kontrollpunkter = {
 "Skjev mast/fundament":["Skjev"],
@@ -146,33 +154,44 @@ Object.keys(kontrollpunkter).forEach(navn => {
         b.innerText = avvik;
 
         b.onclick = () => {
-            knapp.style.background = "#c62828"; // 🔴 kontrollpunkt blir rødt
-            data[navn] = avvik;
+            knapp.style.background = "#c62828";
+            valgtData[navn] = avvik;
             avvikDiv.classList.add("hidden");
         };
 
         avvikDiv.appendChild(b);
     });
 
-    let kamera = document.createElement("input");
-    kamera.type = "file";
-    kamera.accept = "image/*";
-    kamera.capture = "environment";
-    kamera.className = "kamera hidden";
+    // 📷 skjult input
+    let kameraInput = document.createElement("input");
+    kameraInput.type = "file";
+    kameraInput.accept = "image/*";
+    kameraInput.capture = "environment";
+    kameraInput.style.display = "none";
+
+    // 📷 knapp
+    let kameraKnapp = document.createElement("button");
+    kameraKnapp.innerText = "📷 Ta bilde";
+    kameraKnapp.className = "kamera hidden";
+    kameraKnapp.onclick = () => kameraInput.click();
 
     let merknad = document.createElement("textarea");
     merknad.placeholder = "Merknad";
     merknad.classList.add("hidden");
+    merknad.oninput = () => {
+        valgtMerknad[navn] = merknad.value;
+    };
 
     knapp.onclick = () => {
         avvikDiv.classList.toggle("hidden");
-        kamera.classList.toggle("hidden");
+        kameraKnapp.classList.toggle("hidden");
         merknad.classList.toggle("hidden");
     };
 
     wrapper.appendChild(knapp);
     wrapper.appendChild(avvikDiv);
-    wrapper.appendChild(kamera);
+    wrapper.appendChild(kameraInput);
+    wrapper.appendChild(kameraKnapp);
     wrapper.appendChild(merknad);
 
     container.appendChild(wrapper);
@@ -183,14 +202,58 @@ function mastOK(){
 }
 
 function lagre(){
-    alert("Lagring kommer i Excel neste steg");
+
+    let mast = {
+        netteier: document.getElementById("netteier").value,
+        linje: document.getElementById("linje").value,
+        mastnr: document.getElementById("mast").value,
+        data: valgtData,
+        merknad: valgtMerknad
+    };
+
+    alleMaster.push(mast);
+
+    alert("Mast lagret");
 }
 
 function nyMast(){
+
+    let netteier = document.getElementById("netteier").value;
+    let linje = document.getElementById("linje").value;
+
     document.querySelectorAll("textarea").forEach(t=>t.value="");
+
+    document.getElementById("netteier").value = netteier;
+    document.getElementById("linje").value = linje;
+    document.getElementById("mast").value = "";
+
     document.querySelectorAll(".kontroll").forEach(k=>{
         k.style.background="#2e7d32";
     });
+
+    valgtData = {};
+    valgtMerknad = {};
+}
+
+function lastNed(){
+
+    let csv = "Netteier,LinjeID,Mastnr,Punkt,Avvik,Merknad\n";
+
+    alleMaster.forEach(m=>{
+        Object.keys(m.data).forEach(punkt=>{
+            csv += `${m.netteier},${m.linje},${m.mastnr},${punkt},${m.data[punkt] || ""},${m.merknad[punkt] || ""}\n`;
+        });
+
+        if(Object.keys(m.data).length === 0){
+            csv += `${m.netteier},${m.linje},${m.mastnr},OK,,\n`;
+        }
+    });
+
+    let blob = new Blob([csv], {type:"text/csv"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "linjekontroll.csv";
+    a.click();
 }
 
 </script>
