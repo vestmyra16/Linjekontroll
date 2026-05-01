@@ -3,32 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Linjekontroll</title>
+<title>Linjekontroll v10</title>
 
 <style>
-body { font-family: Arial; background:#f2f2f2; }
-.container { max-width:600px; margin:auto; padding:10px; }
+body {
+    font-family: Arial;
+    background:#f4f4f4;
+    margin:0;
+}
 
-button {
+.container {
+    max-width:500px;
+    margin:auto;
+    padding:10px;
+}
+
+h2 {
+    text-align:center;
+}
+
+input {
     width:100%;
-    padding:14px;
+    padding:10px;
     margin:5px 0;
-    border-radius:10px;
-    border:2px solid #ccc;
-    background:#eee;
-    font-size:15px;
+    font-size:16px;
 }
 
-button.red { background:#ffcccc; border-color:red; }
-button.green { background:#ccffcc; border-color:green; }
-
-.hidden { display:none; }
-
-select, textarea {
+.knapp {
     width:100%;
-    margin-top:5px;
-    padding:8px;
+    padding:16px;
+    margin:6px 0;
+    border:none;
+    border-radius:10px;
+    background:#e0e0e0;
+    font-size:16px;
 }
+
+.knapp.rød {
+    background:#d32f2f;
+    color:white;
+}
+
+.knapp.grønn {
+    background:#2e7d32;
+    color:white;
+}
+
+.valg {
+    display:none;
+    margin-bottom:10px;
+}
+
+.valg button {
+    width:100%;
+    padding:12px;
+    margin:3px 0;
+    border:none;
+    border-radius:8px;
+    background:#f0f0f0;
+}
+
+textarea {
+    width:100%;
+    padding:8px;
+    margin-top:5px;
+}
+
 </style>
 </head>
 
@@ -36,35 +76,24 @@ select, textarea {
 
 <div class="container">
 
-<h3>Linjekontroll</h3>
+<h2>Linjekontroll v10</h2>
 
-<label>Netteier</label>
-<input id="netteier">
+<input placeholder="Netteier" id="netteier">
+<input placeholder="LinjeID" id="linje">
+<input placeholder="Mast nr" id="mast">
 
-<label>LinjeID</label>
-<input id="linje">
+<button id="mastok" class="knapp" onclick="mastOK()">✔ Mast OK</button>
 
-<label>Mastnr</label>
-<input id="mastnr" type="number" value="1">
+<div id="punkter"></div>
 
-<label>GPS</label>
-<input id="gps">
-
-<button id="mastok" onclick="mastOK()">Ingen synlige avvik – Mast OK</button>
-
-<div id="kontrollpunkter"></div>
-
-<button onclick="lagreMast()">Lagre mast</button>
-<button onclick="lastNed()">Last ned Excel</button>
-<button onclick="nyMast()">Ny mast</button>
+<button class="knapp" onclick="lagre()">Lagre mast</button>
+<button class="knapp" onclick="nyMast()">Ny mast</button>
 
 </div>
 
 <script>
 
-const data = [];
-
-const kontroll = {
+const kontrollpunkter = {
 "Skjev mast/fundament":["Skjev"],
 "Barduner":["Anvisere defekt","Slakk","Rust"],
 "Stolper":["Råte","Sprekk"],
@@ -84,121 +113,68 @@ const kontroll = {
 "Merking":["Hinderlys","HS mangler","Mnr mangler","Farvannskilt"]
 };
 
-const container = document.getElementById("kontrollpunkter");
+const container = document.getElementById("punkter");
 
-Object.keys(kontroll).forEach(punkt=>{
-    let div = document.createElement("div");
+Object.keys(kontrollpunkter).forEach(navn => {
 
-    let btn = document.createElement("button");
-    btn.innerText = punkt;
+    let wrapper = document.createElement("div");
 
-    let select = document.createElement("select");
-    select.classList.add("hidden");
+    let knapp = document.createElement("button");
+    knapp.className = "knapp";
+    knapp.innerText = navn;
 
-    kontroll[punkt].forEach(avvik=>{
-        let opt = document.createElement("option");
-        opt.value = avvik;
-        opt.text = avvik;
-        select.appendChild(opt);
+    let valgDiv = document.createElement("div");
+    valgDiv.className = "valg";
+
+    kontrollpunkter[navn].forEach(avvik => {
+        let b = document.createElement("button");
+        b.innerText = avvik;
+
+        b.onclick = () => {
+            knapp.classList.add("rød");   // 🔴 HER skjer riktig farging
+            valgtData[navn] = avvik;
+            valgDiv.style.display = "none";
+        };
+
+        valgDiv.appendChild(b);
     });
 
-    let tekst = document.createElement("textarea");
-    tekst.placeholder = "Merknad";
-    tekst.classList.add("hidden");
-
-    let bilde = document.createElement("input");
-    bilde.type="file";
-    bilde.accept="image/*";
-    bilde.capture="camera";
-    bilde.classList.add("hidden");
-
-    btn.onclick = ()=>{
-        btn.classList.add("red");
-        select.classList.remove("hidden");
-        tekst.classList.remove("hidden");
-        bilde.classList.remove("hidden");
+    let merknad = document.createElement("textarea");
+    merknad.placeholder = "Merknad";
+    merknad.oninput = () => {
+        valgtMerknad[navn] = merknad.value;
     };
 
-    div.appendChild(btn);
-    div.appendChild(select);
-    div.appendChild(tekst);
-    div.appendChild(bilde);
+    knapp.onclick = () => {
+        valgDiv.style.display =
+            valgDiv.style.display === "block" ? "none" : "block";
+    };
 
-    container.appendChild(div);
+    wrapper.appendChild(knapp);
+    wrapper.appendChild(valgDiv);
+    wrapper.appendChild(merknad);
+
+    container.appendChild(wrapper);
 });
 
+let valgtData = {};
+let valgtMerknad = {};
+
 function mastOK(){
-    document.getElementById("mastok").classList.add("green");
+    document.getElementById("mastok").classList.add("grønn");
 }
 
-function lagreMast(){
-
-    let mast = {
-        netteier:document.getElementById("netteier").value,
-        linje:document.getElementById("linje").value,
-        mastnr:document.getElementById("mastnr").value,
-        gps:document.getElementById("gps").value,
-        avvik:[]
-    };
-
-    document.querySelectorAll("#kontrollpunkter div").forEach(div=>{
-        let btn = div.querySelector("button");
-        let select = div.querySelector("select");
-        let tekst = div.querySelector("textarea");
-
-        if(btn.classList.contains("red")){
-            mast.avvik.push({
-                punkt:btn.innerText,
-                type:select.value,
-                merknad:tekst.value
-            });
-        }
-    });
-
-    data.push(mast);
-    alert("Mast lagret");
+function lagre(){
+    alert("Mast lagret (Excel kommer neste steg)");
 }
 
 function nyMast(){
-
-    let netteier = document.getElementById("netteier").value;
-    let linje = document.getElementById("linje").value;
-
-    document.querySelectorAll("input, textarea").forEach(e=>e.value="");
-
-    document.getElementById("netteier").value = netteier;
-    document.getElementById("linje").value = linje;
-
-    document.getElementById("mastnr").value++;
-
-    document.querySelectorAll("button").forEach(b=>{
-        b.classList.remove("red","green");
+    document.querySelectorAll("textarea").forEach(t=>t.value="");
+    document.querySelectorAll(".knapp").forEach(k=>{
+        k.classList.remove("rød","grønn");
     });
-
-    document.querySelectorAll("select, textarea, input[type=file]").forEach(e=>{
-        e.classList.add("hidden");
-    });
-}
-
-function lastNed(){
-
-    let csv = "Netteier,Linje,Mastnr,GPS,Punkt,Avvik,Merknad\n";
-
-    data.forEach(m=>{
-        if(m.avvik.length===0){
-            csv += `${m.netteier},${m.linje},${m.mastnr},${m.gps},OK,,\n`;
-        } else {
-            m.avvik.forEach(a=>{
-                csv += `${m.netteier},${m.linje},${m.mastnr},${m.gps},${a.punkt},${a.type},${a.merknad}\n`;
-            });
-        }
-    });
-
-    let blob = new Blob([csv], {type:"text/csv"});
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "linjekontroll.csv";
-    a.click();
+    valgtData = {};
+    valgtMerknad = {};
 }
 
 </script>
