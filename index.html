@@ -4,103 +4,62 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="/Linjekontroll/icon-180.png">
-<meta name="theme-color" content="#2e7d32">
-
-<title>Linjekontroll v14</title>
+<title>Linjekontroll v16</title>
 
 <style>
-body {
-    font-family: Arial;
-    background:#f4f4f4;
-    margin:0;
-}
+body { font-family: Arial; background:#f4f4f4; margin:0; }
 
 .container {
-    max-width:520px;
+    max-width:600px;
     margin:auto;
     padding:12px;
 }
 
-h2 {
-    text-align:center;
-    font-size:22px;
-}
+h2 { text-align:center; }
 
-/* LABEL */
 label {
+    font-weight:bold;
     display:block;
     margin-top:10px;
+}
+
+input, textarea {
+    width:100%;
+    padding:12px;
+    margin-top:5px;
     font-size:16px;
-    font-weight:bold;
-    color:#000;
 }
 
-/* INPUT */
-input {
+button {
     width:100%;
     padding:16px;
-    margin-top:4px;
+    margin-top:10px;
     font-size:18px;
-}
-
-/* KNAPPER */
-.kontroll {
-    width:100%;
-    padding:20px;
-    margin:10px 0;
-    border:none;
-    border-radius:12px;
-    font-size:20px;
-    color:white;
-}
-
-.morkgronn { background:#2e7d32; }
-.lysgronn { background:#66bb6a; }
-.rod { background:#c62828; }
-
-.avvik button {
-    width:100%;
-    padding:16px;
-    margin:4px 0;
-    border:none;
-    border-radius:10px;
-    background:#e0e0e0;
-    font-size:18px;
-    color:black;
-}
-
-/* KAMERA */
-.kamera {
-    width:100%;
-    padding:18px;
-    margin-top:6px;
     border:none;
     border-radius:10px;
     background:#2e7d32;
     color:white;
-    font-size:20px;
 }
 
-/* MERKNAD */
-textarea {
-    width:100%;
-    padding:14px;
-    margin-top:6px;
-    font-size:18px;
+.kontrollpunkt {
+    background:#2e7d32;
 }
 
-.hidden { display:none; }
+.kontrollpunkt.rød {
+    background:#c62828;
+}
 
 .mastok {
-    font-size:20px;
-    padding:18px;
-    border:none;
-    border-radius:12px;
-    width:100%;
-    margin:10px 0;
-    color:white;
+    background:#2e7d32;
+}
+
+.mastok.aktiv {
+    background:#66bb6a;
+}
+
+.detalj {
+    display:none;
+    margin-bottom:10px;
 }
 </style>
 </head>
@@ -109,7 +68,7 @@ textarea {
 
 <div class="container">
 
-<h2>Linjekontroll v14</h2>
+<h2>Linjekontroll v16</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -118,183 +77,113 @@ textarea {
 <input id="linje">
 
 <label>Mast nr</label>
-<input id="mast">
+<input id="mastnr">
 
-<button id="mastok" class="mastok morkgronn" onclick="toggleMastOK()">Mast OK</button>
+<label>GPS (Lat, Lon)</label>
+<input id="gps" readonly>
 
-<div id="liste"></div>
+<button onclick="startGPS()">Slå på GPS</button>
+<button onclick="stopGPS()">Slå av GPS</button>
 
-<button class="kontroll morkgronn" onclick="lagre()">Lagre mast</button>
-<button class="kontroll morkgronn" onclick="nyMast()">Ny mast</button>
-<button class="kontroll morkgronn" onclick="lastNed()">Last ned Excel</button>
+<button class="mastok" onclick="toggleMastOK(this)">Mast OK</button>
+
+<!-- EKSEMPEL -->
+<button class="kontrollpunkt" onclick="togglePunkt(this)">Barduner</button>
+
+<div class="detalj">
+    <button onclick="markerAvvik(this)">Rust</button>
+    <button onclick="markerAvvik(this)">Slakk</button>
+
+    <button>📷 Ta bilde</button>
+    <input type="file" accept="image/*">
+
+    <textarea placeholder="Merknad"></textarea>
+</div>
+
+<button onclick="nyMast()">Ny mast</button>
 
 </div>
 
 <script>
 
-let alleMaster = [];
-let valgtData = {};
-let valgtMerknad = {};
-let mastOKstatus = false;
+let gpsWatch = null;
 
-const kontrollpunkter = {
-"Skjev mast/fundament":["Skjev"],
-"Barduner":["Anvisere defekt","Slakk","Rust"],
-"Stolper":["Råte","Sprekk"],
-"Stålmast":["Armering synlig","Fundament erodert","Fundament oppsprukket"],
-"Topphette":["Mangler","Defekt"],
-"Traversfeste":["Defekt","Sprukket"],
-"Travers":["Skade","Mosegrodd","Skjev"],
-"Isolatorfeste":["Slitasje","Rust"],
-"Isolator":["Sprukket","Knust","Krypestrømsvei"],
-"Bendsling":["Korrosjon","Løs"],
-"Liner":["Korrosjon","Kordelbrudd"],
-"Strekking":["Skjev","Lav høyde"],
-"Skjøter/klemmer":["Korrodert","Varmgang","Tape i klemme"],
-"Topp/jordline":["Korrosjon","Beslag rust"],
-"Jordinger":["Brudd","Løs"],
-"Trasé":["Kratt","Sideskog","Underskog"],
-"Merking":["Hinderlys","HS mangler","Mnr mangler","Farvannskilt"]
-};
-
-const container = document.getElementById("liste");
-
-Object.keys(kontrollpunkter).forEach(navn => {
-
-    let wrapper = document.createElement("div");
-
-    let knapp = document.createElement("button");
-    knapp.className = "kontroll morkgronn";
-    knapp.innerText = navn;
-
-    let avvikDiv = document.createElement("div");
-    avvikDiv.className = "avvik hidden";
-
-    kontrollpunkter[navn].forEach(avvik => {
-        let b = document.createElement("button");
-        b.innerText = avvik;
-
-        b.onclick = () => {
-            if(knapp.classList.contains("rod")){
-                knapp.classList.remove("rod");
-                knapp.classList.add("morkgronn");
-                delete valgtData[navn];
-            } else {
-                knapp.classList.remove("morkgronn");
-                knapp.classList.add("rod");
-                valgtData[navn] = avvik;
-            }
-            avvikDiv.classList.add("hidden");
-        };
-
-        avvikDiv.appendChild(b);
-    });
-
-    let kameraInput = document.createElement("input");
-    kameraInput.type = "file";
-    kameraInput.accept = "image/*";
-    kameraInput.capture = "environment";
-    kameraInput.style.display = "none";
-
-    let kameraKnapp = document.createElement("button");
-    kameraKnapp.innerText = "📷 Ta bilde";
-    kameraKnapp.className = "kamera hidden";
-    kameraKnapp.onclick = () => kameraInput.click();
-
-    let merknad = document.createElement("textarea");
-    merknad.placeholder = "Merknad";
-    merknad.classList.add("hidden");
-    merknad.oninput = () => {
-        valgtMerknad[navn] = merknad.value;
-    };
-
-    knapp.onclick = () => {
-        avvikDiv.classList.toggle("hidden");
-        kameraKnapp.classList.toggle("hidden");
-        merknad.classList.toggle("hidden");
-    };
-
-    wrapper.appendChild(knapp);
-    wrapper.appendChild(avvikDiv);
-    wrapper.appendChild(kameraInput);
-    wrapper.appendChild(kameraKnapp);
-    wrapper.appendChild(merknad);
-
-    container.appendChild(wrapper);
-});
-
-function toggleMastOK(){
-    let btn = document.getElementById("mastok");
-    mastOKstatus = !mastOKstatus;
-
-    if(mastOKstatus){
-        btn.classList.remove("morkgronn");
-        btn.classList.add("lysgronn");
+// GPS START
+function startGPS(){
+    if(navigator.geolocation){
+        gpsWatch = navigator.geolocation.watchPosition(pos=>{
+            let lat = pos.coords.latitude.toFixed(6);
+            let lon = pos.coords.longitude.toFixed(6);
+            document.getElementById("gps").value = lat + ", " + lon;
+        });
     } else {
-        btn.classList.remove("lysgronn");
-        btn.classList.add("morkgronn");
+        alert("GPS støttes ikke");
     }
 }
 
-function lagre(){
-    let mast = {
-        netteier: document.getElementById("netteier").value,
-        linje: document.getElementById("linje").value,
-        mastnr: document.getElementById("mast").value,
-        mastOK: mastOKstatus,
-        data: valgtData,
-        merknad: valgtMerknad
-    };
-    alleMaster.push(mast);
-    alert("Mast lagret");
+// GPS STOPP
+function stopGPS(){
+    if(gpsWatch){
+        navigator.geolocation.clearWatch(gpsWatch);
+    }
 }
 
+// Toggle kontrollpunkt
+function togglePunkt(btn){
+    let detalj = btn.nextElementSibling;
+    detalj.style.display = detalj.style.display === "block" ? "none" : "block";
+}
+
+// Marker avvik → gjør knapp rød
+function markerAvvik(btn){
+    let kontrollpunkt = btn.closest(".detalj").previousElementSibling;
+    kontrollpunkt.classList.add("rød");
+}
+
+// Mast OK toggle
+function toggleMastOK(btn){
+    btn.classList.toggle("aktiv");
+}
+
+// 🔒 Ny mast
 function nyMast(){
+
+    let bekreft = confirm("Er du sikker på at du vil starte ny mast?");
+    if(!bekreft) return;
 
     let netteier = document.getElementById("netteier").value;
     let linje = document.getElementById("linje").value;
+    let gps = document.getElementById("gps").value;
 
-    document.querySelectorAll("textarea").forEach(t=>t.value="");
+    // Tøm alt
+    document.querySelectorAll("input, textarea").forEach(e => e.value = "");
 
+    // Behold disse
     document.getElementById("netteier").value = netteier;
     document.getElementById("linje").value = linje;
-    document.getElementById("mast").value = "";
+    document.getElementById("gps").value = gps;
 
-    document.querySelectorAll(".kontroll").forEach(k=>{
-        k.classList.remove("rod");
-        k.classList.add("morkgronn");
+    // Reset kontrollpunkt
+    document.querySelectorAll(".kontrollpunkt").forEach(btn=>{
+        btn.classList.remove("rød");
     });
 
-    document.getElementById("mastok").classList.remove("lysgronn");
-    document.getElementById("mastok").classList.add("morkgronn");
-
-    valgtData = {};
-    valgtMerknad = {};
-    mastOKstatus = false;
-}
-
-function lastNed(){
-
-    let csv = "Netteier,LinjeID,Mastnr,Status,Punkt,Avvik,Merknad\n";
-
-    alleMaster.forEach(m=>{
-        if(m.mastOK){
-            csv += `${m.netteier},${m.linje},${m.mastnr},OK,,,\n`;
-        } else if(Object.keys(m.data).length === 0){
-            csv += `${m.netteier},${m.linje},${m.mastnr},Ingen avvik,,,\n`;
-        } else {
-            Object.keys(m.data).forEach(punkt=>{
-                csv += `${m.netteier},${m.linje},${m.mastnr},Avvik,${punkt},${m.data[punkt]},${m.merknad[punkt] || ""}\n`;
-            });
-        }
+    // Reset Mast OK
+    document.querySelectorAll(".mastok").forEach(btn=>{
+        btn.classList.remove("aktiv");
     });
 
-    let blob = new Blob([csv], {type:"text/csv"});
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "linjekontroll.csv";
-    a.click();
+    // Skjul detaljer
+    document.querySelectorAll(".detalj").forEach(d=>{
+        d.style.display = "none";
+    });
+
+    // Fjern bilder
+    document.querySelectorAll("input[type='file']").forEach(f=>{
+        f.value = "";
+    });
 }
+
 </script>
 
 </body>
