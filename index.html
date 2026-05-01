@@ -4,27 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-
-<title>Linjekontroll v22</title>
+<title>Linjekontroll v23</title>
 
 <style>
-body {
- font-family: Arial;
- background:#f4f4f4;
- margin:0;
-}
-
-.container {
- max-width:600px;
- margin:auto;
- padding:12px;
-}
+body { font-family:Arial; background:#f4f4f4; margin:0; }
+.container { max-width:600px; margin:auto; padding:12px; }
 
 h2 { text-align:center; }
 
-/* INPUT */
 label { font-weight:bold; display:block; margin-top:10px; }
 input, textarea {
  width:100%;
@@ -33,7 +20,6 @@ input, textarea {
  font-size:16px;
 }
 
-/* KNAPPER */
 button {
  width:100%;
  padding:16px;
@@ -43,27 +29,11 @@ button {
  font-size:16px;
 }
 
-/* Kontrollpunkt */
-.kontroll {
- background:#2e7d32;
- color:white;
-}
+.kontroll { background:#2e7d32; color:white; }
+.avvik { background:#ccc; }
+.aktiv { background:#c62828 !important; color:white; }
 
-/* Avvik */
-.avvik {
- background:#ccc;
-}
-
-/* Aktiv */
-.aktiv {
- background:#c62828 !important;
- color:white;
-}
-
-/* Skjult */
-.hidden {
- display:none;
-}
+.hidden { display:none; }
 </style>
 </head>
 
@@ -71,7 +41,7 @@ button {
 
 <div class="container">
 
-<h2>Linjekontroll v22</h2>
+<h2>Linjekontroll v23</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -85,94 +55,92 @@ button {
 <label>GPS</label>
 <input id="gps">
 
-<button class="kontroll" onclick="startGPS()">Slå på GPS</button>
+<button class="kontroll" id="gpsBtn">Slå på GPS</button>
 
-<!-- MAST OK -->
-<button id="mastok" class="kontroll" onclick="toggleAktiv('mastok')">Mast OK</button>
+<button id="mastok" class="kontroll">Mast OK</button>
 
-<!-- SKEIV -->
-<button class="kontroll" onclick="toggle('skjev')">Skjev mast/fundament</button>
+<button class="kontroll" id="btnSkjev">Skjev mast/fundament</button>
 <div id="skjev" class="hidden">
-    <button class="avvik" onclick="velg(this)">Skjev</button>
+    <button class="avvik">Skjev</button>
     <textarea placeholder="Merknad"></textarea>
 </div>
 
-<!-- BARDUN -->
-<button class="kontroll" onclick="toggle('bardun')">Barduner</button>
+<button class="kontroll" id="btnBardun">Barduner</button>
 <div id="bardun" class="hidden">
-    <button class="avvik" onclick="velg(this)">Løs</button>
-    <button class="avvik" onclick="velg(this)">Brudd</button>
+    <button class="avvik">Løs</button>
+    <button class="avvik">Brudd</button>
     <textarea placeholder="Merknad"></textarea>
 </div>
 
-<!-- ISOLATOR -->
-<button class="kontroll" onclick="toggle('isolator')">Isolator</button>
+<button class="kontroll" id="btnIsolator">Isolator</button>
 <div id="isolator" class="hidden">
-    <button class="avvik" onclick="velg(this)">Knust</button>
-    <button class="avvik" onclick="velg(this)">Krypestrøm</button>
+    <button class="avvik">Knust</button>
+    <button class="avvik">Krypestrøm</button>
     <textarea placeholder="Merknad"></textarea>
 </div>
 
-<!-- LAGRE -->
-<button class="kontroll" onclick="lagre()">Lagre mast</button>
-
-<button class="kontroll" onclick="excel()">Last ned Excel</button>
-
-<button class="kontroll" onclick="nyMast()">Ny mast</button>
+<button class="kontroll" id="lagre">Lagre mast</button>
+<button class="kontroll" id="excel">Last ned Excel</button>
+<button class="kontroll" id="ny">Ny mast</button>
 
 </div>
 
 <script>
 
 /* GPS */
-function startGPS(){
+document.getElementById("gpsBtn").onclick = function(){
  navigator.geolocation.getCurrentPosition(p=>{
   document.getElementById("gps").value =
   p.coords.latitude.toFixed(6)+","+p.coords.longitude.toFixed(6);
  });
-}
+};
+
+/* Mast OK toggle */
+document.getElementById("mastok").onclick = function(){
+ this.classList.toggle("aktiv");
+};
 
 /* Åpne/lukke */
-function toggle(id){
- let el=document.getElementById(id);
- el.classList.toggle("hidden");
-}
+document.getElementById("btnSkjev").onclick = function(){
+ document.getElementById("skjev").classList.toggle("hidden");
+};
 
-/* Velg avvik */
-function velg(btn){
- btn.classList.toggle("aktiv");
-}
+document.getElementById("btnBardun").onclick = function(){
+ document.getElementById("bardun").classList.toggle("hidden");
+};
 
-/* Toggle grønn/rød */
-function toggleAktiv(id){
- document.getElementById(id).classList.toggle("aktiv");
-}
+document.getElementById("btnIsolator").onclick = function(){
+ document.getElementById("isolator").classList.toggle("hidden");
+};
+
+/* Avvik toggle */
+document.querySelectorAll(".avvik").forEach(btn=>{
+ btn.onclick = function(){
+  this.classList.toggle("aktiv");
+ };
+});
 
 /* Lagre */
-function lagre(){
- alert("Mast lagret");
-}
+document.getElementById("lagre").onclick = function(){
+ alert("Lagret");
+};
 
 /* Excel */
-function excel(){
- alert("Excel eksport kommer");
-}
+document.getElementById("excel").onclick = function(){
+ alert("Excel kommer");
+};
 
 /* Ny mast */
-function nyMast(){
+document.getElementById("ny").onclick = function(){
 
- // fjern aktive
  document.querySelectorAll(".aktiv").forEach(e=>e.classList.remove("aktiv"));
-
- // skjul alle
  document.querySelectorAll(".hidden").forEach(e=>e.classList.add("hidden"));
 
- // nullstill felt
  document.getElementById("mast").value="";
  document.getElementById("gps").value="";
  document.querySelectorAll("textarea").forEach(e=>e.value="");
 
-}
+};
 
 </script>
 
