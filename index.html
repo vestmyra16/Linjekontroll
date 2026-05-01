@@ -199,12 +199,50 @@ function taBilde(btn){
 
 /* Lagre */
 function lagre(){
- let mast = {
+
+ let rader = [];
+
+ let base = {
   netteier: document.getElementById("netteier").value,
   linje: document.getElementById("linje").value,
   mast: document.getElementById("mast").value,
   gps: document.getElementById("gps").value
  };
+
+ punkter.forEach((p, i)=>{
+
+  if(p.avvik.length === 0) return; // Mast OK hoppes over
+
+  let panel = document.getElementById("panel_" + i);
+  let kp = document.getElementById("kp_" + i);
+
+  let avvikKnapper = panel.querySelectorAll(".avvik.aktiv");
+  let merknad = panel.querySelector("textarea").value;
+
+  if(avvikKnapper.length > 0 || merknad !== ""){
+
+    let avvikListe = [];
+
+    avvikKnapper.forEach(a=>{
+      avvikListe.push(a.innerText);
+    });
+
+    rader.push({
+      ...base,
+      kontrollpunkt: p.navn,
+      avvik: avvikListe.join("; "),
+      merknad: merknad
+    });
+  }
+ });
+
+ if(rader.length === 0){
+  alert("Ingen avvik registrert");
+ } else {
+  data = data.concat(rader);
+  alert("Lagret med avvik");
+ }
+}
 
  data.push(mast);
  alert("Lagret");
