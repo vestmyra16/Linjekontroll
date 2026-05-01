@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Linjekontroll v12</title>
+<title>Linjekontroll v13</title>
 
 <style>
 body {
@@ -20,57 +20,67 @@ body {
 
 h2 {
     text-align:center;
+    font-size:22px;
+}
+
+/* LABEL */
+label {
+    display:block;
+    margin-top:10px;
+    font-size:16px;
+    font-weight:bold;
+    color:#000;
 }
 
 /* INPUT */
 input {
     width:100%;
-    padding:14px;
-    margin:6px 0;
+    padding:16px;
+    margin-top:4px;
     font-size:18px;
 }
 
 /* KONTROLLPUNKT */
 .kontroll {
     width:100%;
-    padding:18px;
-    margin:8px 0;
+    padding:20px;
+    margin:10px 0;
     border:none;
     border-radius:12px;
     background:#2e7d32;
     color:white;
-    font-size:18px;
+    font-size:20px;
 }
 
 /* AVVIK */
 .avvik button {
     width:100%;
-    padding:14px;
+    padding:16px;
     margin:4px 0;
     border:none;
     border-radius:10px;
     background:#e0e0e0;
-    font-size:16px;
+    font-size:18px;
 }
 
 /* KAMERA */
 .kamera {
     width:100%;
-    padding:16px;
+    padding:18px;
     margin-top:6px;
     border:none;
     border-radius:10px;
     background:#2e7d32;
     color:white;
-    font-size:18px;
+    font-size:20px;
 }
 
 /* MERKNAD */
 textarea {
     width:100%;
-    padding:12px;
+    padding:14px;
     margin-top:6px;
-    font-size:16px;
+    font-size:18px;
 }
 
 .hidden { display:none; }
@@ -79,12 +89,12 @@ textarea {
 .mastok {
     background:#66bb6a;
     color:white;
-    font-size:18px;
-    padding:16px;
+    font-size:20px;
+    padding:18px;
     border:none;
     border-radius:12px;
     width:100%;
-    margin:8px 0;
+    margin:10px 0;
 }
 </style>
 </head>
@@ -93,11 +103,16 @@ textarea {
 
 <div class="container">
 
-<h2>Linjekontroll v12</h2>
+<h2>Linjekontroll v13</h2>
 
-<input placeholder="Netteier" id="netteier">
-<input placeholder="LinjeID" id="linje">
-<input placeholder="Mast nr" id="mast">
+<label>Netteier</label>
+<input id="netteier">
+
+<label>LinjeID</label>
+<input id="linje">
+
+<label>Mast nr</label>
+<input id="mast">
 
 <button id="mastok" class="mastok" onclick="mastOK()">✔ Mast OK</button>
 
@@ -112,7 +127,6 @@ textarea {
 <script>
 
 let alleMaster = [];
-
 let valgtData = {};
 let valgtMerknad = {};
 
@@ -162,14 +176,12 @@ Object.keys(kontrollpunkter).forEach(navn => {
         avvikDiv.appendChild(b);
     });
 
-    // 📷 skjult input
     let kameraInput = document.createElement("input");
     kameraInput.type = "file";
     kameraInput.accept = "image/*";
     kameraInput.capture = "environment";
     kameraInput.style.display = "none";
 
-    // 📷 knapp
     let kameraKnapp = document.createElement("button");
     kameraKnapp.innerText = "📷 Ta bilde";
     kameraKnapp.className = "kamera hidden";
@@ -202,7 +214,6 @@ function mastOK(){
 }
 
 function lagre(){
-
     let mast = {
         netteier: document.getElementById("netteier").value,
         linje: document.getElementById("linje").value,
@@ -210,9 +221,7 @@ function lagre(){
         data: valgtData,
         merknad: valgtMerknad
     };
-
     alleMaster.push(mast);
-
     alert("Mast lagret");
 }
 
@@ -240,12 +249,12 @@ function lastNed(){
     let csv = "Netteier,LinjeID,Mastnr,Punkt,Avvik,Merknad\n";
 
     alleMaster.forEach(m=>{
-        Object.keys(m.data).forEach(punkt=>{
-            csv += `${m.netteier},${m.linje},${m.mastnr},${punkt},${m.data[punkt] || ""},${m.merknad[punkt] || ""}\n`;
-        });
-
         if(Object.keys(m.data).length === 0){
             csv += `${m.netteier},${m.linje},${m.mastnr},OK,,\n`;
+        } else {
+            Object.keys(m.data).forEach(punkt=>{
+                csv += `${m.netteier},${m.linje},${m.mastnr},${punkt},${m.data[punkt]},${m.merknad[punkt] || ""}\n`;
+            });
         }
     });
 
@@ -255,7 +264,6 @@ function lastNed(){
     a.download = "linjekontroll.csv";
     a.click();
 }
-
 </script>
 
 </body>
