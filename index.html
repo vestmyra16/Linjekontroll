@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-
-<title>Linjekontroll v26</title>
+<title>Linjekontroll v27</title>
 
 <style>
 body {font-family: Arial; background:#f4f4f4; margin:0;}
@@ -44,9 +41,10 @@ border:none; border-radius:10px; font-size:16px;
 </head>
 
 <body>
+
 <div class="container">
 
-<h2>Linjekontroll v26</h2>
+<h2>Linjekontroll v27</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -63,6 +61,7 @@ border:none; border-radius:10px; font-size:16px;
 <button class="green" onclick="startGPS()">Slå på GPS</button>
 <button class="green" onclick="stopGPS()">Slå av GPS</button>
 
+<!-- 🔴 DENNE MÅ VÆRE MED -->
 <div id="punkter"></div>
 
 <button class="darkgreen" onclick="lagre()">Lagre mast</button>
@@ -72,9 +71,11 @@ border:none; border-radius:10px; font-size:16px;
 </div>
 
 <script>
+
 let gpsWatch = null;
 let data = [];
 
+// 🔴 HER ER HELE LISTA – IKKE RØR
 let punkter = [
 {navn:"Mast OK", avvik:[]},
 
@@ -102,28 +103,30 @@ let punkter = [
 let status = {};
 
 function render(){
-let html="";
+let html = "";
 
 punkter.forEach((p,i)=>{
-let cls="kp";
+
+let cls = "kp";
 if(status[i]=="ok") cls+=" ok";
 if(status[i]=="avvik") cls+=" avvik";
 
-html+=`<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
+html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
 
-if(p.avvik.length>0 && status[i]=="vis"){
+if(p.avvik.length > 0 && status[i]=="vis"){
 p.avvik.forEach(a=>{
-html+=`<button class="avvik" onclick="settAvvik(${i})">${a}</button>`;
+html += `<button class="avvik" onclick="settAvvik(${i})">${a}</button>`;
 });
 
-html+=`
+html += `
 <button class="green">📸 Ta bilde</button>
 <textarea placeholder="Merknad" id="m${i}"></textarea>
 `;
 }
+
 });
 
-document.getElementById("punkter").innerHTML=html;
+document.getElementById("punkter").innerHTML = html;
 }
 
 function toggle(i){
@@ -157,7 +160,7 @@ netteier: document.getElementById("netteier").value,
 linje: document.getElementById("linje").value,
 mast: document.getElementById("mast").value,
 gps: document.getElementById("gps").value,
-punkter: []
+punkter:[]
 };
 
 punkter.forEach((p,i)=>{
@@ -177,25 +180,27 @@ let csv="Netteier,Linje,Mast,GPS,Kontrollpunkt,Status,Merknad\n";
 
 data.forEach(d=>{
 d.punkter.forEach(p=>{
-csv+=`${d.netteier},${d.linje},${d.mast},${d.gps},${p.navn},${p.status},${p.merknad}\n`;
+csv += `${d.netteier},${d.linje},${d.mast},${d.gps},${p.navn},${p.status},${p.merknad}\n`;
 });
 });
 
-let blob=new Blob([csv],{type:"text/csv"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="linjekontroll.csv";
+let blob = new Blob([csv],{type:"text/csv"});
+let a = document.createElement("a");
+a.href = URL.createObjectURL(blob);
+a.download = "linjekontroll.csv";
 a.click();
 }
 
 function nyMast(){
 document.getElementById("mast").value="";
 document.getElementById("gps").value="";
-status={};
+status = {};
 render();
 }
 
+// 🔴 KRITISK: denne må være med
 render();
+
 </script>
 
 </body>
