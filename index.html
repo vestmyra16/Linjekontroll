@@ -7,11 +7,12 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 
-<title>Linjekontroll v24</title>
+<title>Linjekontroll v25</title>
 
 <style>
 body { font-family: Arial; background:#f4f4f4; margin:0; }
 .container { max-width:600px; margin:auto; padding:12px; }
+
 h2 { text-align:center; }
 
 label { font-weight:bold; display:block; margin-top:10px; }
@@ -40,15 +41,13 @@ button {
 
 /* Aktiv */
 .aktiv { background:#d32f2f !important; color:white; }
-
-textarea { margin-top:5px; }
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h2>Linjekontroll v24</h2>
+<h2>Linjekontroll v25</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -115,29 +114,46 @@ const punkter = [
 function bygg(){
  let html = "";
 
- punkter.forEach(p=>{
+ punkter.forEach((p, i)=>{
+
   html += `<div style="margin-top:10px">`;
 
-  html += `<button class="kontroll" onclick="toggle(this)">${p.navn}</button>`;
+  html += `
+  <button class="kontroll" onclick="toggleVis(${i})">
+    ${p.navn}
+  </button>
+  `;
+
+  html += `<div id="panel_${i}" style="display:none">`;
 
   p.avvik.forEach(a=>{
    html += `<button class="avvik" onclick="toggle(this)">${a}</button>`;
   });
 
-  /* Kamera */
   html += `
   <button class="kontroll" onclick="taBilde(this)">📷 Ta bilde</button>
   <input type="file" accept="image/*" capture="environment" style="display:none">
+  <textarea placeholder="Merknad"></textarea>
   `;
 
-  html += `<textarea placeholder="Merknad"></textarea>`;
-  html += `</div>`;
+  html += `</div></div>`;
  });
 
  document.getElementById("punkter").innerHTML = html;
 }
 
-/* Toggle */
+/* Vis/skjul */
+function toggleVis(i){
+ let el = document.getElementById("panel_" + i);
+
+ if(el.style.display === "none"){
+  el.style.display = "block";
+ } else {
+  el.style.display = "none";
+ }
+}
+
+/* Toggle avvik */
 function toggle(btn){
  btn.classList.toggle("aktiv");
 }
@@ -168,7 +184,7 @@ function lagre(){
  alert("Lagret");
 }
 
-/* Excel (CSV) */
+/* Excel */
 function lastNed(){
  let csv = "Netteier,Linje,Mast,GPS\n";
 
@@ -204,6 +220,10 @@ function ny(){
   if(b.innerText.includes("Bilde")){
    b.innerText = "📷 Ta bilde";
   }
+ });
+
+ document.querySelectorAll("[id^=panel_]").forEach(p=>{
+  p.style.display = "none";
  });
 }
 
