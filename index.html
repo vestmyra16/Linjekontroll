@@ -5,80 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 
-<title>Linjekontroll v21</title>
+<title>Linjekontroll v22</title>
 
 <style>
+body {
+ font-family: Arial;
+ background:#f4f4f4;
+ margin:0;
+}
 
-body {font-family: Arial; background:#f4f4f4;}
-.container {max-width:600px; margin:auto; padding:12px;}
+.container {
+ max-width:600px;
+ margin:auto;
+ padding:12px;
+}
 
-label {font-weight:bold; margin-top:10px; display:block; font-size:18px;}
-input {width:100%; padding:12px; font-size:18px;}
+h2 { text-align:center; }
 
+/* INPUT */
+label { font-weight:bold; display:block; margin-top:10px; }
+input, textarea {
+ width:100%;
+ padding:12px;
+ margin-top:5px;
+ font-size:16px;
+}
+
+/* KNAPPER */
+button {
+ width:100%;
+ padding:16px;
+ margin-top:10px;
+ border:none;
+ border-radius:10px;
+ font-size:16px;
+}
+
+/* Kontrollpunkt */
 .kontroll {
-  background:#2e7d32;
-  color:white;
-  padding:16px;
-  margin-top:10px;
-  border:none;
-  width:100%;
-  border-radius:10px;
-  font-size:18px;
+ background:#2e7d32;
+ color:white;
 }
 
+/* Avvik */
 .avvik {
-  background:#e0e0e0;
-  padding:12px;
-  margin-top:6px;
-  border:none;
-  width:100%;
-  border-radius:8px;
+ background:#ccc;
 }
 
+/* Aktiv */
 .aktiv {
-  background:#c62828 !important;
-  color:white;
+ background:#c62828 !important;
+ color:white;
 }
 
-.kamera {
-  background:#2e7d32;
-  color:white;
-  padding:12px;
-  margin-top:6px;
-  border:none;
-  width:100%;
-  border-radius:8px;
+/* Skjult */
+.hidden {
+ display:none;
 }
-
-textarea {
-  width:100%;
-  padding:10px;
-  margin-top:6px;
-  font-size:16px;
-}
-
-.bunn {
-  background:#1b5e20;
-  color:white;
-  padding:16px;
-  margin-top:12px;
-  border:none;
-  width:100%;
-  border-radius:10px;
-  font-size:18px;
-}
-
-.hidden {display:none;}
-
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
-<h2>Linjekontroll v21</h2>
+<h2>Linjekontroll v22</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -91,49 +84,48 @@ textarea {
 
 <label>GPS</label>
 <input id="gps">
-<button class="kontroll" onclick="gps()">Slå på GPS</button>
 
-<button class="kontroll" id="mastok" onclick="toggleMastOK()">Mast OK</button>
+<button class="kontroll" onclick="startGPS()">Slå på GPS</button>
 
-<!-- FUNDAMENT -->
-<button class="kontroll" onclick="toggle('f')">Skjev mast/fundament</button>
-<div id="f" class="hidden">
-  <button class="avvik" onclick="velg('f')">Skjev</button>
-  <button class="avvik" onclick="velg('f')">Setning</button>
-  <button class="avvik" onclick="velg('f')">Fundamentfeil</button>
-  <button class="kamera">📷 Ta bilde</button>
-  <textarea placeholder="Merknad"></textarea>
+<!-- MAST OK -->
+<button id="mastok" class="kontroll" onclick="toggleAktiv('mastok')">Mast OK</button>
+
+<!-- SKEIV -->
+<button class="kontroll" onclick="toggle('skjev')">Skjev mast/fundament</button>
+<div id="skjev" class="hidden">
+    <button class="avvik" onclick="velg(this)">Skjev</button>
+    <textarea placeholder="Merknad"></textarea>
 </div>
 
 <!-- BARDUN -->
-<button class="kontroll" onclick="toggle('b')">Barduner</button>
-<div id="b" class="hidden">
-  <button class="avvik" onclick="velg('b')">Slakk</button>
-  <button class="avvik" onclick="velg('b')">Rust</button>
-  <button class="avvik" onclick="velg('b')">Brudd</button>
-  <button class="kamera">📷 Ta bilde</button>
-  <textarea placeholder="Merknad"></textarea>
+<button class="kontroll" onclick="toggle('bardun')">Barduner</button>
+<div id="bardun" class="hidden">
+    <button class="avvik" onclick="velg(this)">Løs</button>
+    <button class="avvik" onclick="velg(this)">Brudd</button>
+    <textarea placeholder="Merknad"></textarea>
 </div>
 
 <!-- ISOLATOR -->
-<button class="kontroll" onclick="toggle('i')">Isolator</button>
-<div id="i" class="hidden">
-  <button class="avvik" onclick="velg('i')">Knust</button>
-  <button class="avvik" onclick="velg('i')">Krypestrøm</button>
-  <button class="kamera">📷 Ta bilde</button>
-  <textarea placeholder="Merknad"></textarea>
+<button class="kontroll" onclick="toggle('isolator')">Isolator</button>
+<div id="isolator" class="hidden">
+    <button class="avvik" onclick="velg(this)">Knust</button>
+    <button class="avvik" onclick="velg(this)">Krypestrøm</button>
+    <textarea placeholder="Merknad"></textarea>
 </div>
 
-<button class="bunn" onclick="lagre()">Lagre mast</button>
-<button class="bunn">Last ned Excel</button>
-<button class="bunn" onclick="nyMast()">Ny mast</button>
+<!-- LAGRE -->
+<button class="kontroll" onclick="lagre()">Lagre mast</button>
+
+<button class="kontroll" onclick="excel()">Last ned Excel</button>
+
+<button class="kontroll" onclick="nyMast()">Ny mast</button>
 
 </div>
 
 <script>
 
 /* GPS */
-function gps(){
+function startGPS(){
  navigator.geolocation.getCurrentPosition(p=>{
   document.getElementById("gps").value =
   p.coords.latitude.toFixed(6)+","+p.coords.longitude.toFixed(6);
@@ -147,28 +139,39 @@ function toggle(id){
 }
 
 /* Velg avvik */
-function velg(id){
- let parent=document.getElementById(id);
- parent.previousElementSibling.classList.add("aktiv");
+function velg(btn){
+ btn.classList.toggle("aktiv");
 }
 
-/* Mast OK toggle */
-function toggleMastOK(){
- document.getElementById("mastok").classList.toggle("aktiv");
+/* Toggle grønn/rød */
+function toggleAktiv(id){
+ document.getElementById(id).classList.toggle("aktiv");
 }
 
 /* Lagre */
 function lagre(){
- alert("Lagret");
+ alert("Mast lagret");
+}
+
+/* Excel */
+function excel(){
+ alert("Excel eksport kommer");
 }
 
 /* Ny mast */
 function nyMast(){
+
+ // fjern aktive
  document.querySelectorAll(".aktiv").forEach(e=>e.classList.remove("aktiv"));
+
+ // skjul alle
  document.querySelectorAll(".hidden").forEach(e=>e.classList.add("hidden"));
- document.querySelectorAll("textarea").forEach(e=>e.value="");
+
+ // nullstill felt
  document.getElementById("mast").value="";
  document.getElementById("gps").value="";
+ document.querySelectorAll("textarea").forEach(e=>e.value="");
+
 }
 
 </script>
