@@ -7,107 +7,126 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Linjekontroll v20</title>
+<title>Linjekontroll v21</title>
 
 <style>
+
 body {font-family: Arial; background:#f4f4f4;}
 .container {max-width:600px; margin:auto; padding:12px;}
 
-label {font-weight:bold; display:block; margin-top:10px;}
-input {width:100%; padding:10px; margin-top:5px;}
+label {font-weight:bold; margin-top:10px; display:block; font-size:18px;}
+input {width:100%; padding:12px; font-size:18px;}
 
 .kontroll {
   background:#2e7d32;
   color:white;
-  padding:14px;
+  padding:16px;
   margin-top:10px;
   border:none;
   width:100%;
-  border-radius:8px;
-  font-size:16px;
+  border-radius:10px;
+  font-size:18px;
 }
 
 .avvik {
-  background:#ddd;
-  padding:10px;
-  margin-top:5px;
+  background:#e0e0e0;
+  padding:12px;
+  margin-top:6px;
   border:none;
   width:100%;
-  border-radius:6px;
+  border-radius:8px;
 }
 
-.rod {background:#c62828 !important; color:white;}
-.hidden {display:none;}
+.aktiv {
+  background:#c62828 !important;
+  color:white;
+}
 
 .kamera {
   background:#2e7d32;
   color:white;
-  padding:10px;
-  margin-top:5px;
+  padding:12px;
+  margin-top:6px;
   border:none;
   width:100%;
+  border-radius:8px;
+}
+
+textarea {
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  font-size:16px;
 }
 
 .bunn {
   background:#1b5e20;
   color:white;
-  padding:14px;
+  padding:16px;
   margin-top:12px;
   border:none;
   width:100%;
+  border-radius:10px;
+  font-size:18px;
 }
+
+.hidden {display:none;}
+
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h2>Linjekontroll v20</h2>
+<h2>Linjekontroll v21</h2>
 
 <label>Netteier</label>
-<input>
+<input id="netteier">
 
 <label>LinjeID</label>
-<input>
+<input id="linje">
 
 <label>Mast nr</label>
-<input>
+<input id="mast">
 
 <label>GPS</label>
 <input id="gps">
 <button class="kontroll" onclick="gps()">Slå på GPS</button>
 
-<button class="kontroll" onclick="toggle('mastok', this)">Mast OK</button>
+<button class="kontroll" id="mastok" onclick="toggleMastOK()">Mast OK</button>
 
 <!-- FUNDAMENT -->
-<button class="kontroll" onclick="vis('f')">Skjev mast/fundament</button>
+<button class="kontroll" onclick="toggle('f')">Skjev mast/fundament</button>
 <div id="f" class="hidden">
-  <button class="avvik" onclick="velg('f',this)">Skjev</button>
-  <button class="avvik" onclick="velg('f',this)">Setning</button>
-  <button class="avvik" onclick="velg('f',this)">Fundamentfeil</button>
+  <button class="avvik" onclick="velg('f')">Skjev</button>
+  <button class="avvik" onclick="velg('f')">Setning</button>
+  <button class="avvik" onclick="velg('f')">Fundamentfeil</button>
   <button class="kamera">📷 Ta bilde</button>
+  <textarea placeholder="Merknad"></textarea>
 </div>
 
 <!-- BARDUN -->
-<button class="kontroll" onclick="vis('b')">Barduner</button>
+<button class="kontroll" onclick="toggle('b')">Barduner</button>
 <div id="b" class="hidden">
-  <button class="avvik" onclick="velg('b',this)">Slakk</button>
-  <button class="avvik" onclick="velg('b',this)">Rust</button>
-  <button class="avvik" onclick="velg('b',this)">Brudd</button>
+  <button class="avvik" onclick="velg('b')">Slakk</button>
+  <button class="avvik" onclick="velg('b')">Rust</button>
+  <button class="avvik" onclick="velg('b')">Brudd</button>
   <button class="kamera">📷 Ta bilde</button>
+  <textarea placeholder="Merknad"></textarea>
 </div>
 
 <!-- ISOLATOR -->
-<button class="kontroll" onclick="vis('i')">Isolator</button>
+<button class="kontroll" onclick="toggle('i')">Isolator</button>
 <div id="i" class="hidden">
-  <button class="avvik" onclick="velg('i',this)">Knust</button>
-  <button class="avvik" onclick="velg('i',this)">Krypestrøm</button>
+  <button class="avvik" onclick="velg('i')">Knust</button>
+  <button class="avvik" onclick="velg('i')">Krypestrøm</button>
   <button class="kamera">📷 Ta bilde</button>
+  <textarea placeholder="Merknad"></textarea>
 </div>
 
-<button class="bunn">Lagre mast</button>
+<button class="bunn" onclick="lagre()">Lagre mast</button>
 <button class="bunn">Last ned Excel</button>
-<button class="bunn" onclick="resetAll()">Ny mast</button>
+<button class="bunn" onclick="nyMast()">Ny mast</button>
 
 </div>
 
@@ -122,27 +141,34 @@ function gps(){
 }
 
 /* Åpne/lukke */
-function vis(id){
+function toggle(id){
  let el=document.getElementById(id);
  el.classList.toggle("hidden");
 }
 
 /* Velg avvik */
-function velg(id,btn){
+function velg(id){
  let parent=document.getElementById(id);
- parent.previousElementSibling.classList.add("rod");
+ parent.previousElementSibling.classList.add("aktiv");
 }
 
-/* Toggle Mast OK */
-function toggle(id,btn){
- btn.classList.toggle("rod");
+/* Mast OK toggle */
+function toggleMastOK(){
+ document.getElementById("mastok").classList.toggle("aktiv");
 }
 
-/* Reset */
-function resetAll(){
- document.querySelectorAll(".rod").forEach(e=>e.classList.remove("rod"));
- document.querySelectorAll(".hidden").forEach(e=>e.style.display="none");
- document.querySelectorAll("input").forEach(e=>e.value="");
+/* Lagre */
+function lagre(){
+ alert("Lagret");
+}
+
+/* Ny mast */
+function nyMast(){
+ document.querySelectorAll(".aktiv").forEach(e=>e.classList.remove("aktiv"));
+ document.querySelectorAll(".hidden").forEach(e=>e.classList.add("hidden"));
+ document.querySelectorAll("textarea").forEach(e=>e.value="");
+ document.getElementById("mast").value="";
+ document.getElementById("gps").value="";
 }
 
 </script>
