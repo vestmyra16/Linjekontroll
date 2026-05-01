@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 
-<title>Linjekontroll v25</title>
+<title>Linjekontroll v26</title>
 
 <style>
 body { font-family: Arial; background:#f4f4f4; margin:0; }
@@ -39,15 +39,16 @@ button {
 /* Avvik */
 .avvik { background:#ccc; color:black; }
 
-/* Aktiv */
-.aktiv { background:#d32f2f !important; color:white; }
+/* RØD = AVVIK PÅ KONTROLLPUNKT */
+.rød { background:#d32f2f !important; color:white; }
+
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h2>Linjekontroll v25</h2>
+<h2>Linjekontroll v26</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -119,24 +120,30 @@ function bygg(){
   html += `<div style="margin-top:10px">`;
 
   html += `
-  <button class="kontroll" onclick="toggleVis(${i})">
+  <button id="kp_${i}" class="kontroll" onclick="toggleVis(${i})">
     ${p.navn}
   </button>
   `;
 
-  html += `<div id="panel_${i}" style="display:none">`;
+  /* Mast OK skal IKKE ha noe under */
+  if(p.avvik.length > 0){
 
-  p.avvik.forEach(a=>{
-   html += `<button class="avvik" onclick="toggle(this)">${a}</button>`;
-  });
+    html += `<div id="panel_${i}" style="display:none">`;
 
-  html += `
-  <button class="kontroll" onclick="taBilde(this)">📷 Ta bilde</button>
-  <input type="file" accept="image/*" capture="environment" style="display:none">
-  <textarea placeholder="Merknad"></textarea>
-  `;
+    p.avvik.forEach(a=>{
+      html += `<button class="avvik" onclick="toggleAvvik(${i}, this)">${a}</button>`;
+    });
 
-  html += `</div></div>`;
+    html += `
+    <button class="kontroll" onclick="taBilde(this)">📷 Ta bilde</button>
+    <input type="file" accept="image/*" capture="environment" style="display:none">
+    <textarea placeholder="Merknad"></textarea>
+    `;
+
+    html += `</div>`;
+  }
+
+  html += `</div>`;
  });
 
  document.getElementById("punkter").innerHTML = html;
@@ -145,17 +152,26 @@ function bygg(){
 /* Vis/skjul */
 function toggleVis(i){
  let el = document.getElementById("panel_" + i);
+ if(!el) return;
 
- if(el.style.display === "none"){
-  el.style.display = "block";
- } else {
-  el.style.display = "none";
- }
+ el.style.display = el.style.display === "none" ? "block" : "none";
 }
 
-/* Toggle avvik */
-function toggle(btn){
+/* Avvik styrer kontrollpunkt */
+function toggleAvvik(i, btn){
+
  btn.classList.toggle("aktiv");
+
+ let panel = document.getElementById("panel_" + i);
+ let kp = document.getElementById("kp_" + i);
+
+ let aktive = panel.querySelectorAll(".aktiv").length;
+
+ if(aktive > 0){
+  kp.classList.add("rød");
+ } else {
+  kp.classList.remove("rød");
+ }
 }
 
 /* Kamera */
@@ -166,7 +182,6 @@ function taBilde(btn){
  input.onchange = function(){
   if(input.files.length > 0){
    btn.innerText = "📷 Bilde ✔";
-   btn.classList.add("aktiv");
   }
  }
 }
@@ -204,6 +219,10 @@ function ny(){
  document.getElementById("mast").value = "";
  document.getElementById("gps").value = "";
 
+ document.querySelectorAll(".rød").forEach(e=>{
+  e.classList.remove("rød");
+ });
+
  document.querySelectorAll(".aktiv").forEach(e=>{
   e.classList.remove("aktiv");
  });
@@ -216,14 +235,14 @@ function ny(){
   i.value = "";
  });
 
+ document.querySelectorAll("[id^=panel_]").forEach(p=>{
+  p.style.display = "none";
+ });
+
  document.querySelectorAll("button").forEach(b=>{
   if(b.innerText.includes("Bilde")){
    b.innerText = "📷 Ta bilde";
   }
- });
-
- document.querySelectorAll("[id^=panel_]").forEach(p=>{
-  p.style.display = "none";
  });
 }
 
