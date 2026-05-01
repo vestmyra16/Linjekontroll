@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v27</title>
+<title>Linjekontroll v28</title>
+
+<!-- ✅ IKON (iPhone FIX) -->
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2e7d32">
 
 <style>
 body {font-family: Arial; background:#f4f4f4; margin:0;}
@@ -38,13 +44,14 @@ border:none; border-radius:10px; font-size:16px;
 .green {background:#2e7d32; color:white;}
 .darkgreen {background:#1b5e20; color:white;}
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<h2>Linjekontroll v27</h2>
+<h2>Linjekontroll v28</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -61,7 +68,6 @@ border:none; border-radius:10px; font-size:16px;
 <button class="green" onclick="startGPS()">Slå på GPS</button>
 <button class="green" onclick="stopGPS()">Slå av GPS</button>
 
-<!-- 🔴 DENNE MÅ VÆRE MED -->
 <div id="punkter"></div>
 
 <button class="darkgreen" onclick="lagre()">Lagre mast</button>
@@ -75,7 +81,6 @@ border:none; border-radius:10px; font-size:16px;
 let gpsWatch = null;
 let data = [];
 
-// 🔴 HER ER HELE LISTA – IKKE RØR
 let punkter = [
 {navn:"Mast OK", avvik:[]},
 
@@ -198,7 +203,6 @@ status = {};
 render();
 }
 
-// 🔴 KRITISK: denne må være med
 render();
 
 </script>
