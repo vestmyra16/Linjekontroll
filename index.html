@@ -7,51 +7,46 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 
-<title>Linjekontroll v27</title>
+<title>Linjekontroll v26</title>
 
 <style>
-body { font-family: Arial; background:#f4f4f4; margin:0; }
-.container { max-width:600px; margin:auto; padding:12px; }
+body {font-family: Arial; background:#f4f4f4; margin:0;}
+.container {max-width:600px; margin:auto; padding:12px;}
 
-h2 { text-align:center; }
+h2 {text-align:center;}
 
-label { font-weight:bold; display:block; margin-top:10px; }
-
+label {font-weight:bold; display:block; margin-top:10px;}
 input, textarea {
- width:100%;
- padding:10px;
- margin-top:5px;
- font-size:16px;
+width:100%; padding:10px; margin-top:5px; font-size:16px;
+}
+
+.kp {
+background:#2e7d32; color:white; width:100%;
+padding:14px; margin-top:8px; border:none; border-radius:10px;
+}
+
+.kp.ok { background:#66bb6a; }
+.kp.avvik { background:#c62828; }
+
+.avvik {
+background:#ccc; width:100%;
+padding:12px; margin-top:5px; border:none; border-radius:8px;
 }
 
 button {
- width:100%;
- padding:14px;
- margin-top:10px;
- border:none;
- border-radius:10px;
- font-size:16px;
+width:100%; padding:14px; margin-top:10px;
+border:none; border-radius:10px; font-size:16px;
 }
 
-/* Kontrollpunkt */
-.kontroll { background:#2e7d32; color:white; }
-
-/* Mast OK aktiv */
-.ok { background:#66bb6a !important; }
-
-/* Avvik */
-.avvik { background:#ccc; color:black; }
-
-/* Rød kontroll */
-.rød { background:#d32f2f !important; color:white; }
-
+.green {background:#2e7d32; color:white;}
+.darkgreen {background:#1b5e20; color:white;}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h2>Linjekontroll v27</h2>
+<h2>Linjekontroll v26</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -65,242 +60,143 @@ button {
 <label>GPS</label>
 <input id="gps">
 
-<button class="kontroll" onclick="startGPS()">Slå på GPS</button>
-<button class="kontroll" onclick="stopGPS()">Slå av GPS</button>
+<button class="green" onclick="startGPS()">Slå på GPS</button>
+<button class="green" onclick="stopGPS()">Slå av GPS</button>
 
 <div id="punkter"></div>
 
-<button class="kontroll" onclick="lagre()">Lagre mast</button>
-<button class="kontroll" onclick="lastNed()">Last ned Excel</button>
-<button class="kontroll" onclick="ny()">Ny mast</button>
+<button class="darkgreen" onclick="lagre()">Lagre mast</button>
+<button class="darkgreen" onclick="lastNed()">Last ned Excel</button>
+<button class="green" onclick="nyMast()">Ny mast</button>
 
 </div>
 
 <script>
-
+let gpsWatch = null;
 let data = [];
-let watchID = null;
 
-/* GPS */
+let punkter = [
+{navn:"Mast OK", avvik:[]},
+
+{navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
+{navn:"Barduner", avvik:["Løs","Brudd"]},
+
+{navn:"Stolper", avvik:["Råte","Skade"]},
+{navn:"Stålmast", avvik:["Rust","Skade"]},
+{navn:"Topphette", avvik:["Mangler","Defekt"]},
+
+{navn:"Traversfeste", avvik:["Skade"]},
+{navn:"Travers", avvik:["Skade"]},
+
+{navn:"Isolatorfeste", avvik:["Skade"]},
+{navn:"Isolator", avvik:["Knust","Krypestrøm"]},
+
+{navn:"Bendsling", avvik:["Løs","Brudd"]},
+{navn:"Liner", avvik:["Kordelbrudd"]},
+{navn:"Strekking", avvik:["Skjev"]},
+
+{navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
+{navn:"Trase", avvik:["Skog","Kratt"]}
+];
+
+let status = {};
+
+function render(){
+let html="";
+
+punkter.forEach((p,i)=>{
+let cls="kp";
+if(status[i]=="ok") cls+=" ok";
+if(status[i]=="avvik") cls+=" avvik";
+
+html+=`<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
+
+if(p.avvik.length>0 && status[i]=="vis"){
+p.avvik.forEach(a=>{
+html+=`<button class="avvik" onclick="settAvvik(${i})">${a}</button>`;
+});
+
+html+=`
+<button class="green">📸 Ta bilde</button>
+<textarea placeholder="Merknad" id="m${i}"></textarea>
+`;
+}
+});
+
+document.getElementById("punkter").innerHTML=html;
+}
+
+function toggle(i){
+if(punkter[i].navn=="Mast OK"){
+status[i]="ok";
+} else {
+status[i]="vis";
+}
+render();
+}
+
+function settAvvik(i){
+status[i]="avvik";
+render();
+}
+
 function startGPS(){
- if(navigator.geolocation){
-  watchID = navigator.geolocation.watchPosition(pos=>{
-   document.getElementById("gps").value =
-    pos.coords.latitude.toFixed(6)+", "+pos.coords.longitude.toFixed(6);
-  });
- }
+gpsWatch = navigator.geolocation.watchPosition(p=>{
+document.getElementById("gps").value =
+p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
+});
 }
 
 function stopGPS(){
- if(watchID) navigator.geolocation.clearWatch(watchID);
+navigator.geolocation.clearWatch(gpsWatch);
 }
 
-/* Kontrollpunkter */
-const punkter = [
- {navn:"Mast OK", avvik:[]},
- {navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
- {navn:"Barduner", avvik:["Løs","Brudd"]},
- {navn:"Stolper", avvik:["Råte","Skade"]},
- {navn:"Stålmast", avvik:["Rust","Skade"]},
- {navn:"Topphatte", avvik:["Mangler","Defekt"]},
- {navn:"Traversfeste", avvik:["Løs","Skade"]},
- {navn:"Travers", avvik:["Skjev","Skade"]},
- {navn:"Isolatorfeste", avvik:["Løs","Skade"]},
- {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
- {navn:"Bendsling", avvik:["Løs","Brudd"]},
- {navn:"Liner", avvik:["Korrosjon","Kordelbrudd"]},
- {navn:"Strekking", avvik:["Skjev"]},
- {navn:"Merking", avvik:["Mangler","Uleselig"]},
- {navn:"Trase", avvik:["Skog","Kratt"]}
-];
-
-/* Bygg UI */
-function bygg(){
- let html = "";
-
- punkter.forEach((p, i)=>{
-
-  html += `<div style="margin-top:10px">`;
-
-  /* Mast OK */
-  if(p.navn === "Mast OK"){
-    html += `
-    <button id="kp_${i}" class="kontroll" onclick="toggleOK(${i})">
-      ${p.navn}
-    </button>`;
-  } else {
-
-    html += `
-    <button id="kp_${i}" class="kontroll" onclick="toggleVis(${i})">
-      ${p.navn}
-    </button>`;
-
-    html += `<div id="panel_${i}" style="display:none">`;
-
-    p.avvik.forEach(a=>{
-      html += `<button class="avvik" onclick="toggleAvvik(${i}, this)">${a}</button>`;
-    });
-
-    html += `
-    <button class="kontroll" onclick="taBilde(this)">📷 Ta bilde</button>
-    <input type="file" accept="image/*" capture="environment" style="display:none">
-    <textarea placeholder="Merknad"></textarea>
-    `;
-
-    html += `</div>`;
-  }
-
-  html += `</div>`;
- });
-
- document.getElementById("punkter").innerHTML = html;
-}
-
-/* Mast OK toggle */
-function toggleOK(i){
- let btn = document.getElementById("kp_" + i);
- btn.classList.toggle("ok");
-}
-
-/* Vis/skjul */
-function toggleVis(i){
- let el = document.getElementById("panel_" + i);
- el.style.display = el.style.display === "none" ? "block" : "none";
-}
-
-/* Avvik styrer kontrollpunkt */
-function toggleAvvik(i, btn){
-
- btn.classList.toggle("aktiv");
-
- let panel = document.getElementById("panel_" + i);
- let kp = document.getElementById("kp_" + i);
-
- let aktive = panel.querySelectorAll(".aktiv").length;
-
- if(aktive > 0){
-  kp.classList.add("rød");
- } else {
-  kp.classList.remove("rød");
- }
-}
-
-/* Kamera */
-function taBilde(btn){
- let input = btn.nextElementSibling;
- input.click();
-
- input.onchange = function(){
-  if(input.files.length > 0){
-   btn.innerText = "📷 Bilde ✔";
-  }
- }
-}
-
-/* Lagre */
 function lagre(){
+let rad = {
+netteier: document.getElementById("netteier").value,
+linje: document.getElementById("linje").value,
+mast: document.getElementById("mast").value,
+gps: document.getElementById("gps").value,
+punkter: []
+};
 
- let rader = [];
+punkter.forEach((p,i)=>{
+rad.punkter.push({
+navn:p.navn,
+status: status[i] || "",
+merknad: document.getElementById("m"+i)?.value || ""
+});
+});
 
- let base = {
-  netteier: document.getElementById("netteier").value,
-  linje: document.getElementById("linje").value,
-  mast: document.getElementById("mast").value,
-  gps: document.getElementById("gps").value
- };
-
- punkter.forEach((p, i)=>{
-
-  if(p.avvik.length === 0) return; // Mast OK hoppes over
-
-  let panel = document.getElementById("panel_" + i);
-  let kp = document.getElementById("kp_" + i);
-
-  let avvikKnapper = panel.querySelectorAll(".avvik.aktiv");
-  let merknad = panel.querySelector("textarea").value;
-
-  if(avvikKnapper.length > 0 || merknad !== ""){
-
-    let avvikListe = [];
-
-    avvikKnapper.forEach(a=>{
-      avvikListe.push(a.innerText);
-    });
-
-    rader.push({
-      ...base,
-      kontrollpunkt: p.navn,
-      avvik: avvikListe.join("; "),
-      merknad: merknad
-    });
-  }
- });
-
- if(rader.length === 0){
-  alert("Ingen avvik registrert");
- } else {
-  data = data.concat(rader);
-  alert("Lagret med avvik");
- }
+data.push(rad);
+alert("Lagret");
 }
 
- data.push(mast);
- alert("Lagret");
-}
-
-/* Excel */
 function lastNed(){
- let csv = "Netteier,Linje,Mast,GPS\n";
+let csv="Netteier,Linje,Mast,GPS,Kontrollpunkt,Status,Merknad\n";
 
- data.forEach(d=>{
-  csv += `${d.netteier},${d.linje},${d.mast},${d.gps}\n`;
- });
+data.forEach(d=>{
+d.punkter.forEach(p=>{
+csv+=`${d.netteier},${d.linje},${d.mast},${d.gps},${p.navn},${p.status},${p.merknad}\n`;
+});
+});
 
- let blob = new Blob([csv], {type:"text/csv"});
- let a = document.createElement("a");
- a.href = URL.createObjectURL(blob);
- a.download = "linjekontroll.csv";
- a.click();
+let blob=new Blob([csv],{type:"text/csv"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="linjekontroll.csv";
+a.click();
 }
 
-/* Ny mast */
-function ny(){
- document.getElementById("mast").value = "";
- document.getElementById("gps").value = "";
-
- document.querySelectorAll(".rød").forEach(e=>{
-  e.classList.remove("rød");
- });
-
- document.querySelectorAll(".ok").forEach(e=>{
-  e.classList.remove("ok");
- });
-
- document.querySelectorAll(".aktiv").forEach(e=>{
-  e.classList.remove("aktiv");
- });
-
- document.querySelectorAll("textarea").forEach(e=>{
-  e.value = "";
- });
-
- document.querySelectorAll("input[type=file]").forEach(i=>{
-  i.value = "";
- });
-
- document.querySelectorAll("[id^=panel_]").forEach(p=>{
-  p.style.display = "none";
- });
-
- document.querySelectorAll("button").forEach(b=>{
-  if(b.innerText.includes("Bilde")){
-   b.innerText = "📷 Ta bilde";
-  }
- });
+function nyMast(){
+document.getElementById("mast").value="";
+document.getElementById("gps").value="";
+status={};
+render();
 }
 
-bygg();
-
+render();
 </script>
+
 </body>
 </html>
