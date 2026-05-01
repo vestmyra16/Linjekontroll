@@ -3,40 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Linjekontroll</title>
 
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="icon" href="icon-192.png">
-<link rel="manifest" href="manifest.json">
-
 <style>
-body{font-family:Arial;max-width:700px;margin:auto;padding:15px;background:#f5f5f5;}
-h2{text-align:center;}
+body { font-family: Arial; background:#f2f2f2; }
+.container { max-width:600px; margin:auto; padding:10px; }
 
-label{font-weight:bold;color:black;margin-top:10px;display:block;}
-input{width:100%;padding:12px;margin-top:5px;border-radius:6px;border:1px solid #888;font-size:16px;}
-
-.knapp{
-width:100%;
-padding:14px;
-margin-top:8px;
-border:none;
-border-radius:6px;
-font-size:16px;
-text-align:left;
+button {
+    width:100%;
+    padding:14px;
+    margin:5px 0;
+    border-radius:10px;
+    border:2px solid #ccc;
+    background:#eee;
+    font-size:15px;
 }
 
-.gronn{background:#1f7a1f;color:white;}
-.rod{background:#c62828;color:white;}
-.graa{background:#e0e0e0;color:black;}
+button.red { background:#ffcccc; border-color:red; }
+button.green { background:#ccffcc; border-color:green; }
 
+.hidden { display:none; }
+
+select, textarea {
+    width:100%;
+    margin-top:5px;
+    padding:8px;
+}
 </style>
 </head>
 
-<body onload="sjekkTilgang()">
+<body>
 
-<h2>Linjekontroll v9</h2>
+<div class="container">
+
+<h3>Linjekontroll</h3>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -44,185 +44,162 @@ text-align:left;
 <label>LinjeID</label>
 <input id="linje">
 
-<label>Mast nr</label>
-<input id="mast">
+<label>Mastnr</label>
+<input id="mastnr" type="number" value="1">
 
-<button class="knapp gronn" onclick="mastOK()">✔ Mast OK</button>
+<label>GPS</label>
+<input id="gps">
 
-<div id="kontroll"></div>
+<button id="mastok" onclick="mastOK()">Ingen synlige avvik – Mast OK</button>
 
-<button class="knapp gronn" onclick="lagreData()">💾 Lagre mast</button>
-<button class="knapp gronn" onclick="lastNedExcel()">📄 Last ned Excel</button>
-<button class="knapp graa" onclick="nyMast()">➕ Ny mast</button>
+<div id="kontrollpunkter"></div>
+
+<button onclick="lagreMast()">Lagre mast</button>
+<button onclick="lastNed()">Last ned Excel</button>
+<button onclick="nyMast()">Ny mast</button>
+
+</div>
 
 <script>
 
-// 🔐 BESKYTTELSE
-const KODE="stolpe2026";
-const DAGER=60;
+const data = [];
 
-function sjekkTilgang(){
-let start=localStorage.getItem("startDato");
-let idag=new Date().getTime();
-
-if(!start){
-localStorage.setItem("startDato", idag);
-}else{
-let diff=(idag-start)/(1000*60*60*24);
-if(diff>DAGER){
-document.body.innerHTML="<h2>Tilgang utløpt</h2>";
-return;
-}
-}
-
-let input=prompt("Kode:");
-if(input!==KODE){
-document.body.innerHTML="<h2>Feil kode</h2>";
-}
-}
-
-// 📋 KONTROLLPUNKTER
-const kontrollpunkter = {
-"Skjev mast/fundament": ["Skjev","Setning","Fundamentfeil"],
-"Barduner": ["Slakk","Brudd","Rust"],
-"Stolper": ["Råte","Sprekk"],
-"Topphatte": ["Mangler","Defekt"],
-"Traversfeste": ["Sprukket","Defekt"],
-"Travers": ["Skade","Mosegrodd"],
-"Isolatorfeste": ["Slitasje","Rust"],
-"Toppline": ["Korrosjon"],
-"Jordinger": ["Løs","Brudd"],
-"Merking": ["HS mangler","Mnr mangler"]
+const kontroll = {
+"Skjev mast/fundament":["Skjev"],
+"Barduner":["Anvisere defekt","Slakk","Rust"],
+"Stolper":["Råte","Sprekk"],
+"Stålmast":["Armering synlig","Fundament erodert","Fundament oppsprukket"],
+"Topphette":["Mangler","Defekt"],
+"Traversfeste":["Defekt","Sprukket"],
+"Travers":["Skade","Mosegrodd","Skjev"],
+"Isolatorfeste":["Slitasje","Rust"],
+"Isolator":["Sprukket","Knust","Krypestrømsvei"],
+"Bendsling":["Korrosjon","Løs"],
+"Liner":["Korrosjon","Kordelbrudd"],
+"Strekking":["Skjev","Lav høyde"],
+"Skjøter/klemmer":["Korrodert","Varmgang","Tape i klemme"],
+"Topp/jordline":["Korrosjon","Beslag rust"],
+"Jordinger":["Brudd","Løs"],
+"Trasé":["Kratt","Sideskog","Underskog"],
+"Merking":["Hinderlys","HS mangler","Mnr mangler","Farvannskilt"]
 };
 
-let valgtAvvik = {};
-let registreringer=[];
+const container = document.getElementById("kontrollpunkter");
 
-// 🔧 BYGG UI
-function bygg(){
+Object.keys(kontroll).forEach(punkt=>{
+    let div = document.createElement("div");
 
-let div=document.getElementById("kontroll");
-div.innerHTML="";
+    let btn = document.createElement("button");
+    btn.innerText = punkt;
 
-for(let kp in kontrollpunkter){
+    let select = document.createElement("select");
+    select.classList.add("hidden");
 
-let btn=document.createElement("button");
-btn.className="knapp gronn";
-btn.innerText=kp;
+    kontroll[punkt].forEach(avvik=>{
+        let opt = document.createElement("option");
+        opt.value = avvik;
+        opt.text = avvik;
+        select.appendChild(opt);
+    });
 
-btn.onclick=function(){
-visAvvik(kp,btn);
-};
+    let tekst = document.createElement("textarea");
+    tekst.placeholder = "Merknad";
+    tekst.classList.add("hidden");
 
-div.appendChild(btn);
-}
-}
+    let bilde = document.createElement("input");
+    bilde.type="file";
+    bilde.accept="image/*";
+    bilde.capture="camera";
+    bilde.classList.add("hidden");
 
-function visAvvik(kp,btn){
+    btn.onclick = ()=>{
+        btn.classList.add("red");
+        select.classList.remove("hidden");
+        tekst.classList.remove("hidden");
+        bilde.classList.remove("hidden");
+    };
 
-let eksisterende=document.getElementById("sub_"+kp);
+    div.appendChild(btn);
+    div.appendChild(select);
+    div.appendChild(tekst);
+    div.appendChild(bilde);
 
-if(eksisterende){
-eksisterende.remove();
-return;
-}
-
-let sub=document.createElement("div");
-sub.id="sub_"+kp;
-
-kontrollpunkter[kp].forEach(avvik=>{
-
-let b=document.createElement("button");
-b.className="knapp graa";
-b.innerText=avvik;
-
-b.onclick=function(){
-
-b.classList.remove("graa");
-b.classList.add("rod");
-
-btn.classList.remove("gronn");
-btn.classList.add("rod");
-
-if(!valgtAvvik[kp]) valgtAvvik[kp]=[];
-valgtAvvik[kp].push(avvik);
-
-};
-
-sub.appendChild(b);
+    container.appendChild(div);
 });
 
-btn.after(sub);
-}
-
-// ✔ MAST OK
 function mastOK(){
-valgtAvvik={"Mast OK":["Ingen avvik"]};
-alert("Mast registrert som OK");
+    document.getElementById("mastok").classList.add("green");
 }
 
-// 💾 LAGRE
-function lagreData(){
+function lagreMast(){
 
-for(let kp in valgtAvvik){
-valgtAvvik[kp].forEach(avvik=>{
+    let mast = {
+        netteier:document.getElementById("netteier").value,
+        linje:document.getElementById("linje").value,
+        mastnr:document.getElementById("mastnr").value,
+        gps:document.getElementById("gps").value,
+        avvik:[]
+    };
 
-registreringer.push([
-netteier.value,
-linje.value,
-mast.value,
-kp,
-avvik
-]);
+    document.querySelectorAll("#kontrollpunkter div").forEach(div=>{
+        let btn = div.querySelector("button");
+        let select = div.querySelector("select");
+        let tekst = div.querySelector("textarea");
 
-});
+        if(btn.classList.contains("red")){
+            mast.avvik.push({
+                punkt:btn.innerText,
+                type:select.value,
+                merknad:tekst.value
+            });
+        }
+    });
+
+    data.push(mast);
+    alert("Mast lagret");
 }
 
-alert("Mast lagret");
-}
-
-// 📄 EXCEL
-function lastNedExcel(){
-
-let header=["Netteier","Linje","Mast","Kontrollpunkt","Avvik"];
-
-let data=[header,...registreringer];
-
-let csv=data.map(e=>e.join(";")).join("\n");
-
-let blob=new Blob([csv],{type:"text/csv"});
-let link=document.createElement("a");
-
-link.href=URL.createObjectURL(blob);
-link.download="linjekontroll.csv";
-link.click();
-}
-
-// 🔄 NY MAST
 function nyMast(){
 
-let n=netteier.value;
-let l=linje.value;
+    let netteier = document.getElementById("netteier").value;
+    let linje = document.getElementById("linje").value;
 
-valgtAvvik={};
+    document.querySelectorAll("input, textarea").forEach(e=>e.value="");
 
-document.querySelectorAll("button").forEach(b=>{
-if(b.classList.contains("rod")){
-b.classList.remove("rod");
-b.classList.add("gronn");
+    document.getElementById("netteier").value = netteier;
+    document.getElementById("linje").value = linje;
+
+    document.getElementById("mastnr").value++;
+
+    document.querySelectorAll("button").forEach(b=>{
+        b.classList.remove("red","green");
+    });
+
+    document.querySelectorAll("select, textarea, input[type=file]").forEach(e=>{
+        e.classList.add("hidden");
+    });
 }
-});
 
-document.querySelectorAll("div[id^='sub_']").forEach(d=>d.remove());
+function lastNed(){
 
-mast.value="";
+    let csv = "Netteier,Linje,Mastnr,GPS,Punkt,Avvik,Merknad\n";
 
-netteier.value=n;
-linje.value=l;
+    data.forEach(m=>{
+        if(m.avvik.length===0){
+            csv += `${m.netteier},${m.linje},${m.mastnr},${m.gps},OK,,\n`;
+        } else {
+            m.avvik.forEach(a=>{
+                csv += `${m.netteier},${m.linje},${m.mastnr},${m.gps},${a.punkt},${a.type},${a.merknad}\n`;
+            });
+        }
+    });
+
+    let blob = new Blob([csv], {type:"text/csv"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "linjekontroll.csv";
+    a.click();
 }
-
-// START
-bygg();
 
 </script>
 
