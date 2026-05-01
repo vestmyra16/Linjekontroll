@@ -3,26 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+
 <title>Linjekontroll v24</title>
 
 <style>
-body { font-family:Arial; background:#f4f4f4; margin:0; }
+body { font-family: Arial; background:#f4f4f4; margin:0; }
 .container { max-width:600px; margin:auto; padding:12px; }
-
 h2 { text-align:center; }
 
 label { font-weight:bold; display:block; margin-top:10px; }
+
 input, textarea {
  width:100%;
- padding:12px;
+ padding:10px;
  margin-top:5px;
  font-size:16px;
 }
 
 button {
  width:100%;
- padding:16px;
- margin-top:8px;
+ padding:14px;
+ margin-top:10px;
  border:none;
  border-radius:10px;
  font-size:16px;
@@ -32,13 +36,12 @@ button {
 .kontroll { background:#2e7d32; color:white; }
 
 /* Avvik */
-.avvik { background:#ccc; }
+.avvik { background:#ccc; color:black; }
 
 /* Aktiv */
-.aktiv { background:#c62828 !important; color:white; }
+.aktiv { background:#d32f2f !important; color:white; }
 
-/* Skjult */
-.hidden { display:none; }
+textarea { margin-top:5px; }
 </style>
 </head>
 
@@ -59,108 +62,153 @@ button {
 <label>GPS</label>
 <input id="gps">
 
-<button class="kontroll" onclick="gps()">Slå på GPS</button>
-
-<button id="mastok" class="kontroll" onclick="toggleAktiv(this)">Mast OK</button>
-
-<!-- ===== KONTROLLPUNKT ===== -->
+<button class="kontroll" onclick="startGPS()">Slå på GPS</button>
+<button class="kontroll" onclick="stopGPS()">Slå av GPS</button>
 
 <div id="punkter"></div>
 
-<!-- ===== FUNKSJONSKNAPPER ===== -->
-
 <button class="kontroll" onclick="lagre()">Lagre mast</button>
-<button class="kontroll" onclick="excel()">Last ned Excel</button>
+<button class="kontroll" onclick="lastNed()">Last ned Excel</button>
 <button class="kontroll" onclick="ny()">Ny mast</button>
 
 </div>
 
 <script>
 
+let data = [];
+let watchID = null;
+
 /* GPS */
-function gps(){
- navigator.geolocation.getCurrentPosition(p=>{
-  document.getElementById("gps").value =
-  p.coords.latitude.toFixed(6)+","+p.coords.longitude.toFixed(6);
- });
+function startGPS(){
+ if(navigator.geolocation){
+  watchID = navigator.geolocation.watchPosition(pos=>{
+   document.getElementById("gps").value =
+    pos.coords.latitude.toFixed(6)+", "+pos.coords.longitude.toFixed(6);
+  });
+ }
 }
 
-/* Toggle kontroll */
-function toggleAktiv(el){
- el.classList.toggle("aktiv");
+function stopGPS(){
+ if(watchID) navigator.geolocation.clearWatch(watchID);
 }
 
-/* Åpne/lukke */
-function åpne(id){
- document.querySelectorAll(".gruppe").forEach(e=>e.classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
-}
-
-/* Velg avvik */
-function velg(btn){
- btn.classList.toggle("aktiv");
-}
-
-/* DATA – ALLE KONTROLLPUNKT */
-const data = [
- {navn:"Skjev mast/fundament", avvik:["Skjev"]},
+/* Kontrollpunkter */
+const punkter = [
+ {navn:"Mast OK", avvik:[]},
+ {navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
  {navn:"Barduner", avvik:["Løs","Brudd"]},
  {navn:"Stolper", avvik:["Råte","Skade"]},
  {navn:"Stålmast", avvik:["Rust","Skade"]},
- {navn:"Topphatte", avvik:["Løs","Skade"]},
+ {navn:"Topphatte", avvik:["Mangler","Defekt"]},
  {navn:"Traversfeste", avvik:["Løs","Skade"]},
- {navn:"Travers", avvik:["Skade","Skjev"]},
+ {navn:"Travers", avvik:["Skjev","Skade"]},
  {navn:"Isolatorfeste", avvik:["Løs","Skade"]},
  {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
  {navn:"Bendsling", avvik:["Løs","Brudd"]},
  {navn:"Liner", avvik:["Korrosjon","Kordelbrudd"]},
  {navn:"Strekking", avvik:["Skjev"]},
- {navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
+ {navn:"Merking", avvik:["Mangler","Uleselig"]},
  {navn:"Trase", avvik:["Skog","Kratt"]}
 ];
 
-/* GENERER UI */
-let html = "";
+/* Bygg UI */
+function bygg(){
+ let html = "";
 
-data.forEach((p,i)=>{
+ punkter.forEach(p=>{
+  html += `<div style="margin-top:10px">`;
 
- let id="g"+i;
+  html += `<button class="kontroll" onclick="toggle(this)">${p.navn}</button>`;
 
- html += `
-<button class="kontroll" onclick="åpne('${id}')">${p.navn}</button>
+  p.avvik.forEach(a=>{
+   html += `<button class="avvik" onclick="toggle(this)">${a}</button>`;
+  });
 
-<div id="${id}" class="gruppe hidden">
-`;
+  /* Kamera */
+  html += `
+  <button class="kontroll" onclick="taBilde(this)">📷 Ta bilde</button>
+  <input type="file" accept="image/*" capture="environment" style="display:none">
+  `;
 
- p.avvik.forEach(a=>{
-  html += `<button class="avvik" onclick="velg(this)">${a}</button>`;
+  html += `<textarea placeholder="Merknad"></textarea>`;
+  html += `</div>`;
  });
 
- html += `<textarea placeholder="Merknad"></textarea></div>`;
-});
+ document.getElementById("punkter").innerHTML = html;
+}
 
-document.getElementById("punkter").innerHTML = html;
+/* Toggle */
+function toggle(btn){
+ btn.classList.toggle("aktiv");
+}
+
+/* Kamera */
+function taBilde(btn){
+ let input = btn.nextElementSibling;
+ input.click();
+
+ input.onchange = function(){
+  if(input.files.length > 0){
+   btn.innerText = "📷 Bilde ✔";
+   btn.classList.add("aktiv");
+  }
+ }
+}
 
 /* Lagre */
 function lagre(){
- alert("Mast lagret");
+ let mast = {
+  netteier: document.getElementById("netteier").value,
+  linje: document.getElementById("linje").value,
+  mast: document.getElementById("mast").value,
+  gps: document.getElementById("gps").value
+ };
+
+ data.push(mast);
+ alert("Lagret");
 }
 
-/* Excel */
-function excel(){
- alert("Excel eksport kommer");
+/* Excel (CSV) */
+function lastNed(){
+ let csv = "Netteier,Linje,Mast,GPS\n";
+
+ data.forEach(d=>{
+  csv += `${d.netteier},${d.linje},${d.mast},${d.gps}\n`;
+ });
+
+ let blob = new Blob([csv], {type:"text/csv"});
+ let a = document.createElement("a");
+ a.href = URL.createObjectURL(blob);
+ a.download = "linjekontroll.csv";
+ a.click();
 }
 
 /* Ny mast */
 function ny(){
- document.querySelectorAll(".aktiv").forEach(e=>e.classList.remove("aktiv"));
- document.querySelectorAll(".gruppe").forEach(e=>e.classList.add("hidden"));
- document.querySelectorAll("textarea").forEach(e=>e.value="");
- document.getElementById("mast").value="";
- document.getElementById("gps").value="";
+ document.getElementById("mast").value = "";
+ document.getElementById("gps").value = "";
+
+ document.querySelectorAll(".aktiv").forEach(e=>{
+  e.classList.remove("aktiv");
+ });
+
+ document.querySelectorAll("textarea").forEach(e=>{
+  e.value = "";
+ });
+
+ document.querySelectorAll("input[type=file]").forEach(i=>{
+  i.value = "";
+ });
+
+ document.querySelectorAll("button").forEach(b=>{
+  if(b.innerText.includes("Bilde")){
+   b.innerText = "📷 Ta bilde";
+  }
+ });
 }
 
-</script>
+bygg();
 
+</script>
 </body>
 </html>
