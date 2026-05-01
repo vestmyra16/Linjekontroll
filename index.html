@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 
-<title>Linjekontroll v26</title>
+<title>Linjekontroll v27</title>
 
 <style>
 body { font-family: Arial; background:#f4f4f4; margin:0; }
@@ -36,10 +36,13 @@ button {
 /* Kontrollpunkt */
 .kontroll { background:#2e7d32; color:white; }
 
+/* Mast OK aktiv */
+.ok { background:#66bb6a !important; }
+
 /* Avvik */
 .avvik { background:#ccc; color:black; }
 
-/* RØD = AVVIK PÅ KONTROLLPUNKT */
+/* Rød kontroll */
 .rød { background:#d32f2f !important; color:white; }
 
 </style>
@@ -48,7 +51,7 @@ button {
 <body>
 <div class="container">
 
-<h2>Linjekontroll v26</h2>
+<h2>Linjekontroll v27</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -119,14 +122,18 @@ function bygg(){
 
   html += `<div style="margin-top:10px">`;
 
-  html += `
-  <button id="kp_${i}" class="kontroll" onclick="toggleVis(${i})">
-    ${p.navn}
-  </button>
-  `;
+  /* Mast OK */
+  if(p.navn === "Mast OK"){
+    html += `
+    <button id="kp_${i}" class="kontroll" onclick="toggleOK(${i})">
+      ${p.navn}
+    </button>`;
+  } else {
 
-  /* Mast OK skal IKKE ha noe under */
-  if(p.avvik.length > 0){
+    html += `
+    <button id="kp_${i}" class="kontroll" onclick="toggleVis(${i})">
+      ${p.navn}
+    </button>`;
 
     html += `<div id="panel_${i}" style="display:none">`;
 
@@ -149,11 +156,15 @@ function bygg(){
  document.getElementById("punkter").innerHTML = html;
 }
 
+/* Mast OK toggle */
+function toggleOK(i){
+ let btn = document.getElementById("kp_" + i);
+ btn.classList.toggle("ok");
+}
+
 /* Vis/skjul */
 function toggleVis(i){
  let el = document.getElementById("panel_" + i);
- if(!el) return;
-
  el.style.display = el.style.display === "none" ? "block" : "none";
 }
 
@@ -221,6 +232,10 @@ function ny(){
 
  document.querySelectorAll(".rød").forEach(e=>{
   e.classList.remove("rød");
+ });
+
+ document.querySelectorAll(".ok").forEach(e=>{
+  e.classList.remove("ok");
  });
 
  document.querySelectorAll(".aktiv").forEach(e=>{
