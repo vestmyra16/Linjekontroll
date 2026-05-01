@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Linjekontroll v23</title>
+<title>Linjekontroll v24</title>
 
 <style>
 body { font-family:Arial; background:#f4f4f4; margin:0; }
@@ -23,25 +22,30 @@ input, textarea {
 button {
  width:100%;
  padding:16px;
- margin-top:10px;
+ margin-top:8px;
  border:none;
  border-radius:10px;
  font-size:16px;
 }
 
+/* Kontrollpunkt */
 .kontroll { background:#2e7d32; color:white; }
+
+/* Avvik */
 .avvik { background:#ccc; }
+
+/* Aktiv */
 .aktiv { background:#c62828 !important; color:white; }
 
+/* Skjult */
 .hidden { display:none; }
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-<h2>Linjekontroll v23</h2>
+<h2>Linjekontroll v24</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -55,92 +59,106 @@ button {
 <label>GPS</label>
 <input id="gps">
 
-<button class="kontroll" id="gpsBtn">Slå på GPS</button>
+<button class="kontroll" onclick="gps()">Slå på GPS</button>
 
-<button id="mastok" class="kontroll">Mast OK</button>
+<button id="mastok" class="kontroll" onclick="toggleAktiv(this)">Mast OK</button>
 
-<button class="kontroll" id="btnSkjev">Skjev mast/fundament</button>
-<div id="skjev" class="hidden">
-    <button class="avvik">Skjev</button>
-    <textarea placeholder="Merknad"></textarea>
-</div>
+<!-- ===== KONTROLLPUNKT ===== -->
 
-<button class="kontroll" id="btnBardun">Barduner</button>
-<div id="bardun" class="hidden">
-    <button class="avvik">Løs</button>
-    <button class="avvik">Brudd</button>
-    <textarea placeholder="Merknad"></textarea>
-</div>
+<div id="punkter"></div>
 
-<button class="kontroll" id="btnIsolator">Isolator</button>
-<div id="isolator" class="hidden">
-    <button class="avvik">Knust</button>
-    <button class="avvik">Krypestrøm</button>
-    <textarea placeholder="Merknad"></textarea>
-</div>
+<!-- ===== FUNKSJONSKNAPPER ===== -->
 
-<button class="kontroll" id="lagre">Lagre mast</button>
-<button class="kontroll" id="excel">Last ned Excel</button>
-<button class="kontroll" id="ny">Ny mast</button>
+<button class="kontroll" onclick="lagre()">Lagre mast</button>
+<button class="kontroll" onclick="excel()">Last ned Excel</button>
+<button class="kontroll" onclick="ny()">Ny mast</button>
 
 </div>
 
 <script>
 
 /* GPS */
-document.getElementById("gpsBtn").onclick = function(){
+function gps(){
  navigator.geolocation.getCurrentPosition(p=>{
   document.getElementById("gps").value =
   p.coords.latitude.toFixed(6)+","+p.coords.longitude.toFixed(6);
  });
-};
+}
 
-/* Mast OK toggle */
-document.getElementById("mastok").onclick = function(){
- this.classList.toggle("aktiv");
-};
+/* Toggle kontroll */
+function toggleAktiv(el){
+ el.classList.toggle("aktiv");
+}
 
 /* Åpne/lukke */
-document.getElementById("btnSkjev").onclick = function(){
- document.getElementById("skjev").classList.toggle("hidden");
-};
+function åpne(id){
+ document.querySelectorAll(".gruppe").forEach(e=>e.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+}
 
-document.getElementById("btnBardun").onclick = function(){
- document.getElementById("bardun").classList.toggle("hidden");
-};
+/* Velg avvik */
+function velg(btn){
+ btn.classList.toggle("aktiv");
+}
 
-document.getElementById("btnIsolator").onclick = function(){
- document.getElementById("isolator").classList.toggle("hidden");
-};
+/* DATA – ALLE KONTROLLPUNKT */
+const data = [
+ {navn:"Skjev mast/fundament", avvik:["Skjev"]},
+ {navn:"Barduner", avvik:["Løs","Brudd"]},
+ {navn:"Stolper", avvik:["Råte","Skade"]},
+ {navn:"Stålmast", avvik:["Rust","Skade"]},
+ {navn:"Topphatte", avvik:["Løs","Skade"]},
+ {navn:"Traversfeste", avvik:["Løs","Skade"]},
+ {navn:"Travers", avvik:["Skade","Skjev"]},
+ {navn:"Isolatorfeste", avvik:["Løs","Skade"]},
+ {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
+ {navn:"Bendsling", avvik:["Løs","Brudd"]},
+ {navn:"Liner", avvik:["Korrosjon","Kordelbrudd"]},
+ {navn:"Strekking", avvik:["Skjev"]},
+ {navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
+ {navn:"Trase", avvik:["Skog","Kratt"]}
+];
 
-/* Avvik toggle */
-document.querySelectorAll(".avvik").forEach(btn=>{
- btn.onclick = function(){
-  this.classList.toggle("aktiv");
- };
+/* GENERER UI */
+let html = "";
+
+data.forEach((p,i)=>{
+
+ let id="g"+i;
+
+ html += `
+<button class="kontroll" onclick="åpne('${id}')">${p.navn}</button>
+
+<div id="${id}" class="gruppe hidden">
+`;
+
+ p.avvik.forEach(a=>{
+  html += `<button class="avvik" onclick="velg(this)">${a}</button>`;
+ });
+
+ html += `<textarea placeholder="Merknad"></textarea></div>`;
 });
 
+document.getElementById("punkter").innerHTML = html;
+
 /* Lagre */
-document.getElementById("lagre").onclick = function(){
- alert("Lagret");
-};
+function lagre(){
+ alert("Mast lagret");
+}
 
 /* Excel */
-document.getElementById("excel").onclick = function(){
- alert("Excel kommer");
-};
+function excel(){
+ alert("Excel eksport kommer");
+}
 
 /* Ny mast */
-document.getElementById("ny").onclick = function(){
-
+function ny(){
  document.querySelectorAll(".aktiv").forEach(e=>e.classList.remove("aktiv"));
- document.querySelectorAll(".hidden").forEach(e=>e.classList.add("hidden"));
-
+ document.querySelectorAll(".gruppe").forEach(e=>e.classList.add("hidden"));
+ document.querySelectorAll("textarea").forEach(e=>e.value="");
  document.getElementById("mast").value="";
  document.getElementById("gps").value="";
- document.querySelectorAll("textarea").forEach(e=>e.value="");
-
-};
+}
 
 </script>
 
