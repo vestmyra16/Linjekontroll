@@ -4,116 +4,73 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- PWA / IKON FIX -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
-<link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
 <meta name="theme-color" content="#2e7d32">
-<meta name="apple-mobile-web-app-capable" content="yes">
 
-<title>Linjekontroll v18</title>
+<title>Linjekontroll v19</title>
 
 <style>
 
-body {
-    font-family: Arial;
-    background:#f4f4f4;
-    margin:0;
-}
+body {font-family: Arial; background:#f4f4f4; margin:0;}
+.container {max-width:600px; margin:auto; padding:12px;}
+h2 {text-align:center;}
 
-.container {
-    max-width:600px;
-    margin:auto;
-    padding:14px;
-}
-
-h2 {
-    text-align:center;
-    font-size:26px;
-}
-
-/* TEKST TYDELIG */
 label {
-    font-weight:bold;
-    font-size:18px;
-    display:block;
-    margin-top:12px;
+  font-weight:bold;
+  font-size:18px;
+  margin-top:10px;
+  display:block;
 }
 
 input, textarea {
-    width:100%;
-    padding:14px;
-    font-size:18px;
-    margin-top:6px;
-    border:1px solid #ccc;
-    border-radius:6px;
+  width:100%;
+  padding:12px;
+  font-size:18px;
+  margin-top:5px;
 }
 
-/* KONTROLLPUNKT (GRØNN) */
 .kontrollpunkt {
-    background:#2e7d32;
-    color:white;
-    width:100%;
-    padding:18px;
-    margin-top:12px;
-    border:none;
-    border-radius:12px;
-    font-size:20px;
+  background:#2e7d32;
+  color:white;
+  padding:16px;
+  margin-top:10px;
+  border:none;
+  width:100%;
+  border-radius:10px;
+  font-size:18px;
 }
 
-/* AVVIK (GRÅ) */
 .avvik {
-    background:#e0e0e0;
-    color:black;
-    width:100%;
-    padding:14px;
-    margin-top:6px;
-    border:none;
-    border-radius:8px;
-    font-size:18px;
+  background:#e0e0e0;
+  padding:12px;
+  margin-top:5px;
+  border:none;
+  width:100%;
+  border-radius:8px;
 }
 
-/* AKTIV (RØD) */
-.aktiv {
-    background:#c62828 !important;
-    color:white;
-}
+.aktiv {background:#c62828 !important; color:white;}
 
-/* KAMERA */
 .kamera {
-    background:#2e7d32;
-    color:white;
-    width:100%;
-    padding:14px;
-    margin-top:6px;
-    border:none;
-    border-radius:10px;
-    font-size:18px;
+  background:#2e7d32;
+  color:white;
+  padding:12px;
+  margin-top:5px;
+  border:none;
+  width:100%;
+  border-radius:8px;
 }
 
-/* GPS */
-.gpsknapp {
-    background:#2e7d32;
-    color:white;
-    padding:12px;
-    border:none;
-    width:100%;
-    border-radius:10px;
-    margin-top:8px;
-    font-size:18px;
-}
-
-/* BUNNKNAPPER */
 .bunn {
-    background:#1b5e20;
-    color:white;
-    width:100%;
-    padding:16px;
-    margin-top:14px;
-    border:none;
-    border-radius:12px;
-    font-size:20px;
+  background:#1b5e20;
+  color:white;
+  padding:16px;
+  margin-top:12px;
+  border:none;
+  width:100%;
+  border-radius:10px;
+  font-size:18px;
 }
 
 </style>
@@ -122,7 +79,7 @@ input, textarea {
 <body>
 <div class="container">
 
-<h2>Linjekontroll v18</h2>
+<h2>Linjekontroll v19</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -133,41 +90,42 @@ input, textarea {
 <label>Mast nr</label>
 <input id="mast">
 
-<label>GPS (Lat, Lon)</label>
+<label>GPS</label>
 <input id="gps">
-<button class="gpsknapp" onclick="startGPS()">Slå på GPS</button>
-<button class="gpsknapp" onclick="stopGPS()">Slå av GPS</button>
+
+<button class="kontrollpunkt" onclick="startGPS()">Slå på GPS</button>
 
 <button class="kontrollpunkt" id="mastok" onclick="toggleMastOK()">Mast OK</button>
 
-<!-- KONTROLLPUNKT -->
+<!-- FUNDAMENT -->
 <button class="kontrollpunkt" onclick="toggle('fundament')">Skjev mast/fundament</button>
 <div id="fundament" style="display:none;">
-    <button class="avvik" onclick="velg(this,'fundament')">Skjev</button>
-    <button class="avvik" onclick="velg(this,'fundament')">Setning</button>
-    <button class="avvik" onclick="velg(this,'fundament')">Fundamentfeil</button>
-    <button class="kamera">📷 Ta bilde</button>
-    <textarea placeholder="Merknad"></textarea>
+  <button class="avvik" onclick="velg(this,'fundament')">Skjev</button>
+  <button class="avvik" onclick="velg(this,'fundament')">Setning</button>
+  <button class="avvik" onclick="velg(this,'fundament')">Fundamentfeil</button>
+  <button class="kamera">📷 Ta bilde</button>
+  <textarea placeholder="Merknad"></textarea>
 </div>
 
+<!-- BARDUN -->
 <button class="kontrollpunkt" onclick="toggle('bardun')">Barduner</button>
 <div id="bardun" style="display:none;">
-    <button class="avvik" onclick="velg(this,'bardun')">Slakk</button>
-    <button class="avvik" onclick="velg(this,'bardun')">Rust</button>
-    <button class="avvik" onclick="velg(this,'bardun')">Brudd</button>
-    <button class="kamera">📷 Ta bilde</button>
-    <textarea placeholder="Merknad"></textarea>
+  <button class="avvik" onclick="velg(this,'bardun')">Slakk</button>
+  <button class="avvik" onclick="velg(this,'bardun')">Rust</button>
+  <button class="avvik" onclick="velg(this,'bardun')">Brudd</button>
+  <button class="kamera">📷 Ta bilde</button>
+  <textarea placeholder="Merknad"></textarea>
 </div>
 
+<!-- ISOLATOR -->
 <button class="kontrollpunkt" onclick="toggle('isolator')">Isolator</button>
 <div id="isolator" style="display:none;">
-    <button class="avvik" onclick="velg(this,'isolator')">Knust</button>
-    <button class="avvik" onclick="velg(this,'isolator')">Krypestrøm</button>
-    <button class="kamera">📷 Ta bilde</button>
-    <textarea placeholder="Merknad"></textarea>
+  <button class="avvik" onclick="velg(this,'isolator')">Knust</button>
+  <button class="avvik" onclick="velg(this,'isolator')">Krypestrøm</button>
+  <button class="kamera">📷 Ta bilde</button>
+  <textarea placeholder="Merknad"></textarea>
 </div>
 
-<!-- BUNN -->
 <button class="bunn" onclick="lagre()">Lagre mast</button>
 <button class="bunn" onclick="lastNed()">Last ned Excel</button>
 <button class="bunn" onclick="nyMast()">Ny mast</button>
@@ -176,73 +134,64 @@ input, textarea {
 
 <script>
 
-/* GPS */
-let watchId;
-
-function startGPS(){
-    if(navigator.geolocation){
-        watchId = navigator.geolocation.watchPosition(pos=>{
-            document.getElementById("gps").value =
-            pos.coords.latitude.toFixed(6)+", "+pos.coords.longitude.toFixed(6);
-        });
-    }
-}
-
-function stopGPS(){
-    navigator.geolocation.clearWatch(watchId);
-}
-
-/* TOGGLE FELT */
-function toggle(id){
-    let el = document.getElementById(id);
-    el.style.display = (el.style.display==="none") ? "block" : "none";
-}
-
-/* AVVIK -> RØDT KONTROLLPUNKT */
-function velg(btn, gruppe){
-    let parent = document.getElementById(gruppe);
-    parent.previousElementSibling.classList.add("aktiv");
-}
-
-/* MAST OK toggle */
-function toggleMastOK(){
-    let btn = document.getElementById("mastok");
-    btn.classList.toggle("aktiv");
-}
-
-/* LAGRE */
 let data = [];
 
+/* GPS */
+function startGPS(){
+ navigator.geolocation.getCurrentPosition(pos=>{
+  document.getElementById("gps").value =
+  pos.coords.latitude.toFixed(6)+","+pos.coords.longitude.toFixed(6);
+ });
+}
+
+/* Toggle visning */
+function toggle(id){
+ let el=document.getElementById(id);
+ el.style.display = el.style.display==="none"?"block":"none";
+}
+
+/* Velg avvik */
+function velg(btn, gruppe){
+ document.querySelector(`#${gruppe}`).previousElementSibling.classList.add("aktiv");
+}
+
+/* Mast OK */
+function toggleMastOK(){
+ document.getElementById("mastok").classList.toggle("aktiv");
+}
+
+/* Lagre */
 function lagre(){
-    data.push({
-        netteier: document.getElementById("netteier").value,
-        linje: document.getElementById("linje").value,
-        mast: document.getElementById("mast").value,
-        gps: document.getElementById("gps").value
-    });
-    alert("Lagret");
+ data.push({
+  netteier: netteier.value,
+  linje: linje.value,
+  mast: mast.value,
+  gps: gps.value
+ });
+ alert("Lagret");
 }
 
-/* NY MAST */
+/* Ny mast */
 function nyMast(){
-    document.getElementById("mast").value="";
-    document.getElementById("gps").value="";
-    document.querySelectorAll("textarea").forEach(e=>e.value="");
-    document.querySelectorAll(".aktiv").forEach(e=>e.classList.remove("aktiv"));
+ mast.value="";
+ gps.value="";
+ document.querySelectorAll(".aktiv").forEach(e=>e.classList.remove("aktiv"));
+ document.querySelectorAll("textarea").forEach(e=>e.value="");
+ document.querySelectorAll("div").forEach(e=>e.style.display="none");
 }
 
-/* LAST NED */
+/* Excel */
 function lastNed(){
-    let csv = "Netteier,Linje,Mast,GPS\n";
-    data.forEach(d=>{
-        csv += `${d.netteier},${d.linje},${d.mast},${d.gps}\n`;
-    });
+ let csv="Netteier,Linje,Mast,GPS\n";
+ data.forEach(d=>{
+  csv+=`${d.netteier},${d.linje},${d.mast},${d.gps}\n`;
+ });
 
-    let blob = new Blob([csv], {type:'text/csv'});
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "linjekontroll.csv";
-    a.click();
+ let blob=new Blob([csv]);
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="linjekontroll.csv";
+ a.click();
 }
 
 </script>
