@@ -8,8 +8,8 @@
 <link rel="apple-touch-icon" href="/Linjekontroll/icon-180.png">
 <meta name="theme-color" content="#2e7d32">
 
-<title>Linjekontroll</title>
-</head>
+<title>Linjekontroll v14</title>
+
 <style>
 body {
     font-family: Arial;
@@ -45,19 +45,21 @@ input {
     font-size:18px;
 }
 
-/* KONTROLLPUNKT */
+/* KNAPPER */
 .kontroll {
     width:100%;
     padding:20px;
     margin:10px 0;
     border:none;
     border-radius:12px;
-    background:#2e7d32;
-    color:white;
     font-size:20px;
+    color:white;
 }
 
-/* AVVIK */
+.morkgronn { background:#2e7d32; }
+.lysgronn { background:#66bb6a; }
+.rod { background:#c62828; }
+
 .avvik button {
     width:100%;
     padding:16px;
@@ -66,6 +68,7 @@ input {
     border-radius:10px;
     background:#e0e0e0;
     font-size:18px;
+    color:black;
 }
 
 /* KAMERA */
@@ -90,16 +93,14 @@ textarea {
 
 .hidden { display:none; }
 
-/* MAST OK */
 .mastok {
-    background:#66bb6a;
-    color:white;
     font-size:20px;
     padding:18px;
     border:none;
     border-radius:12px;
     width:100%;
     margin:10px 0;
+    color:white;
 }
 </style>
 </head>
@@ -108,7 +109,7 @@ textarea {
 
 <div class="container">
 
-<h2>Linjekontroll v13</h2>
+<h2>Linjekontroll v14</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -119,13 +120,13 @@ textarea {
 <label>Mast nr</label>
 <input id="mast">
 
-<button id="mastok" class="mastok" onclick="mastOK()">✔ Mast OK</button>
+<button id="mastok" class="mastok morkgronn" onclick="toggleMastOK()">Mast OK</button>
 
 <div id="liste"></div>
 
-<button class="kontroll" onclick="lagre()">Lagre mast</button>
-<button class="kontroll" onclick="nyMast()">Ny mast</button>
-<button class="kontroll" onclick="lastNed()">Last ned Excel</button>
+<button class="kontroll morkgronn" onclick="lagre()">Lagre mast</button>
+<button class="kontroll morkgronn" onclick="nyMast()">Ny mast</button>
+<button class="kontroll morkgronn" onclick="lastNed()">Last ned Excel</button>
 
 </div>
 
@@ -134,6 +135,7 @@ textarea {
 let alleMaster = [];
 let valgtData = {};
 let valgtMerknad = {};
+let mastOKstatus = false;
 
 const kontrollpunkter = {
 "Skjev mast/fundament":["Skjev"],
@@ -162,7 +164,7 @@ Object.keys(kontrollpunkter).forEach(navn => {
     let wrapper = document.createElement("div");
 
     let knapp = document.createElement("button");
-    knapp.className = "kontroll";
+    knapp.className = "kontroll morkgronn";
     knapp.innerText = navn;
 
     let avvikDiv = document.createElement("div");
@@ -173,8 +175,15 @@ Object.keys(kontrollpunkter).forEach(navn => {
         b.innerText = avvik;
 
         b.onclick = () => {
-            knapp.style.background = "#c62828";
-            valgtData[navn] = avvik;
+            if(knapp.classList.contains("rod")){
+                knapp.classList.remove("rod");
+                knapp.classList.add("morkgronn");
+                delete valgtData[navn];
+            } else {
+                knapp.classList.remove("morkgronn");
+                knapp.classList.add("rod");
+                valgtData[navn] = avvik;
+            }
             avvikDiv.classList.add("hidden");
         };
 
@@ -214,8 +223,17 @@ Object.keys(kontrollpunkter).forEach(navn => {
     container.appendChild(wrapper);
 });
 
-function mastOK(){
-    document.getElementById("mastok").style.background = "#2e7d32";
+function toggleMastOK(){
+    let btn = document.getElementById("mastok");
+    mastOKstatus = !mastOKstatus;
+
+    if(mastOKstatus){
+        btn.classList.remove("morkgronn");
+        btn.classList.add("lysgronn");
+    } else {
+        btn.classList.remove("lysgronn");
+        btn.classList.add("morkgronn");
+    }
 }
 
 function lagre(){
@@ -223,6 +241,7 @@ function lagre(){
         netteier: document.getElementById("netteier").value,
         linje: document.getElementById("linje").value,
         mastnr: document.getElementById("mast").value,
+        mastOK: mastOKstatus,
         data: valgtData,
         merknad: valgtMerknad
     };
@@ -242,23 +261,30 @@ function nyMast(){
     document.getElementById("mast").value = "";
 
     document.querySelectorAll(".kontroll").forEach(k=>{
-        k.style.background="#2e7d32";
+        k.classList.remove("rod");
+        k.classList.add("morkgronn");
     });
+
+    document.getElementById("mastok").classList.remove("lysgronn");
+    document.getElementById("mastok").classList.add("morkgronn");
 
     valgtData = {};
     valgtMerknad = {};
+    mastOKstatus = false;
 }
 
 function lastNed(){
 
-    let csv = "Netteier,LinjeID,Mastnr,Punkt,Avvik,Merknad\n";
+    let csv = "Netteier,LinjeID,Mastnr,Status,Punkt,Avvik,Merknad\n";
 
     alleMaster.forEach(m=>{
-        if(Object.keys(m.data).length === 0){
-            csv += `${m.netteier},${m.linje},${m.mastnr},OK,,\n`;
+        if(m.mastOK){
+            csv += `${m.netteier},${m.linje},${m.mastnr},OK,,,\n`;
+        } else if(Object.keys(m.data).length === 0){
+            csv += `${m.netteier},${m.linje},${m.mastnr},Ingen avvik,,,\n`;
         } else {
             Object.keys(m.data).forEach(punkt=>{
-                csv += `${m.netteier},${m.linje},${m.mastnr},${punkt},${m.data[punkt]},${m.merknad[punkt] || ""}\n`;
+                csv += `${m.netteier},${m.linje},${m.mastnr},Avvik,${punkt},${m.data[punkt]},${m.merknad[punkt] || ""}\n`;
             });
         }
     });
