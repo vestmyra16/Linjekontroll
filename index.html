@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Linjekontroll v17</title>
+<title>Linjekontroll v18</title>
 
 <style>
 body { font-family: Arial; background:#f4f4f4; margin:0; }
@@ -21,30 +21,69 @@ input, textarea {
     font-size:16px;
 }
 
+/* Kontrollpunkt (GRØNN) */
+.kontrollpunkt {
+    background:#2e7d32;
+    color:white;
+    width:100%;
+    padding:16px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+}
+
+/* Avvik (GRÅ) */
+.avvik {
+    background:#cccccc;
+    color:black;
+    width:100%;
+    padding:14px;
+    margin-top:6px;
+    border:none;
+    border-radius:8px;
+}
+
+/* RØD når feil */
+.kontrollpunkt.rød {
+    background:#c62828;
+}
+
+/* Mast OK */
+.mastok {
+    background:#2e7d32;
+}
+.mastok.aktiv {
+    background:#66bb6a;
+}
+
 button {
     width:100%;
     padding:16px;
     margin-top:10px;
-    font-size:18px;
     border:none;
     border-radius:10px;
+    font-size:18px;
     background:#2e7d32;
     color:white;
 }
 
-.kontrollpunkt.rød { background:#c62828; }
+.detalj { display:none; }
 
-.mastok { background:#2e7d32; }
-.mastok.aktiv { background:#66bb6a; }
-
-.detalj { display:none; margin-bottom:10px; }
+/* Skjul "Ingen fil valgt" */
+input[type="file"] {
+    color:transparent;
+}
+input[type="file"]::-webkit-file-upload-button {
+    visibility:hidden;
+}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h2>Linjekontroll v17</h2>
+<h2>Linjekontroll v18</h2>
 
 <label>Netteier</label>
 <input id="netteier">
@@ -55,7 +94,7 @@ button {
 <label>Mast nr</label>
 <input id="mastnr">
 
-<label>GPS (Lat, Lon)</label>
+<label>GPS</label>
 <input id="gps" readonly>
 
 <button onclick="startGPS()">Slå på GPS</button>
@@ -63,30 +102,18 @@ button {
 
 <button class="mastok" onclick="toggleMastOK(this)">Mast OK</button>
 
-<!-- FUNKSJON FOR Å LAGE KONTROLLPUNKT -->
-<script>
-function punkt(navn, avvik){
-    return `
-    <button class="kontrollpunkt" onclick="togglePunkt(this)">${navn}</button>
-    <div class="detalj">
-        ${avvik.map(a=>`<button onclick="markerAvvik(this)">${a}</button>`).join("")}
-        <button>📷 Ta bilde</button>
-        <input type="file" accept="image/*">
-        <textarea placeholder="Merknad"></textarea>
-    </div>`;
-}
-</script>
-
 <div id="punkter"></div>
 
+<button onclick="lagre()">Lagre mast</button>
+<button onclick="lastNedExcel()">Last ned Excel</button>
 <button onclick="nyMast()">Ny mast</button>
 
 </div>
 
 <script>
 
-// LISTE
-const allePunkt = [
+// Kontrollpunkter
+const data = [
 ["Skjev mast/fundament",["Skjev","Setning","Fundamentfeil"]],
 ["Barduner",["Rust","Slakk","Brudd"]],
 ["Stolper",["Råte","Sprekk"]],
@@ -106,35 +133,31 @@ const allePunkt = [
 ["Merking",["Mangler","Defekt"]]
 ];
 
-// RENDER
+// Lag UI
 let html="";
-allePunkt.forEach(p=>{
-    html += punkt(p[0],p[1]);
+data.forEach(p=>{
+    html += `<button class="kontrollpunkt" onclick="toggle(this)">${p[0]}</button>`;
+    html += `<div class="detalj">`;
+
+    p[1].forEach(a=>{
+        html += `<button class="avvik" onclick="avvik(this)">${a}</button>`;
+    });
+
+    html += `
+    <button>📷 Ta bilde</button>
+    <input type="file" accept="image/*">
+    <textarea placeholder="Merknad"></textarea>
+    </div>`;
 });
 document.getElementById("punkter").innerHTML = html;
 
-// GPS
-let gpsWatch=null;
-
-function startGPS(){
-    gpsWatch = navigator.geolocation.watchPosition(pos=>{
-        let lat = pos.coords.latitude.toFixed(6);
-        let lon = pos.coords.longitude.toFixed(6);
-        document.getElementById("gps").value = lat + ", " + lon;
-    });
-}
-
-function stopGPS(){
-    if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch);
-}
-
-// UI
-function togglePunkt(btn){
+// Funksjoner
+function toggle(btn){
     let d = btn.nextElementSibling;
-    d.style.display = d.style.display==="block" ? "none":"block";
+    d.style.display = d.style.display==="block"?"none":"block";
 }
 
-function markerAvvik(btn){
+function avvik(btn){
     let k = btn.closest(".detalj").previousElementSibling;
     k.classList.add("rød");
 }
@@ -143,31 +166,46 @@ function toggleMastOK(btn){
     btn.classList.toggle("aktiv");
 }
 
-// RESET
+// GPS
+let watch=null;
+function startGPS(){
+    watch = navigator.geolocation.watchPosition(p=>{
+        gps.value = p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
+    });
+}
+function stopGPS(){
+    if(watch) navigator.geolocation.clearWatch(watch);
+}
+
+// Lagre (placeholder)
+function lagre(){
+    alert("Mast lagret");
+}
+
+// Excel (placeholder)
+function lastNedExcel(){
+    alert("Excel eksport kommer");
+}
+
+// Ny mast
 function nyMast(){
 
     if(!confirm("Er du sikker på ny mast?")) return;
 
-    let netteier = netteierEl.value;
-    let linje = linjeEl.value;
-    let gps = gpsEl.value;
+    let n = netteier.value;
+    let l = linje.value;
+    let g = gps.value;
 
     document.querySelectorAll("input, textarea").forEach(e=>e.value="");
 
-    netteierEl.value = netteier;
-    linjeEl.value = linje;
-    gpsEl.value = gps;
+    netteier.value = n;
+    linje.value = l;
+    gps.value = g;
 
     document.querySelectorAll(".kontrollpunkt").forEach(b=>b.classList.remove("rød"));
     document.querySelectorAll(".detalj").forEach(d=>d.style.display="none");
     document.querySelectorAll(".mastok").forEach(b=>b.classList.remove("aktiv"));
-
 }
-
-const netteierEl = document.getElementById("netteier");
-const linjeEl = document.getElementById("linje");
-const gpsEl = document.getElementById("gps");
-
 </script>
 
 </body>
