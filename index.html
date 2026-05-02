@@ -156,10 +156,17 @@ render();
 }
 
 function settAvvik(i){
+
+// Hvis allerede avvik → nullstill
+if(status[i]=="avvik"){
+delete status[i];
+render();
+return;
+}
+
 status[i]="avvik";
 render();
 }
-
 function startGPS(){
 gpsWatch = navigator.geolocation.watchPosition(p=>{
 document.getElementById("gps").value =
