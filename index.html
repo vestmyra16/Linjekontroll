@@ -135,11 +135,23 @@ document.getElementById("punkter").innerHTML = html;
 }
 
 function toggle(i){
+
+// Hvis allerede satt → nullstill
+if(status[i]){
+delete status[i];
+render();
+return;
+}
+
+// Mast OK direkte til OK
 if(punkter[i].navn=="Mast OK"){
 status[i]="ok";
-} else {
-status[i]="vis";
+render();
+return;
 }
+
+// ellers vis avvik
+status[i]="vis";
 render();
 }
 
