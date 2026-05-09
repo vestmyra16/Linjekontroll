@@ -6,53 +6,32 @@
 <title>Linjekontroll</title>
 
 <style>
-body{
-font-family:Arial;
-max-width:420px;
-margin:auto;
-background:#f2f2f2;
-padding:10px;
-}
-
+body{font-family:Arial;max-width:420px;margin:auto;background:#f2f2f2;padding:10px;}
 h2{text-align:center;}
 
-label{
-font-weight:bold;
-display:block;
-margin-top:8px;
-}
+label{font-weight:bold;display:block;margin-top:8px;color:#000;}
 
 input{
-width:100%;
-padding:12px;
-margin:4px 0 8px 0;
-border-radius:6px;
-border:1px solid #ccc;
-font-size:16px;
+width:100%;padding:12px;margin:4px 0 8px 0;
+border-radius:6px;border:1px solid #ccc;font-size:16px;
 }
 
 button{
-width:100%;
-padding:12px;
-margin:6px 0;
-border-radius:6px;
-background:#2e7d32;
-color:white;
-border:none;
+width:100%;padding:12px;margin:6px 0;
+border-radius:6px;background:#2e7d32;color:white;border:none;
 font-size:16px;
 }
 
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:8px;
-}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 
 .hidden{display:none;}
 
 .avvik{
-background:#ccc;
-color:#000;
+background:#ccc;color:#000;
+}
+
+.ok{
+background:#66bb6a !important;
 }
 </style>
 </head>
@@ -88,16 +67,10 @@ color:#000;
 
 <h3>Kontrollpunkt</h3>
 
-<div class="grid">
-<button onclick="velg('Isolator')">Isolator</button>
-<button onclick="velg('Liner')">Liner</button>
-<button onclick="velg('Klemmer')">Klemmer</button>
-<button onclick="velg('Toppline')">Toppline</button>
-<button onclick="velg('Trase')">Trase</button>
-<button onclick="velg('Jording')">Jording</button>
-</div>
+<div class="grid" id="kontrollGrid"></div>
 
 <div id="valgBox" class="hidden">
+
 <h3 id="tittel"></h3>
 
 <div id="avvikBox"></div>
@@ -106,6 +79,8 @@ color:#000;
 <input id="merknad">
 
 </div>
+
+<button id="okBtn" onclick="toggleOK()">Mast OK</button>
 
 <button onclick="lagre()">Lagre</button>
 <button onclick="lastCSV()">Last ned Excel</button>
@@ -128,59 +103,105 @@ alert("Feil passord");
 }
 }
 
-// AVVIK LISTE
-const avvikData={
-Isolator:["Skadet","Slitt"],
-Liner:["Korrosjon","Brudd"],
-Klemmer:["Løs","Korrosjon"],
-Toppline:["Slakk","Skadet"],
-Trase:["Skog","Kratt"],
-Jording:["Brudd","Løs"]
+// KONTROLLPUNKT + AVVIK
+const kontrollData={
+"Isolatorfeste":["Slitasje","Skade"],
+"Liner":["Korrosjon","Kordelbrudd"],
+"Klemmer":["Korrosjon","Brudd"],
+"Toppline":["Slakk","Korrosjon"],
+"Trase":["Skog","Kratt"],
+"Jording":["Løs","Brudd"],
+"Merking":["HS mangler","Mnr mangler"]
 };
 
-function velg(type){
+let registreringer=[];
+let valgtKontroll=null;
+let valgtAvvik=[];
+let mastOK=false;
+
+// bygg knapper
+function init(){
+let grid=document.getElementById("kontrollGrid");
+
+Object.keys(kontrollData).forEach(k=>{
+grid.innerHTML+=`<button onclick="velgKontroll('${k}')">${k}</button>`;
+});
+}
+
+function velgKontroll(k){
 valgBox.classList.remove("hidden");
-tittel.innerText=type;
+tittel.innerText=k;
+
+valgtKontroll=k;
+valgtAvvik=[];
 
 let box=document.getElementById("avvikBox");
 box.innerHTML="";
 
-avvikData[type].forEach(a=>{
+kontrollData[k].forEach(a=>{
 box.innerHTML+=`<button class="avvik" onclick="velgAvvik('${a}')">${a}</button>`;
 });
 }
 
-let valgtAvvik=[];
-
 function velgAvvik(a){
+if(!valgtAvvik.includes(a)){
 valgtAvvik.push(a);
-alert("Valgt: "+a);
+alert("Registrert: "+a);
+}
 }
 
-// DATA
+// MAST OK
+function toggleOK(){
+mastOK=!mastOK;
+
+if(mastOK){
+okBtn.classList.add("ok");
+}else{
+okBtn.classList.remove("ok");
+}
+}
+
+// LAGRING
 let data=[];
 
 function lagre(){
 
+if(mastOK && valgtAvvik.length===0){
 data.push({
 netteier:netteier.value,
 linje:linje.value,
 mast:mast.value,
-avvik:valgtAvvik.join("|"),
+status:"OK",
+dato:new Date().toLocaleDateString("no-NO")
+});
+}else{
+
+valgtAvvik.forEach(a=>{
+data.push({
+netteier:netteier.value,
+linje:linje.value,
+mast:mast.value,
+kontrollpunkt:valgtKontroll,
+avvik:a,
 merknad:merknad.value,
 dato:new Date().toLocaleDateString("no-NO")
 });
+});
+}
 
 valgtAvvik=[];
 merknad.value="";
-
 alert("Lagret");
 }
 
 // CSV
 function lastCSV(){
+
 let csv=Object.keys(data[0]||{}).join(",")+"\n";
-data.forEach(d=>{csv+=Object.values(d).join(",")+"\n";});
+
+data.forEach(d=>{
+csv+=Object.values(d).join(",")+"\n";
+});
 
 let a=document.createElement("a");
 a.href=URL.createObjectURL(new Blob([csv]));
@@ -190,6 +211,7 @@ a.click();
 
 // NY MAST
 function nyMast(){
+
 let n=netteier.value;
 let l=linje.value;
 
@@ -198,9 +220,15 @@ document.querySelectorAll("input").forEach(i=>i.value="");
 netteier.value=n;
 linje.value=l;
 
+mastOK=false;
+okBtn.classList.remove("ok");
+
 valgBox.classList.add("hidden");
 valgtAvvik=[];
 }
+
+// START
+init();
 
 </script>
 
