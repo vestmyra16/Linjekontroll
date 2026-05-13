@@ -1,93 +1,80 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linjekontroll</title>
-    <style>
-        body {font-family: Arial, sans-serif; background:#f4f4f4; padding:10px;}
-        .container {max-width:600px; margin:auto; background:white; padding:20px; border-radius:10px;}
-        label {font-weight:bold; display:block; margin-top:12px; color:black;}
-        input, textarea {width:100%; padding:10px; margin-top:5px; box-sizing:border-box; border:1px solid #ccc; border-radius:5px;}
-        .kp {background:#2e7d32; color:white; width:100%; padding:14px; margin-top:8px; border:none; border-radius:8px; cursor:pointer; text-align:left;}
-        .kam-knapp {background:#1565c0; color:white; border:none; padding:10px; margin-top:5px; border-radius:5px; width:100%; cursor:pointer;}
-        button {width:100%; padding:14px; margin-top:10px; border:none; border-radius:8px; font-size:16px; cursor:pointer; color:white;}
-        .green {background:#2e7d32;}
-        .darkgreen {background:#1b5e20;}
-    </style>
+<meta charset="UTF-8">
+<title>Linjekontroll v29</title>
+<style>
+    body {font-family: sans-serif; background:#f4f4f4; margin:0; padding:10px;}
+    .container {max-width:600px; margin:auto; background:white; padding:20px; border-radius:10px;}
+    button {width:100%; padding:15px; margin:5px 0; border:none; border-radius:8px; cursor:pointer;}
+    .green {background:#2e7d32; color:white;}
+    input, textarea {width:100%; padding:10px; margin:5px 0; box-sizing:border-box;}
+    .bilde-knapp {background:#1565c0; color:white; margin-top:5px;}
+    .preview {max-width: 100px; display:block; margin: 5px 0;}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <label>Netteier</label> <input id="netteier">
-    <label>LinjeID</label> <input id="linje">
-    <label>Mast nr</label> <input id="mast">
-    <label>GPS-koordinater</label> <input id="gps">
+<div class="container" id="app">
+    <h2>Linjekontroll v29</h2>
+    <input id="netteier" placeholder="Netteier">
+    <input id="linje" placeholder="LinjeID">
+    <input id="mast" placeholder="Mast nr">
+    <input id="gps" placeholder="GPS-koordinater">
     <button class="green" onclick="hentGPS()">Hent GPS</button>
 
     <div id="punkter"></div>
 
-    <button class="darkgreen" onclick="lagre()">Lagre mast</button>
-    <button class="darkgreen" onclick="lastNed()">Last ned CSV</button>
-    <button class="green" onclick="nyMast()">Ny mast</button>
+    <button class="green" onclick="lagre()">Lagre mast</button>
+    <button class="green" onclick="lastNed()">Last ned CSV</button>
 </div>
 
 <script>
-let data = [];
-let punkter = ["Mast OK", "Skjev mast/fundament", "Barduner", "Stolper", "Stålmast", "Topphette", "Traversfeste", "Travers", "Isolatorfeste", "Isolator", "Bendsling", "Liner", "Strekking", "Merking", "Trase"];
+let status = {};
+let bilder = {}; // Lagrer bilde-data her
+
+// Hent lagrede data ved oppstart
+window.onload = () => {
+    let saved = localStorage.getItem("linjedata");
+    if (saved) data = JSON.parse(saved);
+    render();
+};
+
+function hentGPS() {
+    navigator.geolocation.getCurrentPosition(p => {
+        document.getElementById("gps").value = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
+    });
+}
 
 function render() {
     let html = "";
     punkter.forEach((p, i) => {
-        html += `<button class="kp" onclick="toggle(${i})">${p}</button>
-                 <div id="box${i}" style="display:none; padding:10px; background:#f9f9f9; border:1px solid #ddd;">
-                    <textarea id="m${i}" placeholder="Merknad"></textarea>
-                    <button class="kam-knapp" onclick="taBilde(${i}, '${p}')">📸 Kamera</button>
-                 </div>`;
+        html += `<div style="margin-top:10px; border-bottom:1px solid #ccc">
+                 <button onclick="toggle(${i})">${p.navn}</button>`;
+        
+        if (status[i]) {
+            html += `<input type="file" accept="image/*" capture="environment" onchange="taBilde(${i}, event)">
+                     <div id="imgPrev${i}"></div>
+                     <textarea id="m${i}" placeholder="Merknad"></textarea>`;
+        }
+        html += `</div>`;
     });
     document.getElementById("punkter").innerHTML = html;
 }
 
-function toggle(i) {
-    let box = document.getElementById("box" + i);
-    box.style.display = box.style.display === "none" ? "block" : "none";
+function taBilde(i, event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        bilder[i] = e.target.result; // Lagrer bilde som base64
+        document.getElementById(`imgPrev${i}`).innerHTML = `<img src="${e.target.result}" class="preview">`;
+    };
+    reader.readAsDataURL(file);
 }
 
-function taBilde(i, navn) {
-    let f = `${document.getElementById("netteier").value}_${document.getElementById("linje").value}_${document.getElementById("mast").value}_${navn}`;
-    navigator.clipboard.writeText(f);
-    alert("Filnavn kopiert: " + f);
-}
+// Resten av logikken din for lagre() og lastNed()...
+// Husk å legge til 'bilder[i]' i CSV-eksporten din.
 
-function hentGPS() {
-    navigator.geolocation.getCurrentPosition(p => {
-        document.getElementById("gps").value = p.coords.latitude.toFixed(6) + ", " + p.coords.longitude.toFixed(6);
-    });
-}
-
-function lagre() {
-    let n = document.getElementById("netteier").value, l = document.getElementById("linje").value, m = document.getElementById("mast").value, g = document.getElementById("gps").value;
-    punkter.forEach((p, i) => {
-        if (document.getElementById("box" + i).style.display === "block") {
-            data.push({n, l, m, g, p, mnd: document.getElementById("m" + i).value});
-        }
-    });
-    alert("Lagret!");
-}
-
-function lastNed() {
-    let csv = "Netteier,Linje,Mast,GPS,Kontrollpunkt,Merknad\n";
-    data.forEach(d => { csv += `${d.n},${d.l},${d.m},"${d.g}","${d.p}","${d.mnd}"\n`; });
-    let a = document.createElement("a");
-    a.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
-    a.download = "linjekontroll.csv";
-    a.click();
-}
-
-function nyMast() {
-    location.reload();
-}
-render();
 </script>
 </body>
 </html>
