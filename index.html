@@ -2,16 +2,16 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <title>Linjekontroll v29-Oppdatert</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linjekontroll</title>
     <style>
-        body {font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:12px;}
+        body {font-family: Arial, sans-serif; background:#f4f4f4; padding:10px;}
         .container {max-width:600px; margin:auto; background:white; padding:20px; border-radius:10px;}
-        h2 {text-align:center; color:#2e7d32;}
+        label {font-weight:bold; display:block; margin-top:12px; color:black;}
         input, textarea {width:100%; padding:10px; margin-top:5px; box-sizing:border-box; border:1px solid #ccc; border-radius:5px;}
-        .kp {background:#2e7d32; color:white; width:100%; padding:14px; margin-top:8px; border:none; border-radius:10px; cursor:pointer;}
-        .kp.vis {background:#f57c00;}
-        .avvik-detalj {background:#f9f9f9; padding:10px; border:1px solid #ddd; margin-top:5px;}
-        button {width:100%; padding:14px; margin-top:10px; border:none; border-radius:10px; font-size:16px; cursor:pointer; color:white;}
+        .kp {background:#2e7d32; color:white; width:100%; padding:14px; margin-top:8px; border:none; border-radius:8px; cursor:pointer; text-align:left;}
+        .kam-knapp {background:#1565c0; color:white; border:none; padding:10px; margin-top:5px; border-radius:5px; width:100%; cursor:pointer;}
+        button {width:100%; padding:14px; margin-top:10px; border:none; border-radius:8px; font-size:16px; cursor:pointer; color:white;}
         .green {background:#2e7d32;}
         .darkgreen {background:#1b5e20;}
     </style>
@@ -19,76 +19,73 @@
 <body>
 
 <div class="container">
-    <h2>Linjekontroll</h2>
-    <input id="netteier" placeholder="Netteier">
-    <input id="linje" placeholder="LinjeID">
-    <input id="mast" placeholder="Mast nr">
-    <input id="gps" placeholder="GPS-koordinater">
+    <label>Netteier</label> <input id="netteier">
+    <label>LinjeID</label> <input id="linje">
+    <label>Mast nr</label> <input id="mast">
+    <label>GPS-koordinater</label> <input id="gps">
     <button class="green" onclick="hentGPS()">Hent GPS</button>
+
     <div id="punkter"></div>
+
     <button class="darkgreen" onclick="lagre()">Lagre mast</button>
     <button class="darkgreen" onclick="lastNed()">Last ned CSV</button>
     <button class="green" onclick="nyMast()">Ny mast</button>
 </div>
 
 <script>
-let status = {};
 let data = [];
-let punkter = [
-    {navn:"Mast OK"}, {navn:"Skjev mast/fundament"}, {navn:"Barduner"}, {navn:"Stolper"}, 
-    {navn:"Stålmast"}, {navn:"Topphette"}, {navn:"Traversfeste"}, {navn:"Travers"}, 
-    {navn:"Isolatorfeste"}, {navn:"Isolator"}, {navn:"Bendsling"}, {navn:"Liner"}, 
-    {navn:"Strekking"}, {navn:"Merking"}, {navn:"Trase"}
-];
+let punkter = ["Mast OK", "Skjev mast/fundament", "Barduner", "Stolper", "Stålmast", "Topphette", "Traversfeste", "Travers", "Isolatorfeste", "Isolator", "Bendsling", "Liner", "Strekking", "Merking", "Trase"];
 
-function render(){
+function render() {
     let html = "";
-    punkter.forEach((p,i)=>{
-        let cls = status[i] ? "kp vis" : "kp";
-        html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
-        if(status[i] && p.navn !== "Mast OK"){
-            html += `<div class="avvik-detalj"><textarea id="m${i}" placeholder="Merknad"></textarea></div>`;
-        }
+    punkter.forEach((p, i) => {
+        html += `<button class="kp" onclick="toggle(${i})">${p}</button>
+                 <div id="box${i}" style="display:none; padding:10px; background:#f9f9f9; border:1px solid #ddd;">
+                    <textarea id="m${i}" placeholder="Merknad"></textarea>
+                    <button class="kam-knapp" onclick="taBilde(${i}, '${p}')">📸 Kamera</button>
+                 </div>`;
     });
     document.getElementById("punkter").innerHTML = html;
 }
 
-function toggle(i){
-    if(i === 0) status = { 0: !status[0] };
-    else { delete status[0]; status[i] = !status[i]; }
-    render();
+function toggle(i) {
+    let box = document.getElementById("box" + i);
+    box.style.display = box.style.display === "none" ? "block" : "none";
 }
 
-function hentGPS(){
-    navigator.geolocation.getCurrentPosition(p=>{
-        document.getElementById("gps").value = p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
+function taBilde(i, navn) {
+    let f = `${document.getElementById("netteier").value}_${document.getElementById("linje").value}_${document.getElementById("mast").value}_${navn}`;
+    navigator.clipboard.writeText(f);
+    alert("Filnavn kopiert: " + f);
+}
+
+function hentGPS() {
+    navigator.geolocation.getCurrentPosition(p => {
+        document.getElementById("gps").value = p.coords.latitude.toFixed(6) + ", " + p.coords.longitude.toFixed(6);
     });
 }
 
-function lagre(){
-    let n = document.getElementById("netteier").value;
-    let l = document.getElementById("linje").value;
-    let m = document.getElementById("mast").value;
-    let g = document.getElementById("gps").value;
-    punkter.forEach((p,i)=>{
-        if(status[i]) data.push({netteier:n, linje:l, mast:m, gps:g, punkt:p.navn, merknad: document.getElementById("m"+i)?.value || ""});
+function lagre() {
+    let n = document.getElementById("netteier").value, l = document.getElementById("linje").value, m = document.getElementById("mast").value, g = document.getElementById("gps").value;
+    punkter.forEach((p, i) => {
+        if (document.getElementById("box" + i).style.display === "block") {
+            data.push({n, l, m, g, p, mnd: document.getElementById("m" + i).value});
+        }
     });
     alert("Lagret!");
 }
 
-function lastNed(){
+function lastNed() {
     let csv = "Netteier,Linje,Mast,GPS,Kontrollpunkt,Merknad\n";
-    data.forEach(d => { csv += `${d.netteier},${d.linje},${d.mast},"${d.gps}","${d.punkt}","${d.merknad}"\n`; });
+    data.forEach(d => { csv += `${d.n},${d.l},${d.m},"${d.g}","${d.p}","${d.mnd}"\n`; });
     let a = document.createElement("a");
     a.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
     a.download = "linjekontroll.csv";
     a.click();
 }
 
-function nyMast(){
-    status = {};
-    document.getElementById("mast").value = "";
-    render();
+function nyMast() {
+    location.reload();
 }
 render();
 </script>
