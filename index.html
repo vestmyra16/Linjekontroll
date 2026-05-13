@@ -3,22 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linjekontroll v34</title>
+    <title>Linjekontroll v35</title>
     <style>
         body {font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:10px;}
         .container {max-width:600px; margin:auto; background:white; padding:15px; border-radius:8px;}
         h2 {text-align:center; color:#1b5e20;}
         input, textarea {width:100%; padding:10px; margin:5px 0; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;}
         
-        #punkter {max-height: 50vh; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin: 10px 0;}
-        
-        /* Knapp for kontrollpunkt */
+        #punkter {max-height: 60vh; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin: 10px 0;}
         .kp {background:#2e7d32; color:white; width:100%; padding:12px; margin-top:5px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;}
         .kp.vis {background:#f57c00;}
         
-        /* Avviks-området */
         .avvik-detalj {background:#f9f9f9; padding:10px; margin:5px 0; border:1px solid #ddd; border-radius:6px;}
-        .kamera-btn {background:#1565c0; color:white; border:none; padding:10px; border-radius:4px; width:100%; cursor:pointer; margin-top:5px;}
+        .kamera-btn {background:#1565c0; color:white; border:none; padding:10px; border-radius:4px; width:100%; cursor:pointer; margin-top:5px; font-weight:bold;}
         .kamera-btn.tatt {background:#2e7d32;}
         
         .btn-main {width:100%; padding:14px; margin-top:10px; border:none; border-radius:6px; color:white; font-size:16px; cursor:pointer;}
@@ -29,7 +26,7 @@
 <body>
 
 <div id="app" class="container">
-    <h2>Linjekontroll v34</h2>
+    <h2>Linjekontroll v35</h2>
     <input id="netteier" placeholder="Netteier">
     <input id="linje" placeholder="LinjeID">
     <input id="mast" placeholder="Mast nr">
@@ -46,60 +43,64 @@
 let status = {};
 let bilderTatt = {};
 
+// Fullstendig liste med alle kontrollpunktene dine
 let punkter = [
-    {navn:"Mast OK", avvik:[]},
-    {navn:"Skjev mast", avvik:["Skjev","Fundament feil"]},
-    {navn:"Barduner", avvik:["Løs","Brudd"]},
-    {navn:"Stolper", avvik:["Råte","Skade"]},
-    {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
-    {navn:"Trase", avvik:["Skog","Kratt"]}
+    {navn:"Mast OK"},
+    {navn:"Skjev mast/fundament"},
+    {navn:"Barduner"},
+    {navn:"Stolper"},
+    {navn:"Stålmast"},
+    {navn:"Topphette"},
+    {navn:"Traversfeste"},
+    {navn:"Travers"},
+    {navn:"Isolatorfeste"},
+    {navn:"Isolator"},
+    {navn:"Bendsling"},
+    {navn:"Liner"},
+    {navn:"Strekking"},
+    {navn:"Merking"},
+    {navn:"Trase"}
 ];
 
 function render(){
     let html = "";
     punkter.forEach((p,i)=>{
-        if(p.navn === "Mast OK") {
-            let cls = status[i] ? "kp vis" : "kp";
-            html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
-        } else {
-            let cls = status[i] ? "kp vis" : "kp";
-            html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
-            
-            if(status[i]){
-                html += `<div class="avvik-detalj">
-                            <textarea id="m${i}" placeholder="Beskriv avvik..."></textarea>`;
-                p.avvik.forEach(a => {
-                    let id = i + "_" + a;
-                    let btnCls = bilderTatt[id] ? "kamera-btn tatt" : "kamera-btn";
-                    html += `<button class="${btnCls}" onclick="taBilde('${id}', '${a}')">📸 Foto av: ${a}</button>`;
-                });
-                html += `</div>`;
-            }
+        let cls = status[i] ? "kp vis" : "kp";
+        html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
+        
+        // Vis merknad og fotoknapp KUN hvis punktet er valgt (og ikke "Mast OK")
+        if(status[i] && p.navn !== "Mast OK"){
+            let id = i;
+            let btnCls = bilderTatt[id] ? "kamera-btn tatt" : "kamera-btn";
+            html += `<div class="avvik-detalj">
+                        <textarea id="m${i}" placeholder="Merknad"></textarea>
+                        <button class="${btnCls}" onclick="taBilde(${i}, '${p.navn}')">📸 Foto av: ${p.navn}</button>
+                     </div>`;
         }
     });
     document.getElementById("punkter").innerHTML = html;
 }
 
 function toggle(i){
-    // Hvis vi velger "Mast OK", deaktiver alle andre
-    if(punkter[i].navn === "Mast OK") {
-        status = { [i]: !status[i] };
+    // Hvis man velger "Mast OK" (index 0), deaktiver alle andre
+    if(i === 0) {
+        status = { 0: !status[0] };
     } else {
-        // Hvis vi velger et avvik, deaktiver "Mast OK"
+        // Hvis man velger avvik, deaktiver "Mast OK"
         delete status[0];
         status[i] = !status[i];
     }
     render();
 }
 
-function taBilde(id, detalj){
+function taBilde(i, navn){
     let net = document.getElementById("netteier").value || "Net";
     let lin = document.getElementById("linje").value || "Linje";
     let mas = document.getElementById("mast").value || "Mast";
-    let filnavn = `${net}_${lin}_${mas}_${detalj}`;
+    let filnavn = `${net}_${lin}_${mas}_${navn}`;
     
     navigator.clipboard.writeText(filnavn);
-    bilderTatt[id] = true;
+    bilderTatt[i] = true;
     alert("Filnavn kopiert: " + filnavn + "\n\nLim inn i OneDrive når du tar bildet.");
     render();
 }
@@ -115,26 +116,26 @@ function lagre(){
     let linje = document.getElementById("linje").value;
     let mast = document.getElementById("mast").value;
     let gps = document.getElementById("gps").value;
-
     let data = JSON.parse(localStorage.getItem("linjedata")) || [];
     
-    if(status[0]) {
-        data.push({ netteier, linje, mast, gps, avvik: "Mast OK", kommentar: "" });
-    } else {
-        punkter.forEach((p, i) => {
-            if(status[i]) {
-                data.push({ netteier, linje, mast, gps, avvik: p.navn, kommentar: document.getElementById("m"+i)?.value || "" });
-            }
-        });
-    }
+    let registrert = false;
+    punkter.forEach((p, i) => {
+        if(status[i]) {
+            data.push({ netteier, linje, mast, gps, punkt: p.navn, kommentar: document.getElementById("m"+i)?.value || "" });
+            registrert = true;
+        }
+    });
+
+    if(!registrert) { alert("Ingen punkter valgt!"); return; }
+
     localStorage.setItem("linjedata", JSON.stringify(data));
     alert("Mast " + mast + " lagret!");
 }
 
 function lastNed(){
     let data = JSON.parse(localStorage.getItem("linjedata")) || [];
-    let csv = "Netteier,Linje,Mast,GPS,Avvik,Kommentar\n";
-    data.forEach(d => { csv += `${d.netteier},${d.linje},${d.mast},"${d.gps}","${d.avvik}","${d.kommentar}"\n`; });
+    let csv = "Netteier,Linje,Mast,GPS,Punkt,Kommentar\n";
+    data.forEach(d => { csv += `${d.netteier},${d.linje},${d.mast},"${d.gps}","${d.punkt}","${d.kommentar}"\n`; });
     let a = document.createElement("a");
     a.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
     a.download = "kontroll_data.csv";
