@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linjekontroll v32</title>
+    <title>Linjekontroll v33</title>
     <style>
         body {font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:5px; font-size: 14px;}
         .container {max-width:600px; margin:auto; background:white; padding:10px; border-radius:8px;}
         h2 {text-align:center; color:#1b5e20; margin: 5px 0;}
         input, textarea {width:100%; padding:8px; margin:2px 0; box-sizing:border-box; border:1px solid #ccc; border-radius:4px;}
         
-        /* Gjør kontrollpunkt-listen skrollbar hvis den blir for lang */
-        #punkter {max-height: 45vh; overflow-y: auto; border: 1px solid #ddd; padding: 5px; margin: 10px 0;}
+        #punkter {max-height: 50vh; overflow-y: auto; border: 1px solid #ddd; padding: 5px; margin: 10px 0;}
         
         .kp {background:#2e7d32; color:white; width:100%; padding:10px; margin-top:4px; border:none; border-radius:6px; cursor:pointer;}
         .kp.vis {background:#f57c00;}
-        .avvik-valg {background:#e0e0e0; width:100%; padding:8px; margin:2px 0; border:1px solid #bbb; border-radius:4px; font-size:12px; cursor:pointer;}
+        
+        .avvik-wrapper {background:#f9f9f9; padding:5px; margin:5px 0; border:1px solid #ddd; border-radius:4px;}
+        .avvik-knapp {background:#fff; border:1px solid #333; width:65%; padding:8px; border-radius:4px; cursor:pointer;}
+        .kamera-knapp {background:#1565c0; color:white; width:30%; padding:8px; border:none; border-radius:4px; cursor:pointer;}
+        .kamera-knapp.ok {background:#2e7d32;}
+        
         .btn-main {width:100%; padding:12px; margin-top:5px; border:none; border-radius:6px; color:white; cursor:pointer;}
         .green {background:#2e7d32;}
         .darkgreen {background:#1b5e20;}
@@ -23,67 +27,47 @@
 </head>
 <body>
 
-<div id="loginBox" class="container">
-    <h2>Linjekontroll</h2>
-    <input type="password" id="pass" placeholder="Passord">
-    <button class="btn-main green" onclick="login()">Logg inn</button>
-</div>
-
-<div id="app" class="container" style="display:none;">
-    <h2>Linjekontroll</h2>
+<div id="app" class="container">
+    <h2>Linjekontroll v33</h2>
     <input id="netteier" placeholder="Netteier">
     <input id="linje" placeholder="LinjeID">
     <input id="mast" placeholder="Mast nr">
-    <input id="gps" placeholder="GPS-koordinater">
+    <input id="gps" placeholder="GPS">
     <button class="btn-main green" onclick="hentGPS()">Hent GPS</button>
 
     <div id="punkter"></div>
 
     <button class="btn-main darkgreen" onclick="lagre()">Lagre mast</button>
     <button class="btn-main darkgreen" onclick="lastNed()">Last ned CSV</button>
-    <button class="btn-main green" onclick="nyMast()">Ny mast</button>
 </div>
 
 <script>
-const PASSORD = "Linje2026";
 let status = {};
-let data = JSON.parse(localStorage.getItem("linjedata")) || [];
+let bilderTatt = {}; // Holder styr på om bilde er tatt for et avvik
 
-// Fullstendig liste
 let punkter = [
     {navn:"Mast OK", avvik:[]},
     {navn:"Skjev mast", avvik:["Skjev","Fundament feil"]},
     {navn:"Barduner", avvik:["Løs","Brudd"]},
     {navn:"Stolper", avvik:["Råte","Skade"]},
-    {navn:"Stålmast", avvik:["Rust","Skade"]},
-    {navn:"Topphette", avvik:["Mangler","Defekt"]},
-    {navn:"Traversfeste", avvik:["Skade"]},
-    {navn:"Travers", avvik:["Skade"]},
-    {navn:"Isolatorfeste", avvik:["Skade"]},
     {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
-    {navn:"Bendsling", avvik:["Løs","Brudd"]},
-    {navn:"Liner", avvik:["Kordelbrudd"]},
-    {navn:"Strekking", avvik:["Skjev"]},
-    {navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
     {navn:"Trase", avvik:["Skog","Kratt"]}
 ];
-
-function login(){
-    if(document.getElementById("pass").value === PASSORD){
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("app").style.display = "block";
-        render();
-    } else { alert("Feil passord"); }
-}
 
 function render(){
     let html = "";
     punkter.forEach((p,i)=>{
         let cls = "kp" + (status[i]=="vis" ? " vis" : "");
         html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
+        
         if(status[i]=="vis"){
             p.avvik.forEach(a=>{
-                html += `<button class="avvik-valg" onclick="velgAvvik('${a}')">⚠️ ${a}</button>`;
+                let id = i + "_" + a;
+                let kamCls = "kamera-knapp" + (bilderTatt[id] ? " ok" : "");
+                html += `<div class="avvik-wrapper">
+                            <span class="avvik-knapp">${a}</span>
+                            <button class="${kamCls}" onclick="taBilde('${id}', '${a}')">📸 Foto</button>
+                         </div>`;
             });
             html += `<textarea id="m${i}" placeholder="Merknad"></textarea>`;
         }
@@ -91,18 +75,24 @@ function render(){
     document.getElementById("punkter").innerHTML = html;
 }
 
-function toggle(i){
-    status[i] = (status[i] == "vis") ? "" : "vis";
+function toggle(i){ status[i] = (status[i] == "vis") ? "" : "vis"; render(); }
+
+function taBilde(id, navn){
+    let net = document.getElementById("netteier").value || "Net";
+    let lin = document.getElementById("linje").value || "Linje";
+    let mas = document.getElementById("mast").value || "Mast";
+    let filnavn = `${net}_${lin}_${mas}_${navn}`;
+    
+    navigator.clipboard.writeText(filnavn);
+    bilderTatt[id] = true; // Marker som tatt
+    alert("Filnavn kopiert:\n" + filnavn + "\n\nLim inn i OneDrive når du tar bildet.");
     render();
 }
 
-function velgAvvik(detalj){
-    let net = document.getElementById("netteier").value || "Netteier";
-    let lin = document.getElementById("linje").value || "Linje";
-    let mas = document.getElementById("mast").value || "Mast";
-    let filnavn = `${net}_${lin}_${mas}_${detalj}`;
-    navigator.clipboard.writeText(filnavn);
-    alert("Kopiert: " + filnavn);
+function hentGPS(){
+    navigator.geolocation.getCurrentPosition(p => {
+        document.getElementById("gps").value = p.coords.latitude.toFixed(6) + ", " + p.coords.longitude.toFixed(6);
+    });
 }
 
 function lagre(){
@@ -110,30 +100,28 @@ function lagre(){
     let linje = document.getElementById("linje").value;
     let mast = document.getElementById("mast").value;
     let gps = document.getElementById("gps").value;
+
     punkter.forEach((p, i) => {
         if (status[i] == "vis") {
+            let data = JSON.parse(localStorage.getItem("linjedata")) || [];
             data.push({ netteier, linje, mast, gps, avvik: p.navn, kommentar: document.getElementById("m"+i)?.value || "" });
+            localStorage.setItem("linjedata", JSON.stringify(data));
         }
     });
-    localStorage.setItem("linjedata", JSON.stringify(data));
     alert("Lagret!");
 }
 
 function lastNed(){
+    let data = JSON.parse(localStorage.getItem("linjedata")) || [];
     let csv = "Netteier,Linje,Mast,GPS,Avvik,Kommentar\n";
     data.forEach(d => { csv += `${d.netteier},${d.linje},${d.mast},"${d.gps}","${d.avvik}","${d.kommentar}"\n`; });
     let a = document.createElement("a");
     a.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
-    a.download = "kontroll.csv";
+    a.download = "kontroll_data.csv";
     a.click();
 }
 
-function nyMast(){
-    document.getElementById("mast").value="";
-    document.getElementById("gps").value="";
-    status = {};
-    render();
-}
+render();
 </script>
 </body>
 </html>
