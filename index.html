@@ -1,429 +1,141 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Linjekontroll v28</title>
-
-<!-- ✅ IKON (iPhone FIX) -->
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2e7d32">
-
-<style>
-body {font-family: Arial; background:#f4f4f4; margin:0;}
-.container {max-width:600px; margin:auto; padding:12px;}
-
-h2 {text-align:center;}
-
-label {font-weight:bold; display:block; margin-top:10px;}
-input, textarea {
-width:100%; padding:10px; margin-top:5px; font-size:16px;
-}
-
-.kp {
-background:#2e7d32; color:white; width:100%;
-padding:14px; margin-top:8px; border:none; border-radius:10px;
-}
-
-.kp.ok { background:#66bb6a; }
-.kp.avvik { background:#c62828; }
-
-.avvik {
-background:#ccc; width:100%;
-padding:12px; margin-top:5px; border:none; border-radius:8px;
-}
-
-button {
-width:100%; padding:14px; margin-top:10px;
-border:none; border-radius:10px; font-size:16px;
-}
-
-.green {background:#2e7d32; color:white;}
-.darkgreen {background:#1b5e20; color:white;}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linjekontroll v28</title>
+    <link rel="apple-touch-icon" href="icon-180.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+    <style>
+        body {font-family: Arial; background:#f4f4f4; margin:0;}
+        .container {max-width:600px; margin:auto; padding:12px;}
+        h2 {text-align:center;}
+        label {font-weight:bold; display:block; margin-top:10px;}
+        input, textarea {width:100%; padding:10px; margin-top:5px; font-size:16px;}
+        .kp {background:#2e7d32; color:white; width:100%; padding:14px; margin-top:8px; border:none; border-radius:10px;}
+        .kp.ok { background:#66bb6a; }
+        .kp.avvik { background:#c62828; }
+        .avvik {background:#ccc; width:100%; padding:12px; margin-top:5px; border:none; border-radius:8px;}
+        button {width:100%; padding:14px; margin-top:10px; border:none; border-radius:10px; font-size:16px;}
+        .green {background:#2e7d32; color:white;}
+        .darkgreen {background:#1b5e20; color:white;}
+    </style>
 </head>
-
 <body>
-
-<div class="container">
-
-<h2>Linjekontroll v28</h2>
-
-<label>Netteier</label>
-<input id="netteier">
-
-<label>LinjeID</label>
-<input id="linje">
-
-<label>Mast nr</label>
-<input id="mast">
-
-<label>GPS</label>
-<input id="gps">
-
-<button class="green" onclick="startGPS()">Slå på GPS</button>
-<button class="green" onclick="stopGPS()">Slå av GPS</button>
-
-<div id="punkter"></div>
-
-<button class="darkgreen" onclick="lagre()">Lagre mast</button>
-<button class="darkgreen" onclick="lastNed()">Last ned Excel</button>
-<button class="green" onclick="nyMast()">Ny mast</button>
-
-</div>
-
-<script>
-
-let gpsWatch = null;
-let data = [];
-
-let punkter = [
-{navn:"Mast OK", avvik:[]},
-
-{navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
-{navn:"Barduner", avvik:["Løs","Brudd"]},
-
-{navn:"Stolper", avvik:["Råte","Skade"]},
-{navn:"Stålmast", avvik:["Rust","Skade"]},
-{navn:"Topphette", avvik:["Mangler","Defekt"]},
-
-{navn:"Traversfeste", avvik:["Skade"]},
-{navn:"Travers", avvik:["Skade"]},
-
-{navn:"Isolatorfeste", avvik:["Skade"]},
-{navn:"Isolator", avvik:["Knust","Krypestrøm"]},
-
-{navn:"Bendsling", avvik:["Løs","Brudd"]},
-{navn:"Liner", avvik:["Kordelbrudd"]},
-{navn:"Strekking", avvik:["Skjev"]},
-
-{navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
-{navn:"Trase", avvik:["Skog","Kratt"]}
-];
-
-let status = {};
-
-function render(){
-let html = "";
-
-punkter.forEach((p,i)=>{
-
-let cls = "kp";
-if(status[i]=="ok") cls+=" ok";
-if(status[i]=="avvik") cls+=" avvik";
-
-html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
-
-if(p.avvik.length > 0 && status[i]=="vis"){
-p.avvik.forEach(a=>{
-html += `<button class="avvik" onclick="settAvvik(${i})">${a}</button>`;
-});
-
-html += `
-<button class="green">📸 Ta bilde</button>
-<textarea placeholder="Merknad" id="m${i}"></textarea>
-`;
-}
-
-});
-
-document.getElementById("punkter").innerHTML = html;
-}
-
-function toggle(i){
-if(punkter[i].navn=="Mast OK"){
-status[i]="ok";
-} else {
-status[i]="vis";
-}
-render();
-}
-
-function settAvvik(i){
-status[i]="avvik";
-render();
-}
-
-function startGPS(){
-gpsWatch = navigator.geolocation.watchPosition(p=>{
-document.getElementById("gps").value =
-p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
-});
-}
-
-function stopGPS(){
-navigator.geolocation.clearWatch(gpsWatch);
-}
-
-function lagre(){
-let rad = {
-netteier: document.getElementById("netteier").value,
-linje: document.getElementById("linje").value,
-mast: document.getElementById("mast").value,
-gps: document.getElementById("gps").value,
-punkter:[]
-};
-
-punkter.forEach((p,i)=>{
-rad.punkter.push({
-navn:p.navn,
-status: status[i] || "",
-merknad: document.getElementById("m"+i)?.value || ""
-});
-});
-
-data.push(rad);
-alert("Lagret");
-}
-
-<!DOCTYPE html>
-<html lang="no">
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Linjekontroll v28</title>
-
-<!-- ✅ IKON (iPhone FIX) -->
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2e7d32">
-
-<style>
-body {font-family: Arial; background:#f4f4f4; margin:0;}
-.container {max-width:600px; margin:auto; padding:12px;}
-
-h2 {text-align:center;}
-
-label {font-weight:bold; display:block; margin-top:10px;}
-input, textarea {
-width:100%; padding:10px; margin-top:5px; font-size:16px;
-}
-
-.kp {
-background:#2e7d32; color:white; width:100%;
-padding:14px; margin-top:8px; border:none; border-radius:10px;
-}
-
-.kp.ok { background:#66bb6a; }
-.kp.avvik { background:#c62828; }
-
-.avvik {
-background:#ccc; width:100%;
-padding:12px; margin-top:5px; border:none; border-radius:8px;
-}
-
-button {
-width:100%; padding:14px; margin-top:10px;
-border:none; border-radius:10px; font-size:16px;
-}
-
-.green {background:#2e7d32; color:white;}
-.darkgreen {background:#1b5e20; color:white;}
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-<h2>Linjekontroll v28</h2>
-
-<label>Netteier</label>
-<input id="netteier">
-
-<label>LinjeID</label>
-<input id="linje">
-
-<label>Mast nr</label>
-<input id="mast">
-
-<label>GPS</label>
-<input id="gps">
-
-<button class="green" onclick="startGPS()">Slå på GPS</button>
-<button class="green" onclick="stopGPS()">Slå av GPS</button>
-
-<div id="punkter"></div>
-
-<button class="darkgreen" onclick="lagre()">Lagre mast</button>
-<button class="darkgreen" onclick="lastNed()">Last ned Excel</button>
-<button class="green" onclick="nyMast()">Ny mast</button>
-
-</div>
-
-<script>
-
-let gpsWatch = null;
-let data = [];
-
-let punkter = [
-{navn:"Mast OK", avvik:[]},
-
-{navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
-{navn:"Barduner", avvik:["Løs","Brudd"]},
-
-{navn:"Stolper", avvik:["Råte","Skade"]},
-{navn:"Stålmast", avvik:["Rust","Skade"]},
-{navn:"Topphette", avvik:["Mangler","Defekt"]},
-
-{navn:"Traversfeste", avvik:["Skade"]},
-{navn:"Travers", avvik:["Skade"]},
-
-{navn:"Isolatorfeste", avvik:["Skade"]},
-{navn:"Isolator", avvik:["Knust","Krypestrøm"]},
-
-{navn:"Bendsling", avvik:["Løs","Brudd"]},
-{navn:"Liner", avvik:["Kordelbrudd"]},
-{navn:"Strekking", avvik:["Skjev"]},
-
-{navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
-{navn:"Trase", avvik:["Skog","Kratt"]}
-];
-
-let status = {};
-
-function render(){
-let html = "";
-
-punkter.forEach((p,i)=>{
-
-let cls = "kp";
-if(status[i]=="ok") cls+=" ok";
-if(status[i]=="avvik") cls+=" avvik";
-
-html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
-
-if(p.avvik.length > 0 && status[i]=="vis"){
-p.avvik.forEach(a=>{
-html += `<button class="avvik" onclick="settAvvik(${i})">${a}</button>`;
-});
-
-html += `
-<button class="green">📸 Ta bilde</button>
-<textarea placeholder="Merknad" id="m${i}"></textarea>
-`;
-}
-
-});
-
-document.getElementById("punkter").innerHTML = html;
-}
-
-function toggle(i){
-if(punkter[i].navn=="Mast OK"){
-status[i]="ok";
-} else {
-status[i]="vis";
-}
-render();
-}
-
-function settAvvik(i){
-status[i]="avvik";
-render();
-}
-
-function startGPS(){
-gpsWatch = navigator.geolocation.watchPosition(p=>{
-document.getElementById("gps").value =
-p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
-});
-}
-
-function stopGPS(){
-navigator.geolocation.clearWatch(gpsWatch);
-}
-
-function lagre(){
-let rad = {
-netteier: document.getElementById("netteier").value,
-linje: document.getElementById("linje").value,
-mast: document.getElementById("mast").value,
-gps: document.getElementById("gps").value,
-punkter:[]
-};
-
-punkter.forEach((p,i)=>{
-rad.punkter.push({
-navn:p.navn,
-status: status[i] || "",
-merknad: document.getElementById("m"+i)?.value || ""
-});
-});
-
-data.push(rad);
-alert("Lagret");
-}
-function lastNed() {
-    // Bruk semikolon (;) som skilletegn i stedet for komma. 
-    // Dette er standard i norske Excel-oppsett og er mye mer stabilt.
-    let csv = "\ufeffNetteier;Linje;Mast;GPS;Kontrollpunkt;Status;Merknad\n";
-
-    data.forEach(d => {
-        d.punkter.forEach(p => {
-            // Vi legger inn if-sjekk slik at vi kun eksporterer linjer med data
-            if (p.status !== "" || p.merknad !== "") {
-                
-                // Vi pakker hver verdi inn i " ". 
-                // Dette gjør at Excel ikke bryr seg om det er komma inne i teksten.
-                let linje = [
-                    d.netteier,
-                    d.linje,
-                    d.mast,
-                    d.gps, // GPS er nå trygg fordi hele raden håndteres korrekt
-                    p.navn,
-                    p.status,
-                    p.merknad
-                ].map(val => `"${val || ""}"`).join(";"); // Setter sammen med semikolon
-
-                csv += linje + "\n";
-            }
-        });
-    });
-
-    let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "linjekontroll.csv";
-    a.click();
-}
-
-    let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "linjekontroll.csv";
-    a.click();
-}
-function nyMast(){
-document.getElementById("mast").value="";
-document.getElementById("gps").value="";
-status = {};
-render();
-}
-
-render();
-
-</script>
-
-</body>
-</html>
-function nyMast(){
-document.getElementById("mast").value="";
-document.getElementById("gps").value="";
-status = {};
-render();
-}
-
-render();
-
-</script>
-
+    <div class="container">
+        <h2>Linjekontroll v28</h2>
+        <label>Netteier</label> <input id="netteier">
+        <label>LinjeID</label> <input id="linje">
+        <label>Mast nr</label> <input id="mast">
+        <label>GPS</label> <input id="gps">
+        <button class="green" onclick="startGPS()">Slå på GPS</button>
+        <button class="green" onclick="stopGPS()">Slå av GPS</button>
+        <div id="punkter"></div>
+        <button class="darkgreen" onclick="lagre()">Lagre mast</button>
+        <button class="darkgreen" onclick="lastNed()">Last ned Excel</button>
+        <button class="green" onclick="nyMast()">Ny mast</button>
+    </div>
+
+    <script>
+        let gpsWatch = null;
+        // Henter eksisterende data fra minnet eller starter på nytt
+        let data = JSON.parse(localStorage.getItem('linjekontroll_data')) || [];
+        let status = {};
+        
+        let punkter = [
+            {navn:"Mast OK", avvik:[]},
+            {navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
+            {navn:"Barduner", avvik:["Løs","Brudd"]},
+            {navn:"Stolper", avvik:["Råte","Skade"]},
+            {navn:"Stålmast", avvik:["Rust","Skade"]},
+            {navn:"Topphette", avvik:["Mangler","Defekt"]},
+            {navn:"Traversfeste", avvik:["Skade"]},
+            {navn:"Travers", avvik:["Skade"]},
+            {navn:"Isolatorfeste", avvik:["Skade"]},
+            {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
+            {navn:"Bendsling", avvik:["Løs","Brudd"]},
+            {navn:"Liner", avvik:["Kordelbrudd"]},
+            {navn:"Strekking", avvik:["Skjev"]},
+            {navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
+            {navn:"Trase", avvik:["Skog","Kratt"]}
+        ];
+
+        function render(){
+            let html = "";
+            punkter.forEach((p,i)=>{
+                let cls = "kp";
+                if(status[i]=="ok") cls+=" ok";
+                if(status[i]=="avvik") cls+=" avvik";
+                html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
+                if(p.avvik.length > 0 && status[i]=="vis"){
+                    p.avvik.forEach(a=>{
+                        html += `<button class="avvik" onclick="settAvvik(${i})">${a}</button>`;
+                    });
+                    html += `<textarea placeholder="Merknad" id="m${i}" onblur="lagreMerknad(this, ${i})">${status["m"+i] || ""}</textarea>`;
+                }
+            });
+            document.getElementById("punkter").innerHTML = html;
+        }
+
+        function lagreMerknad(el, i) { status["m"+i] = el.value; }
+
+        function toggle(i){
+            status[i] = (punkter[i].navn=="Mast OK") ? "ok" : "vis";
+            render();
+        }
+
+        function settAvvik(i){
+            status[i]="avvik";
+            render();
+        }
+
+        function startGPS(){
+            gpsWatch = navigator.geolocation.watchPosition(p=>{
+                document.getElementById("gps").value = p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
+            });
+        }
+
+        function stopGPS(){ navigator.geolocation.clearWatch(gpsWatch); }
+
+        function lagre(){
+            let rad = {
+                netteier: document.getElementById("netteier").value,
+                linje: document.getElementById("linje").value,
+                mast: document.getElementById("mast").value,
+                gps: document.getElementById("gps").value,
+                punkter: punkter.map((p,i) => ({navn:p.navn, status:status[i]||"", merknad:status["m"+i]||""}))
+            };
+            data.push(rad);
+            localStorage.setItem('linjekontroll_data', JSON.stringify(data));
+            alert("Lagret lokalt!");
+        }
+
+        function lastNed() {
+            let csv = "\ufeffNetteier;Linje;Mast;GPS;Kontrollpunkt;Status;Merknad\n";
+            data.forEach(d => {
+                d.punkter.forEach(p => {
+                    if (p.status !== "") {
+                        let linje = [d.netteier, d.linje, d.mast, d.gps, p.navn, p.status, p.merknad]
+                                    .map(val => `"${val || ""}"`).join(";");
+                        csv += linje + "\n";
+                    }
+                });
+            });
+            let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "linjekontroll.csv";
+            a.click();
+        }
+
+        function nyMast(){
+            document.getElementById("mast").value="";
+            status = {};
+            render();
+        }
+
+        render();
+    </script>
 </body>
 </html>
