@@ -12,12 +12,12 @@
         .container {max-width:600px; margin:auto; padding:12px;}
         h2 {text-align:center;}
         label {font-weight:bold; display:block; margin-top:10px;}
-        input, textarea {width:100%; padding:15px; margin-top:5px; font-size:18px; border:1px solid #ccc; border-radius:8px;}
+        input, textarea {width:100%; padding:15px; margin-top:5px; font-size:18px; border:1px solid #ccc; border-radius:8px; box-sizing: border-box;}
         
         /* Hanske-vennlige knapper */
         button {
             width:100%; padding:20px; margin-top:10px; border:none; border-radius:12px; 
-            font-size:18px; font-weight:bold; touch-action: manipulation;
+            font-size:18px; font-weight:bold; touch-action: manipulation; cursor: pointer;
         }
         .kp {background:#2e7d32; color:white;}
         .kp.ok { background:#66bb6a; }
@@ -28,6 +28,28 @@
     </style>
 </head>
 <body>
+
+<script>
+    // 1. Passord-sjekk
+    const korrektPassord = "1234"; 
+    const brukerInput = prompt("Skriv inn passord for å åpne Linjekontroll:");
+    
+    if (brukerInput !== korrektPassord) {
+        alert("Feil passord! Tilgang nektet.");
+        window.location.href = "about:blank";
+    }
+
+    // 2. Testperiode på 60 dager fra 14. mai 2026
+    const startDato = new Date("2026-05-14");
+    const iDag = new Date();
+    const diffTid = Math.abs(iDag - startDato);
+    const brukteDager = Math.ceil(diffTid / (1000 * 60 * 60 * 24));
+    
+    if (brukteDager > 60) {
+        alert("Testperioden på 60 dager er utløpt. Ta kontakt for fornyelse.");
+        window.location.href = "about:blank";
+    }
+</script>
 
 <div class="container">
     <h2>Linjekontroll v28</h2>
@@ -102,12 +124,14 @@
     function settAvvik(i) { status[i] = "avvik"; render(); }
 
     function startGPS() {
-        gpsWatch = navigator.geolocation.watchPosition(p => {
-            document.getElementById("gps").value = p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
-        });
+        if (navigator.geolocation) {
+            gpsWatch = navigator.geolocation.watchPosition(p => {
+                document.getElementById("gps").value = p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
+            }, e => alert("GPS-feil: " + e.message), {enableHighAccuracy: true});
+        }
     }
 
-    function stopGPS() { navigator.geolocation.clearWatch(gpsWatch); }
+    function stopGPS() { if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch); }
 
     function lagre() {
         let rad = {
@@ -123,27 +147,34 @@
     }
 
     function lastNed() {
+        if (data.length === 0) { alert("Ingen data å laste ned."); return; }
+        
         let csv = "\ufeffNetteier;Linje;Mast;GPS;Kontrollpunkt;Status;Merknad\n";
         data.forEach(d => {
             d.punkter.forEach(p => {
                 if (p.status !== "") {
-                    let linje = [d.netteier, d.linje, d.mast, d.gps, p.navn, p.status, p.merknad]
+                    let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
+                    let linje = [d.netteier, d.linje, d.mast, d.gps, p.navn, p.status, merknadRenset]
                                 .map(val => `"${val || ""}"`).join(";");
                     csv += linje + "\n";
                 }
             });
         });
+        
         let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         let a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = "linjekontroll.csv";
+        a.download = "linjekontroll_eksport.csv";
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
     }
 
     function nyMast() {
         document.getElementById("mast").value = "";
         status = {};
         render();
+        window.scrollTo(0,0);
     }
 
     render();
