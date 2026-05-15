@@ -12,7 +12,7 @@
         .container {max-width:600px; margin:auto; padding:12px;}
         h2 {text-align:center;}
         label {font-weight:bold; display:block; margin-top:10px;}
-        input, textarea {width:100%; padding:15px; margin-top:5px; font-size:18px; border:1px solid #ccc; border-radius:8px; box-sizing: border-box;}
+        input, textarea, select {width:100%; padding:15px; margin-top:5px; font-size:18px; border:1px solid #ccc; border-radius:8px; box-sizing: border-box; background: white;}
         
         /* Hanske-vennlige knapper */
         button {
@@ -25,6 +25,8 @@
         .avvik {background:#ccc; color:#000; margin-top:5px;}
         .green {background:#2e7d32; color:white;}
         .darkgreen {background:#1b5e20; color:white;}
+        
+        .skjult { display: none; }
     </style>
 </head>
 <body>
@@ -56,6 +58,30 @@
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
     <label>Mast nr</label> <input id="mast">
+    
+    <label>Mast type</label>
+    <select id="mastType" onchange="sjekkMastType(this.value)">
+        <option value="E">E</option>
+        <option value="H">H</option>
+        <option value="DH">DH</option>
+        <option value="3H">3H</option>
+        <option value="2A">2A</option>
+        <option value="3A">3A</option>
+        <option value="Annet">Annen type...</option>
+    </select>
+    
+    <div id="egendefinertMastDiv" class="skjult">
+        <label>Skriv inn mast type</label>
+        <input id="egenMastType" placeholder="F.eks. Portal, Gitter...">
+    </div>
+
+    <label>Vertikalkrefter</label>
+    <select id="vertikalkraft">
+        <option value="Lav">Lav</option>
+        <option value="Normal" selected>Normal</option>
+        <option value="Høy">Høy</option>
+    </select>
+
     <label>GPS</label> <input id="gps">
     
     <button class="green" onclick="startGPS()">Slå på GPS</button>
@@ -90,6 +116,16 @@
         {navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
         {navn:"Trase", avvik:["Skog","Kratt"]}
     ];
+
+    function sjekkMastType(verdi) {
+        let egenDiv = document.getElementById("egendefinertMastDiv");
+        if (verdi === "Annet") {
+            egenDiv.classList.remove("skjult");
+        } else {
+            egenDiv.classList.add("skjult");
+            document.getElementById("egenMastType").value = "";
+        }
+    }
 
     function render(){
         let html = "";
@@ -134,10 +170,17 @@
     function stopGPS() { if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch); }
 
     function lagre() {
+        let valgtType = document.getElementById("mastType").value;
+        if (valgtType === "Annet") {
+            valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
+        }
+
         let rad = {
             netteier: document.getElementById("netteier").value,
             linje: document.getElementById("linje").value,
             mast: document.getElementById("mast").value,
+            mastType: valgtType,
+            vertikalkraft: document.getElementById("vertikalkraft").value,
             gps: document.getElementById("gps").value,
             punkter: punkter.map((p,i) => ({navn:p.navn, status:status[i]||"", merknad:status["m"+i]||""}))
         };
@@ -149,12 +192,13 @@
     function lastNed() {
         if (data.length === 0) { alert("Ingen data å laste ned."); return; }
         
-        let csv = "\ufeffNetteier;Linje;Mast;GPS;Kontrollpunkt;Status;Merknad\n";
+        // Lagt til Masttype og Vertikalkrefter i overskriften
+        let csv = "\ufeffNetteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
         data.forEach(d => {
             d.punkter.forEach(p => {
                 if (p.status !== "") {
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
-                    let linje = [d.netteier, d.linje, d.mast, d.gps, p.navn, p.status, merknadRenset]
+                    let linje = [d.netteier, d.linje, d.mast, d.mastType, d.vertikalkraft, d.gps, p.navn, p.status, merknadRenset]
                                 .map(val => `"${val || ""}"`).join(";");
                     csv += linje + "\n";
                 }
@@ -172,6 +216,9 @@
 
     function nyMast() {
         document.getElementById("mast").value = "";
+        document.getElementById("mastType").value = "E";
+        sjekkMastType("E"); // Skjuler tekstfeltet for egendefinert type
+        document.getElementById("vertikalkraft").value = "Normal";
         status = {};
         render();
         window.scrollTo(0,0);
