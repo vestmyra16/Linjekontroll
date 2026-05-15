@@ -41,13 +41,11 @@
         window.location.href = "about:blank";
     }
 
-    // 2. Testperiode på 60 dager fra 14. mai 2026
-    const startDato = new Date("2026-05-14");
+    // 2. Testperiode: Appen slutter å virke 60 dager etter 14. mai 2026 (Utløpsdato: 13. juli 2026)
+    const utlopsDato = new Date("2026-07-13"); 
     const iDag = new Date();
-    const diffTid = Math.abs(iDag - startDato);
-    const brukteDager = Math.ceil(diffTid / (1000 * 60 * 60 * 24));
     
-    if (brukteDager > 60) {
+    if (iDag > utlopsDato) {
         alert("Testperioden på 60 dager er utløpt. Ta kontakt for fornyelse.");
         window.location.href = "about:blank";
     }
@@ -157,6 +155,7 @@
         render();
     }
 
+    function setTimeout(i) { status[i] = "avvik"; render(); }
     function settAvvik(i) { status[i] = "avvik"; render(); }
 
     function startGPS() {
@@ -192,7 +191,6 @@
     function lastNed() {
         if (data.length === 0) { alert("Ingen data å laste ned."); return; }
         
-        // Lagt til Masttype og Vertikalkrefter i overskriften
         let csv = "\ufeffNetteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
         data.forEach(d => {
             d.punkter.forEach(p => {
@@ -217,7 +215,7 @@
     function nyMast() {
         document.getElementById("mast").value = "";
         document.getElementById("mastType").value = "E";
-        sjekkMastType("E"); // Skjuler tekstfeltet for egendefinert type
+        sjekkMastType("E");
         document.getElementById("vertikalkraft").value = "Normal";
         status = {};
         render();
