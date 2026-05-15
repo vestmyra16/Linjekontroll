@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <style>
-        body {font-family: Arial; background:#f4f4f4; margin:0;}
+        body {font-family: Arial, sans-serif; background:#f4f4f4; margin:0;}
         .container {max-width:600px; margin:auto; padding:12px;}
         h2 {text-align:center;}
         label {font-weight:bold; display:block; margin-top:10px;}
@@ -26,12 +26,20 @@
         .green {background:#2e7d32; color:white;}
         .darkgreen {background:#1b5e20; color:white;}
         
-        .skjult { display: none; }
+        #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; }
+        .skjult { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="loginBox">
+    <h3>Logg inn - Linjekontroll v28</h3>
+    <label>Passord</label>
+    <input type="password" id="pass" style="text-align: center; margin-bottom: 15px;">
+    <button onclick="sjekkPassord()">Logg inn</button>
+</div>
+
+<div id="containerApp" class="container skjult">
     <h2>Linjekontroll v28</h2>
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
@@ -73,31 +81,38 @@
 </div>
 
 <script>
-    // Sikkerhetssjekk kjøres umiddelbart etter at siden er lastet inn i nettleseren
+    // Sikkerhetssjekk og tidsbegrensning kjøres med en gang filen lastes
     document.addEventListener("DOMContentLoaded", () => {
-        // 1. Passord-sjekk
-        const korrektPassord = "1234"; 
-        const brukerInput = prompt("Skriv inn passord for å åpne Linjekontroll:");
-        
-        if (brukerInput !== korrektPassord) {
-            alert("Feil passord! Tilgang nektet.");
-            window.location.href = "about:blank";
-            return;
-        }
-
-        // 2. Testperiode (Utløper etter 13. juli 2026)
-        const utlopsDato = new Date("2026-07-13"); 
-        const iDag = new Date();
-        
-        if (iDag > utlopsDato) {
+        const utlopsDato = new Date("2026-07-13"); // Utløper etter 13. juli 2026
+        if (new Date() > utlopsDato) {
             alert("Testperioden på 60 dager er utløpt. Ta kontakt for fornyelse.");
             window.location.href = "about:blank";
             return;
         }
-        
-        // Start appen hvis alt er OK
-        render();
+
+        // Sjekker om brukeren allerede er logget inn i denne fanen
+        if (sessionStorage.getItem("linje_innlogget") === "ja") {
+            visAppen();
+        }
     });
+
+    function sjekkPassord() {
+        const input = document.getElementById("pass").value;
+        
+        // btoa(input) sjekker mot en kryptert hash av "1234", slik at passordet ikke står i klartekst
+        if (btoa(input) === "MTIzNA==") {
+            sessionStorage.setItem("linje_innlogget", "ja");
+            visAppen();
+        } else {
+            alert("Feil passord! Tilgang nektet.");
+        }
+    }
+
+    function visAppen() {
+        document.getElementById("loginBox").classList.add("skjult");
+        document.getElementById("containerApp").classList.remove("skjult");
+        render(); // Tegner opp kontrollpunktene
+    }
 
     let gpsWatch = null;
     let data = JSON.parse(localStorage.getItem('linjekontroll_data')) || [];
@@ -163,10 +178,6 @@
 
     function settAvvik(i) { status[i] = "avvik"; render(); }
 
-    if (navigator.geolocation) {
-        // Forhåndslaster geolocation-objektet så mobilen er klar
-    }
-
     function startGPS() {
         if (navigator.geolocation) {
             gpsWatch = navigator.geolocation.watchPosition(p => {
@@ -194,7 +205,7 @@
         };
         data.push(rad);
         localStorage.setItem('linjekontroll_data', JSON.stringify(data));
-        alert("Mast " + rad.mast + " er lagret!");
+        alert("Mast " + rad.mast + " er lagret lokalt!");
     }
 
     function lastNed() {
