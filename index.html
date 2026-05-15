@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linjekontroll v28</title>
-    <link class="apple-touch-icon" href="icon-180.png">
+    <link rel="apple-touch-icon" href="icon-180.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <style>
@@ -30,26 +30,6 @@
     </style>
 </head>
 <body>
-
-<script>
-    // 1. Passord-sjekk
-    const korrektPassord = "1234"; 
-    const brukerInput = prompt("Skriv inn passord for å åpne Linjekontroll:");
-    
-    if (brukerInput !== korrektPassord) {
-        alert("Feil passord! Tilgang nektet.");
-        window.location.href = "about:blank";
-    }
-
-    // 2. Testperiode: Appen slutter å virke etter 13. juli 2026
-    const utlopsDato = new Date("2026-07-13"); 
-    const iDag = new Date();
-    
-    if (iDag > utlopsDato) {
-        alert("Testperioden på 60 dager er utløpt. Ta kontakt for fornyelse.");
-        window.location.href = "about:blank";
-    }
-</script>
 
 <div class="container">
     <h2>Linjekontroll v28</h2>
@@ -93,6 +73,32 @@
 </div>
 
 <script>
+    // Sikkerhetssjekk kjøres umiddelbart etter at siden er lastet inn i nettleseren
+    document.addEventListener("DOMContentLoaded", () => {
+        // 1. Passord-sjekk
+        const korrektPassord = "1234"; 
+        const brukerInput = prompt("Skriv inn passord for å åpne Linjekontroll:");
+        
+        if (brukerInput !== korrektPassord) {
+            alert("Feil passord! Tilgang nektet.");
+            window.location.href = "about:blank";
+            return;
+        }
+
+        // 2. Testperiode (Utløper etter 13. juli 2026)
+        const utlopsDato = new Date("2026-07-13"); 
+        const iDag = new Date();
+        
+        if (iDag > utlopsDato) {
+            alert("Testperioden på 60 dager er utløpt. Ta kontakt for fornyelse.");
+            window.location.href = "about:blank";
+            return;
+        }
+        
+        // Start appen hvis alt er OK
+        render();
+    });
+
     let gpsWatch = null;
     let data = JSON.parse(localStorage.getItem('linjekontroll_data')) || [];
     let status = {};
@@ -157,6 +163,10 @@
 
     function settAvvik(i) { status[i] = "avvik"; render(); }
 
+    if (navigator.geolocation) {
+        // Forhåndslaster geolocation-objektet så mobilen er klar
+    }
+
     function startGPS() {
         if (navigator.geolocation) {
             gpsWatch = navigator.geolocation.watchPosition(p => {
@@ -220,8 +230,6 @@
         render();
         window.scrollTo(0,0);
     }
-
-    render();
 </script>
 </body>
 </html>
