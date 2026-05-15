@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linjekontroll v28</title>
-    <link rel="apple-touch-icon" href="icon-180.png">
+    <link class="apple-touch-icon" href="icon-180.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <style>
@@ -41,7 +41,7 @@
         window.location.href = "about:blank";
     }
 
-    // 2. Testperiode: Appen slutter å virke 60 dager etter 14. mai 2026 (Utløpsdato: 13. juli 2026)
+    // 2. Testperiode: Appen slutter å virke etter 13. juli 2026
     const utlopsDato = new Date("2026-07-13"); 
     const iDag = new Date();
     
@@ -155,7 +155,6 @@
         render();
     }
 
-    function setTimeout(i) { status[i] = "avvik"; render(); }
     function settAvvik(i) { status[i] = "avvik"; render(); }
 
     function startGPS() {
