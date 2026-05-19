@@ -24,6 +24,7 @@
         .kp.avvik { background:#c62828; }
         .avvik {background:#ccc; color:#000; margin-top:5px;}
         .green {background:#2e7d32; color:white;}
+        .lightgreen {background:#4caf50; color:white; margin-bottom: 20px; border: 3px solid #1b5e20;}
         .darkgreen {background:#1b5e20; color:white;}
         
         #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; }
@@ -41,8 +42,15 @@
 
 <div id="containerApp" class="container skjult">
     <h2>Linjekontroll v28</h2>
+
+    <!-- NY KNAPP FOR NYTT ANLEGG -->
+    <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
+
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
+    
+    <hr style="margin:20px 0;">
+
     <label>Mast nr</label> <input id="mast">
     
     <label>Mast type</label>
@@ -77,20 +85,17 @@
 
     <button class="darkgreen" onclick="lagre()">Lagre mast</button>
     <button class="darkgreen" onclick="lastNed()">Last ned Excel</button>
-    <button class="green" onclick="nyMast()">Ny mast</button>
+    <button class="green" onclick="nyMast()">Neste mast</button>
 </div>
 
 <script>
-    // Sikkerhetssjekk og tidsbegrensning kjøres med en gang filen lastes
     document.addEventListener("DOMContentLoaded", () => {
-        const utlopsDato = new Date("2026-07-13"); // Utløper etter 13. juli 2026
+        const utlopsDato = new Date("2026-07-13");
         if (new Date() > utlopsDato) {
-            alert("Testperioden på 60 dager er utløpt. Ta kontakt for fornyelse.");
+            alert("Testperioden er utløpt.");
             window.location.href = "about:blank";
             return;
         }
-
-        // Sjekker om brukeren allerede er logget inn i denne fanen
         if (sessionStorage.getItem("linje_innlogget") === "ja") {
             visAppen();
         }
@@ -98,20 +103,18 @@
 
     function sjekkPassord() {
         const input = document.getElementById("pass").value;
-        
-        // btoa(input) sjekker mot en kryptert hash av "1234", slik at passordet ikke står i klartekst
         if (btoa(input) === "MTIzNA==") {
             sessionStorage.setItem("linje_innlogget", "ja");
             visAppen();
         } else {
-            alert("Feil passord! Tilgang nektet.");
+            alert("Feil passord!");
         }
     }
 
     function visAppen() {
         document.getElementById("loginBox").classList.add("skjult");
         document.getElementById("containerApp").classList.remove("skjult");
-        render(); // Tegner opp kontrollpunktene
+        render();
     }
 
     let gpsWatch = null;
@@ -136,6 +139,17 @@
         {navn:"Trase", avvik:["Skog","Kratt"]}
     ];
 
+    function nyttAnlegg() {
+        if(confirm("Vil du starte et nytt anlegg? Dette tømmer Netteier og LinjeID.")) {
+            document.getElementById("netteier").value = "";
+            document.getElementById("linje").value = "";
+            document.getElementById("mast").value = "";
+            status = {};
+            render();
+            window.scrollTo(0,0);
+        }
+    }
+
     function sjekkMastType(verdi) {
         let egenDiv = document.getElementById("egendefinertMastDiv");
         if (verdi === "Annet") {
@@ -153,7 +167,6 @@
             if(status[i]=="ok") cls+=" ok";
             if(status[i]=="avvik") cls+=" avvik";
             html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
-            
             if(p.avvik.length > 0 && status[i]=="vis"){
                 p.avvik.forEach(a=>{
                     html += `<button class="avvik" onclick="settAvvik(${i})">${a}</button>`;
@@ -182,7 +195,7 @@
         if (navigator.geolocation) {
             gpsWatch = navigator.geolocation.watchPosition(p => {
                 document.getElementById("gps").value = p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
-            }, e => alert("GPS-feil: " + e.message), {enableHighAccuracy: true});
+            }, e => alert("GPS-feil"), {enableHighAccuracy: true});
         }
     }
 
@@ -190,9 +203,7 @@
 
     function lagre() {
         let valgtType = document.getElementById("mastType").value;
-        if (valgtType === "Annet") {
-            valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
-        }
+        if (valgtType === "Annet") valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
 
         let rad = {
             netteier: document.getElementById("netteier").value,
@@ -205,38 +216,32 @@
         };
         data.push(rad);
         localStorage.setItem('linjekontroll_data', JSON.stringify(data));
-        alert("Mast " + rad.mast + " er lagret lokalt!");
+        alert("Mast " + rad.mast + " lagret!");
     }
 
     function lastNed() {
-        if (data.length === 0) { alert("Ingen data å laste ned."); return; }
-        
+        if (data.length === 0) return;
         let csv = "\ufeffNetteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
         data.forEach(d => {
             d.punkter.forEach(p => {
                 if (p.status !== "") {
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
-                    let linje = [d.netteier, d.linje, d.mast, d.mastType, d.vertikalkraft, d.gps, p.navn, p.status, merknadRenset]
-                                .map(val => `"${val || ""}"`).join(";");
-                    csv += linje + "\n";
+                    csv += `"${d.netteier}";"${d.linje}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${p.status}";"${merknadRenset}"\n`;
                 }
             });
         });
-        
         let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         let a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         a.download = "linjekontroll_eksport.csv";
-        document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
     }
 
     function nyMast() {
+        // Tømmer kun mast-spesifikke felt, beholder Netteier og LinjeID
         document.getElementById("mast").value = "";
         document.getElementById("mastType").value = "E";
         sjekkMastType("E");
-        document.getElementById("vertikalkraft").value = "Normal";
         status = {};
         render();
         window.scrollTo(0,0);
