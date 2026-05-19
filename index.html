@@ -23,6 +23,7 @@
         .kp.ok { background:#66bb6a; }
         .kp.avvik { background:#c62828; }
         .avvik {background:#ccc; color:#000; margin-top:5px;}
+        .avvik.valgt { background:#ef9a9a; border: 2px solid #c62828; font-weight: bold; }
         .green {background:#2e7d32; color:white;}
         .lightgreen {background:#4caf50; color:white; margin-bottom: 20px; border: 3px solid #1b5e20;}
         .darkgreen {background:#1b5e20; color:white;}
@@ -43,7 +44,6 @@
 <div id="containerApp" class="container skjult">
     <h2>Linjekontroll v28</h2>
 
-    <!-- NY KNAPP FOR NYTT ANLEGG -->
     <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
 
     <label>Netteier</label> <input id="netteier">
@@ -56,7 +56,7 @@
     <label>Mast type</label>
     <select id="mastType" onchange="sjekkMastType(this.value)">
         <option value="E">E</option>
-<option value="H" selected>H</option>
+        <option value="H" selected>H</option>
         <option value="DH">DH</option>
         <option value="3H">3H</option>
         <option value="2A">2A</option>
@@ -121,19 +121,20 @@
     let data = JSON.parse(localStorage.getItem('linjekontroll_data')) || [];
     let status = {};
 
+    // Oppdaterte punkter og avvik etter dine ønsker
     let punkter = [
         {navn:"Mast OK", avvik:[]},
         {navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
-        {navn:"Barduner", avvik:["Løs","Brudd"]},
+        {navn:"Barduner", avvik:["Løs","Brudd","Korrosjon"]},
         {navn:"Stolper", avvik:["Råte","Skade"]},
         {navn:"Stålmast", avvik:["Rust","Skade"]},
         {navn:"Topphette", avvik:["Mangler","Defekt"]},
-        {navn:"Traversfeste", avvik:["Skade"]},
-        {navn:"Travers", avvik:["Skade"]},
-        {navn:"Isolatorfeste", avvik:["Skade"]},
+        {navn:"Traversfeste", avvik:["Bruddanvisning","Skade"]},
+        {navn:"Travers", avvik:["Mosegrodd","Råte","Skade"]},
+        {navn:"Isolatorfeste", avvik:["Slitasje"]},
         {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
         {navn:"Bendsling", avvik:["Løs","Brudd"]},
-        {navn:"Liner", avvik:["Kordelbrudd"]},
+        {navn:"Liner", avvik:["Korrodert","Kordellbrudd"]},
         {navn:"Strekking", avvik:["Skjev"]},
         {navn:"Merking", avvik:["HS mangler","Mnr mangler"]},
         {navn:"Trase", avvik:["Skog","Kratt"]}
@@ -164,12 +165,17 @@
         let html = "";
         punkter.forEach((p,i)=>{
             let cls = "kp";
-            if(status[i]=="ok") cls+=" ok";
-            if(status[i]=="avvik") cls+=" avvik";
+            // Sjekker om statusen starter med "avvik:" eller er satt til "vis"/"ok"
+            if(status[i] == "ok") cls += " ok";
+            if(status[i] && status[i].indexOf("avvik:") === 0) cls += " avvik";
+            
             html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
-            if(p.avvik.length > 0 && status[i]=="vis"){
+            
+            if(p.avvik.length > 0 && (status[i] == "vis" || (status[i] && status[i].indexOf("avvik:") === 0))){
                 p.avvik.forEach(a=>{
-                    html += `<button class="avvik" onclick="settAvvik(${i})">${a}</button>`;
+                    let avvikCls = "avvik";
+                    if(status[i] === "avvik:" + a) avvikCls += " valgt"; // Markerer valgt avviksknapp rødt
+                    html += `<button class="${avvikCls}" onclick="settAvvik(${i}, '${a}')">${a}</button>`;
                 });
                 html += `<textarea placeholder="📸 Husk bilde! Merknad:" id="m${i}" onblur="lagreMerknad(this, ${i})">${status["m"+i] || ""}</textarea>`;
             }
@@ -180,7 +186,7 @@
     function lagreMerknad(el, i) { status["m"+i] = el.value; }
 
     function toggle(i) {
-        if (status[i] === "vis" || status[i] === "ok" || status[i] === "avvik") {
+        if (status[i] === "vis" || status[i] === "ok" || (status[i] && status[i].indexOf("avvik:") === 0)) {
             delete status[i];
             delete status["m"+i];
         } else {
@@ -189,7 +195,11 @@
         render();
     }
 
-    function settAvvik(i) { status[i] = "avvik"; render(); }
+    // Endret funksjon for å lagre nøyaktig hvilket avvik som ble trykket på
+    function settAvvik(i, avviksTekst) { 
+        status[i] = "avvik:" + avviksTekst; 
+        render(); 
+    }
 
     function startGPS() {
         if (navigator.geolocation) {
@@ -225,8 +235,13 @@
         data.forEach(d => {
             d.punkter.forEach(p => {
                 if (p.status !== "") {
+                    let visStatus = p.status;
+                    // Hvis status er lagret som f.eks "avvik:Skog", vasker vi bort "avvik:" så det kun står "Skog" i fila.
+                    if(visStatus.indexOf("avvik:") === 0) {
+                        visStatus = visStatus.replace("avvik:", "");
+                    }
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
-                    csv += `"${d.netteier}";"${d.linje}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${p.status}";"${merknadRenset}"\n`;
+                    csv += `"${d.netteier}";"${d.linje}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
                 }
             });
         });
@@ -238,7 +253,6 @@
     }
 
     function nyMast() {
-        // Tømmer kun mast-spesifikke felt, beholder Netteier og LinjeID
         document.getElementById("mast").value = "";
         document.getElementById("mastType").value = "H";
         sjekkMastType("H");
