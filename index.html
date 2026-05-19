@@ -56,7 +56,7 @@
     <label>Mast type</label>
     <select id="mastType" onchange="sjekkMastType(this.value)">
         <option value="E">E</option>
-        <option value="H">H</option>
+<option value="H" selected>H</option>
         <option value="DH">DH</option>
         <option value="3H">3H</option>
         <option value="2A">2A</option>
@@ -240,8 +240,8 @@
     function nyMast() {
         // Tømmer kun mast-spesifikke felt, beholder Netteier og LinjeID
         document.getElementById("mast").value = "";
-        document.getElementById("mastType").value = "E";
-        sjekkMastType("E");
+        document.getElementById("mastType").value = "H";
+        sjekkMastType("H");
         status = {};
         render();
         window.scrollTo(0,0);
