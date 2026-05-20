@@ -24,6 +24,7 @@
         .kp.avvik { background:#c62828; }
         .avvik {background:#ccc; color:#000; margin-top:5px;}
         .avvik.valgt { background:#ef9a9a; border: 2px solid #c62828; font-weight: bold; }
+        .avvik.valgt-ok { background:#a5d6a7; border: 2px solid #2e7d32; font-weight: bold; }
         .green {background:#2e7d32; color:white;}
         .lightgreen {background:#4caf50; color:white; margin-bottom: 20px; border: 3px solid #1b5e20;}
         .darkgreen {background:#1b5e20; color:white;}
@@ -131,11 +132,12 @@
     let status = {};
     let valgtStolpeNrForRaate = ""; 
 
+    // Lagt inn "Stolper OK" som et valg i listen under Stolper
     let punkter = [
         {navn:"Mast OK", avvik:[]},
         {navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
         {navn:"Barduner", avvik:["Løs","Brudd","Korrosjon"]},
-        {navn:"Stolper", avvik:["Råte","Skade"]},
+        {navn:"Stolper", avvik:["Stolper OK","Råte","Skade"]},
         {navn:"Stålmast", avvik:["Rust","Skade"]},
         {navn:"Topphette", avvik:["Mangler","Defekt"]},
         {navn:"Traversfeste", avvik:["Bruddanvisning","Skade"]},
@@ -184,10 +186,14 @@
             if(p.avvik.length > 0 && (status[i] == "vis" || (status[i] && status[i].indexOf("avvik:") === 0))){
                 p.avvik.forEach(a=>{
                     let avvikCls = "avvik";
-                    if(status[i] === "avvik:" + a) avvikCls += " valgt";
+                    if(status[i] === "avvik:" + a) {
+                        // Hvis "Stolper OK" velges, gi den en fin grønn ramme i stedet for rød avviksfarge
+                        avvikCls += (a === "Stolper OK") ? " valgt-ok" : " valgt";
+                    }
                     html += `<button class="${avvikCls}" onclick="settAvvik(${i}, '${a}')">${a}</button>`;
                 });
 
+                // VIS KUN STOLPEVELGER HVIS AVVIKET ER FAKTISK RÅTE ELLER SKADE
                 if(p.navn === "Stolper" && status[i] && (status[i] === "avvik:Råte" || status[i] === "avvik:Skade")) {
                     html += `<div class="stolpe-valg-boks">`;
                     html += `<label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe (1-12) har råte/skade?</label>`;
@@ -279,6 +285,10 @@
                     let visStatus = p.status;
                     if(visStatus.indexOf("avvik:") === 0) {
                         visStatus = visStatus.replace("avvik:", "");
+                    }
+                    // Hvis statusen i koden er registrert som underpunktet "Stolper OK", renses teksten til bare å stå "OK" i Excel
+                    if(visStatus === "Stolper OK") {
+                        visStatus = "OK";
                     }
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
                     csv += `"${d.netteier}";"${d.linje}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
