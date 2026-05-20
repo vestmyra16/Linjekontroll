@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linjekontroll v28</title>
-    <link rel="apple-touch-icon" href="icon-180.png">
-    <link rel="manifest" href="manifest.json">
+    <link class="apple-touch-icon" href="icon-180.png">
+    <link class="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <style>
         body {font-family: Arial, sans-serif; background:#f4f4f4; margin:0;}
@@ -31,14 +31,14 @@
         #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; }
         .skjult { display: none !important; }
 
-        /* Stil for valg av stolpenummer ved råte */
+        /* Stil for valg av stolpenummer ved råte - NÅ MED 6 I BREDDEN FOR 12 STOLPER */
         .stolpe-valg-boks {
             background: #fff; border: 2px dashed #c62828; border-radius: 8px; padding: 10px; margin-top: 5px; box-sizing: border-box;
         }
-        .stolpe-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; margin-top: 5px; }
-        .stolpe-grid button { padding: 10px; font-size: 14px; margin-top: 0; background: #eee; color: #000; border: 1px solid #ccc; }
-        .stolpe-grid button.aktiv { background: #c62828; color: white; font-weight: bold; }
-        .dyplenke-knapp { background: #2e7d32; color: white; text-decoration: none; display: block; text-align: center; padding: 15px; margin-top: 8px; border-radius: 8px; font-weight: bold; font-size: 16px; box-sizing: border-box; }
+        .stolpe-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-top: 5px; }
+        .stolpe-grid button { padding: 12px 2px; font-size: 14px; margin-top: 0; background: #eee; color: #000; border: 1px solid #ccc; border-radius: 6px; }
+        .stolpe-grid button.aktiv { background: #c62828; color: white; font-weight: bold; border-color: #c62828; }
+        .dyplenke-knapp { background: #2e7d32; color: white; text-decoration: none; display: block; text-align: center; padding: 15px; margin-top: 10px; border-radius: 8px; font-weight: bold; font-size: 16px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -129,7 +129,7 @@
     let gpsWatch = null;
     let data = JSON.parse(localStorage.getItem('linjekontroll_data')) || [];
     let status = {};
-    let valgtStolpeNrForRaate = ""; // Holder styr på valgt stolpe i en H/DH mast ved råte
+    let valgtStolpeNrForRaate = ""; 
 
     let punkter = [
         {navn:"Mast OK", avvik:[]},
@@ -188,18 +188,17 @@
                     html += `<button class="${avvikCls}" onclick="settAvvik(${i}, '${a}')">${a}</button>`;
                 });
 
-                // HVIS DET ER SJEKKPUNKT "STOLPER" OG AVVIK ER VALGT SOM "RÅTE" ELLER "SKADE"
+                // STØTTE FOR 12 STOLPER VED RÅTE ELLER SKADE
                 if(p.navn === "Stolper" && status[i] && (status[i] === "avvik:Råte" || status[i] === "avvik:Skade")) {
                     html += `<div class="stolpe-valg-boks">`;
-                    html += `<label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe har råte/skade?</label>`;
+                    html += `<label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe (1-12) har råte/skade?</label>`;
                     html += `<div class="stolpe-grid">`;
-                    for(let s=1; s<=4; s++) {
+                    for(let s=1; s<=12; s++) {
                         let aktivCls = (valgtStolpeNrForRaate == s) ? "aktiv" : "";
-                        html += `<button class="${aktivCls}" onclick="velgStolpeForLenke(${s})">Stolpe ${s}</button>`;
+                        html += `<button class="${aktivCls}" onclick="velgStolpeForLenke(${s})">${s}</button>`;
                     }
                     html += `</div>`;
                     
-                    // Hvis et stolpenummer er valgt, genererer vi den smarte dyplenken på direkten
                     if(valgtStolpeNrForRaate !== "") {
                         let n_eier = encodeURIComponent(document.getElementById("netteier").value || "");
                         let l_id = encodeURIComponent(document.getElementById("linje").value || "");
@@ -220,7 +219,7 @@
 
     function velgStolpeForLenke(nr) {
         valgtStolpeNrForRaate = nr;
-        render(); // Tegner listen på nytt så knappen oppdaterer seg med riktig nummer
+        render(); 
     }
 
     function lagreMerknad(el, i) { status["m"+i] = el.value; }
@@ -229,7 +228,7 @@
         if (status[i] === "vis" || status[i] === "ok" || (status[i] && status[i].indexOf("avvik:") === 0)) {
             delete status[i];
             delete status["m"+i];
-            if(punkter[i].navn === "Stolper") valgtStolpeNrForRaate = ""; // Nullstill stolpevalg
+            if(punkter[i].navn === "Stolper") valgtStolpeNrForRaate = ""; 
         } else {
             status[i] = (punkter[i].navn === "Mast OK") ? "ok" : "vis";
         }
@@ -239,7 +238,7 @@
     function settAvvik(i, avviksTekst) { 
         status[i] = "avvik:" + avviksTekst; 
         if(punkter[i].navn === "Stolper" && avviksTekst !== "Råte" && avviksTekst !== "Skade") {
-            valgtStolpeNrForRaate = ""; // Nullstill hvis de velger noe annet enn råte/skade
+            valgtStolpeNrForRaate = ""; 
         }
         render(); 
     }
@@ -299,7 +298,7 @@
         document.getElementById("mastType").value = "H";
         sjekkMastType("H");
         status = {};
-        valgtStolpeNrForRaate = ""; // Nullstill for neste mast
+        valgtStolpeNrForRaate = ""; 
         render();
         window.scrollTo(0,0);
     }
