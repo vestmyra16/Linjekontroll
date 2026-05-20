@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linjekontroll v28</title>
-    <link class="apple-touch-icon" href="icon-180.png">
-    <link class="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-180.png">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <style>
         body {font-family: Arial, sans-serif; background:#f4f4f4; margin:0;}
@@ -31,7 +31,7 @@
         #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; }
         .skjult { display: none !important; }
 
-        /* Stil for valg av stolpenummer ved råte - NÅ MED 6 I BREDDEN FOR 12 STOLPER */
+        /* Stil for valg av stolpenummer ved råte */
         .stolpe-valg-boks {
             background: #fff; border: 2px dashed #c62828; border-radius: 8px; padding: 10px; margin-top: 5px; box-sizing: border-box;
         }
@@ -188,7 +188,6 @@
                     html += `<button class="${avvikCls}" onclick="settAvvik(${i}, '${a}')">${a}</button>`;
                 });
 
-                // STØTTE FOR 12 STOLPER VED RÅTE ELLER SKADE
                 if(p.navn === "Stolper" && status[i] && (status[i] === "avvik:Råte" || status[i] === "avvik:Skade")) {
                     html += `<div class="stolpe-valg-boks">`;
                     html += `<label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe (1-12) har råte/skade?</label>`;
