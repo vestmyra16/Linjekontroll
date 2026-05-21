@@ -106,15 +106,17 @@
             window.location.href = "about:blank";
             return;
         }
-        if (sessionStorage.getItem("linje_innlogget") === "ja") {
+        // ENDRET TIL localStorage FOR SØMLØS SAMPLING PÅ SAMSUNG
+        if (localStorage.getItem("linje_innlogget") === "ja") {
             visAppen();
         }
     });
 
     function sjekkPassord() {
         const input = document.getElementById("pass").value;
-        if (btoa(input) === "MTIzNA==") {
-            sessionStorage.setItem("linje_innlogget", "ja");
+        if (input === "1234") { 
+            // ENDRET TIL localStorage
+            localStorage.setItem("linje_innlogget", "ja");
             visAppen();
         } else {
             alert("Feil passord!");
@@ -124,6 +126,18 @@
     function visAppen() {
         document.getElementById("loginBox").classList.add("skjult");
         document.getElementById("containerApp").classList.remove("skjult");
+        
+        // HVIS KONTROLLØREN KOMMER TILBAKE FRA STOLPEKONTROLL:
+        // Hent tilbake verdiene fra URL slik at han slipper å taste mast på nytt
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('retur') === 'ja') {
+            if (urlParams.get('netteier')) document.getElementById('netteier').value = urlParams.get('netteier');
+            if (urlParams.get('linje')) document.getElementById('linje').value = urlParams.get('linje');
+            if (urlParams.get('mast')) document.getElementById('mast').value = urlParams.get('mast');
+            // Marker "Stolper -> Råte" automatisk som aktivt siden han nettopp kom derfra
+            status[3] = "avvik:Råte";
+        }
+        
         render();
     }
 
@@ -132,7 +146,6 @@
     let status = {};
     let valgtStolpeNrForRaate = ""; 
 
-    // Lagt inn "Stolper OK" som et valg i listen under Stolper
     let punkter = [
         {navn:"Mast OK", avvik:[]},
         {navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
@@ -187,13 +200,11 @@
                 p.avvik.forEach(a=>{
                     let avvikCls = "avvik";
                     if(status[i] === "avvik:" + a) {
-                        // Hvis "Stolper OK" velges, gi den en fin grønn ramme i stedet for rød avviksfarge
                         avvikCls += (a === "Stolper OK") ? " valgt-ok" : " valgt";
                     }
                     html += `<button class="${avvikCls}" onclick="settAvvik(${i}, '${a}')">${a}</button>`;
                 });
 
-                // VIS KUN STOLPEVELGER HVIS AVVIKET ER FAKTISK RÅTE ELLER SKADE
                 if(p.navn === "Stolper" && status[i] && (status[i] === "avvik:Råte" || status[i] === "avvik:Skade")) {
                     html += `<div class="stolpe-valg-boks">`;
                     html += `<label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe (1-12) har råte/skade?</label>`;
@@ -209,9 +220,10 @@
                         let l_id = encodeURIComponent(document.getElementById("linje").value || "");
                         let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
                         
+                        // SAMSUNG-VENNLIG: Åpner Stolpekontroll i samme vindu/fane for maksimal stabilitet
                         let url = `https://vestmyra16.github.io/stolpekontroll/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&stolpenr=${valgtStolpeNrForRaate}`;
                         
-                        html += `<a href="${url}" target="_blank" class="dyplenke-knapp">🚀 Åpne Stolpekontroll for Stolpe ${valgtStolpeNrForRaate}</a>`;
+                        html += `<a href="${url}" class="dyplenke-knapp">🚀 Åpne Stolpekontroll for Stolpe ${valgtStolpeNrForRaate}</a>`;
                     }
                     html += `</div>`;
                 }
@@ -286,7 +298,6 @@
                     if(visStatus.indexOf("avvik:") === 0) {
                         visStatus = visStatus.replace("avvik:", "");
                     }
-                    // Hvis statusen i koden er registrert som underpunktet "Stolper OK", renses teksten til bare å stå "OK" i Excel
                     if(visStatus === "Stolper OK") {
                         visStatus = "OK";
                     }
