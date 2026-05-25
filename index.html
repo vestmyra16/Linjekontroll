@@ -9,13 +9,23 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <style>
-        body {font-family: Arial, sans-serif; background:#f4f4f4; margin:0;}
+        /* Sikkerhet: Hindre tekstmarkering og kopiering */
+        body {
+            font-family: Arial, sans-serif; background:#f4f4f4; margin:0;
+            -webkit-user-select: none; user-select: none;
+        }
+        
+        /* Vannmerke */
+        .vannmerke {
+            position: fixed; top: 10px; right: 10px; z-index: 9999;
+            font-size: 10px; color: rgba(0,0,0,0.1); pointer-events: none;
+        }
+
         .container {max-width:600px; margin:auto; padding:12px;}
         h2 {text-align:center;}
         label {font-weight:bold; display:block; margin-top:10px;}
         input, textarea, select {width:100%; padding:15px; margin-top:5px; font-size:18px; border:1px solid #ccc; border-radius:8px; box-sizing: border-box; background: white;}
         
-        /* Hanske-vennlige knapper */
         button {
             width:100%; padding:20px; margin-top:10px; border:none; border-radius:12px; 
             font-size:18px; font-weight:bold; touch-action: manipulation; cursor: pointer;
@@ -33,7 +43,6 @@
         #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; }
         .skjult { display: none !important; }
 
-        /* Stil for valg av stolpenummer ved råte */
         .stolpe-valg-boks {
             background: #fff; border: 2px dashed #c62828; border-radius: 8px; padding: 10px; margin-top: 5px; box-sizing: border-box;
         }
@@ -44,17 +53,8 @@
     </style>
 </head>
 <body>
-/* Hindre tekstmarkering og kopiering */
-body {
-    -webkit-user-select: none; /* Safari */
-    user-select: none;
-}
+<div class="vannmerke">Kun for autorisert bruk - Vestmyra16</div>
 
-/* Vannmerke */
-.vannmerke {
-    position: fixed; top: 10px; right: 10px; z-index: 9999;
-    font-size: 10px; color: rgba(0,0,0,0.1); pointer-events: none;
-}
 <div id="loginBox">
     <h3>Logg inn - Linjekontroll v28</h3>
     <label>Passord</label>
@@ -64,16 +64,11 @@ body {
 
 <div id="containerApp" class="container skjult">
     <h2>Linjekontroll v28</h2>
-
     <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
-
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
-    
     <hr style="margin:20px 0;">
-
     <label>Mast nr</label> <input id="mast">
-    
     <label>Mast type</label>
     <select id="mastType" onchange="sjekkMastType(this.value)">
         <option value="E">E</option>
@@ -84,71 +79,54 @@ body {
         <option value="3A">3A</option>
         <option value="Annet">Annen type...</option>
     </select>
-    
     <div id="egendefinertMastDiv" class="skjult">
         <label>Skriv inn mast type</label>
         <input id="egenMastType" placeholder="F.eks. Portal, Gitter...">
     </div>
-
     <label>Vertikalkrefter</label>
     <select id="vertikalkraft">
         <option value="Lav">Lav</option>
         <option value="Normal" selected>Normal</option>
         <option value="Høy">Høy</option>
     </select>
-
     <label>GPS</label> <input id="gps">
-    
     <button class="green" onclick="startGPS()">Slå på GPS</button>
     <button class="green" onclick="stopGPS()">Slå av GPS</button>
-
     <div id="punkter"></div>
-
     <button class="darkgreen" onclick="lagre()">Lagre mast</button>
     <button class="darkgreen" onclick="lastNed()">Last ned Excel</button>
     <button class="green" onclick="nyMast()">Neste mast</button>
 </div>
 
 <script>
-
     // 🔒 START SIKKERHETSLÅS
     document.addEventListener("DOMContentLoaded", () => {
-        // Sperr for høyreklikk
+        // Sperr for høyreklikk og kopiering
         document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('copy', event => event.preventDefault());
 
-        // Domenelås
         const gyldigDomene = "vestmyra16.github.io";
         if (window.location.hostname !== "" && window.location.hostname !== gyldigDomene) {
             document.body.innerHTML = ""; 
             return; 
         }
 
-        // Utløpsdato
         const utlopsDato = new Date("2026-07-13");
         if (new Date() > utlopsDato) {
             alert("Testperioden er utløpt.");
             window.location.href = "about:blank";
             return;
         }
-    });
-    // 🔒 SLUTT SIKKERHETSLÅS
 
-    // Din eksisterende kode starter her...
-    function beregn(){
-    // ...
-       
-    }
-       
-        // ENDRET TIL localStorage FOR SØMLØS SAMPLING PÅ SAMSUNG
         if (localStorage.getItem("linje_innlogget") === "ja") {
             visAppen();
         }
     });
+    // 🔒 SLUTT SIKKERHETSLÅS
 
     function sjekkPassord() {
         const input = document.getElementById("pass").value;
         if (input === "1234") { 
-            // ENDRET TIL localStorage
             localStorage.setItem("linje_innlogget", "ja");
             visAppen();
         } else {
@@ -159,18 +137,12 @@ body {
     function visAppen() {
         document.getElementById("loginBox").classList.add("skjult");
         document.getElementById("containerApp").classList.remove("skjult");
-        
-        // HVIS KONTROLLØREN KOMMER TILBAKE FRA STOLPEKONTROLL:
-        // Hent tilbake verdiene fra URL slik at han slipper å taste mast på nytt
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('retur') === 'ja') {
             if (urlParams.get('netteier')) document.getElementById('netteier').value = urlParams.get('netteier');
             if (urlParams.get('linje')) document.getElementById('linje').value = urlParams.get('linje');
             if (urlParams.get('mast')) document.getElementById('mast').value = urlParams.get('mast');
-            // Marker "Stolper -> Råte" automatisk som aktivt siden han nettopp kom derfra
-            status[3] = "avvik:Råte";
         }
-        
         render();
     }
 
@@ -199,7 +171,7 @@ body {
     ];
 
     function nyttAnlegg() {
-        if(confirm("Vil du starte et nytt anlegg? This tømmer Netteier og LinjeID.")) {
+        if(confirm("Vil du starte et nytt anlegg? Dette tømmer Netteier og LinjeID.")) {
             document.getElementById("netteier").value = "";
             document.getElementById("linje").value = "";
             document.getElementById("mast").value = "";
@@ -252,15 +224,11 @@ body {
                         let n_eier = encodeURIComponent(document.getElementById("netteier").value || "");
                         let l_id = encodeURIComponent(document.getElementById("linje").value || "");
                         let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
-                        
-                        // SAMSUNG-VENNLIG: Åpner Stolpekontroll i samme vindu/fane for maksimal stabilitet
                         let url = `https://vestmyra16.github.io/stolpekontroll/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&stolpenr=${valgtStolpeNrForRaate}`;
-                        
                         html += `<a href="${url}" class="dyplenke-knapp">🚀 Åpne Stolpekontroll for Stolpe ${valgtStolpeNrForRaate}</a>`;
                     }
                     html += `</div>`;
                 }
-
                 html += `<textarea placeholder="📸 Husk bilde! Merknad:" id="m${i}" onblur="lagreMerknad(this, ${i})">${status["m"+i] || ""}</textarea>`;
             }
         });
