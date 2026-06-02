@@ -67,6 +67,7 @@
     <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
+    <label>Kontrollert av:</label> <input id="kontrollor" oninput="lagreKontrollor()" placeholder="F.eks. Ola Nordmann">
     <hr style="margin:20px 0;">
     <label>Mast nr</label> <input id="mast">
     <label>Mast type</label>
@@ -134,9 +135,17 @@
         }
     }
 
+    function lagreKontrollor() {
+        localStorage.setItem("linje_kontrollor", document.getElementById("kontrollor").value);
+    }
+
     function visAppen() {
         document.getElementById("loginBox").classList.add("skjult");
         document.getElementById("containerApp").classList.remove("skjult");
+        
+        // Hent lagret kontrollør
+        document.getElementById('kontrollor').value = localStorage.getItem('linje_kontrollor') || "";
+
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('retur') === 'ja') {
             if (urlParams.get('netteier')) document.getElementById('netteier').value = urlParams.get('netteier');
@@ -274,8 +283,12 @@
     function lagre() {
         let valgtType = document.getElementById("mastType").value;
         if (valgtType === "Annet") valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
+        
+        let datoFormat = new Date().toLocaleDateString('no-NO', {day: '2-digit', month: '2-digit', year: 'numeric'});
 
         let rad = {
+            dato: datoFormat,
+            kontrollor: document.getElementById("kontrollor").value,
             netteier: document.getElementById("netteier").value,
             linje: document.getElementById("linje").value,
             mast: document.getElementById("mast").value,
@@ -291,7 +304,9 @@
 
     function lastNed() {
         if (data.length === 0) return;
-        let csv = "\ufeffNetteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
+        // La til Dato og Kontrollør i CSV-headeren
+        let csv = "\ufeffDato;Kontrollør;Netteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
+        
         data.forEach(d => {
             d.punkter.forEach(p => {
                 if (p.status !== "") {
@@ -303,10 +318,13 @@
                         visStatus = "OK";
                     }
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
-                    csv += `"${d.netteier}";"${d.linje}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
+                    
+                    // Bruker ="verdi" formatering for å forhindre Excel i å gjøre om felter til datoer eller ødelegge tall (f.eks mast 1-2 blir fort til 1. februar uten dette).
+                    csv += `="${d.dato || ""}";="${d.kontrollor || ""}";="${d.netteier}";="${d.linje}";="${d.mast}";="${d.mastType}";="${d.vertikalkraft}";="${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
                 }
             });
         });
+        
         let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         let a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
