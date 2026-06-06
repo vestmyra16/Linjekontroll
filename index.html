@@ -173,7 +173,7 @@
         {navn:"Stålmast", avvik:["Rust","Skade"]},
         {navn:"Topphette", avvik:["Mangler","Defekt"]},
         {navn:"Traversfeste", avvik:["Bruddanvisning","Skade"]},
-        {navn:"Travers", avvik:["Mosegrodd","Råte","Skade"]},
+        {navn:"Travers", avvik:["Travers OK","Mosegrodd","Annen skade","Råte","Sprekk"]},
         {navn:"Isolatorfeste", avvik:["Slitasje"]},
         {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
         {navn:"Bendsling", avvik:["Løs","Brudd"]},
@@ -185,7 +185,7 @@
     ];
 
     function nyttAnlegg() {
-        if(confirm("Vil du starte et nytt anlegg? This tømmer Netteier og LinjeID.")) {
+        if(confirm("Vil du starte et nytt anlegg? Dette tømmer Netteier og LinjeID.")) {
             document.getElementById("netteier").value = "";
             document.getElementById("linje").value = "";
             document.getElementById("mast").value = "";
@@ -219,11 +219,12 @@
                 p.avvik.forEach(a=>{
                     let avvikCls = "avvik";
                     if(status[i] === "avvik:" + a) {
-                        avvikCls += (a === "Stolper OK") ? " valgt-ok" : " valgt";
+                        avvikCls += (a === "Stolper OK" || a === "Travers OK") ? " valgt-ok" : " valgt";
                     }
                     html += `<button class="${avvikCls}" onclick="settAvvik(${i}, '${a}')">${a}</button>`;
                 });
 
+                // SPESIALHÅNDTERING: STOLPER
                 if(p.navn === "Stolper" && status[i] && (status[i] === "avvik:Råte" || status[i] === "avvik:Skade")) {
                     html += `<div class="stolpe-valg-boks">`;
                     html += `<label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe (1-12) har råte/skade?</label>`;
@@ -243,6 +244,30 @@
                     }
                     html += `</div>`;
                 }
+
+                // SPESIALHÅNDTERING: TRAVERS
+                if(p.navn === "Travers" && status[i]) {
+                    let valgtAvvik = status[i].replace("avvik:", "");
+                    
+                    if(valgtAvvik === "Mosegrodd" || valgtAvvik === "Annen skade") {
+                        html += `<div style="background:#fff3e0; border:1px dashed #ff9800; border-radius:6px; padding:10px; margin-top:5px; text-align:center;">`;
+                        html += `<p style="margin:0; font-size:12px; font-weight:bold; color:#e65100;">📸 Dokumentasjon påkrevd: Ta bilde av skaden og beskriv den i merknadsfeltet under.</p>`;
+                        html += `</div>`;
+                    } 
+                    else if(valgtAvvik === "Råte" || valgtAvvik === "Sprekk") {
+                        let n_eier = encodeURIComponent(document.getElementById("netteier").value || "");
+                        let l_id = encodeURIComponent(document.getElementById("linje").value || "");
+                        let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
+                        let url = `https://vestmyra16.github.io/Traverskontroll/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&retur=ja`;
+                        
+                        html += `<div style="background:#ffebee; border:2px dashed #c62828; border-radius:8px; padding:15px; margin-top:10px; text-align:center;">`;
+                        html += `<p style="margin-top:0; font-size:12px; font-weight:900; color:#c62828; text-transform:uppercase;">Kritisk strukturelt avvik</p>`;
+                        html += `<p style="font-size:14px; color:#b71c1c; margin-bottom:10px; font-weight:bold;">Krever reststyrkeanalyse i E.T. Travers.</p>`;
+                        html += `<a href="${url}" class="dyplenke-knapp" style="background:#b71c1c;">🚀 ÅPNE E.T. TRAVERS</a>`;
+                        html += `</div>`;
+                    }
+                }
+
                 html += `<textarea placeholder="📸 Husk bilde! Merknad:" id="m${i}" onblur="lagreMerknad(this, ${i})">${status["m"+i] || ""}</textarea>`;
             }
         });
@@ -318,32 +343,9 @@
                     if(visStatus.indexOf("avvik:") === 0) {
                         visStatus = visStatus.replace("avvik:", "");
                     }
-                    if(visStatus === "Stolper OK") {
+                    if(visStatus === "Stolper OK" || visStatus === "Travers OK") {
                         visStatus = "OK";
                     }
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
                     
-                    csv += `="${d.dato || ""}";="${d.kontrollor || ""}";="${d.netteier}";="${d.linje}";="${d.mast}";="${d.mastType}";="${d.vertikalkraft}";="${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
-                }
-            });
-        });
-        
-        let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "linjekontroll_eksport.csv";
-        a.click();
-    }
-
-    function nyMast() {
-        document.getElementById("mast").value = "";
-        document.getElementById("mastType").value = "H";
-        sjekkMastType("H");
-        status = {};
-        valgtStolpeNrForRaate = ""; 
-        render();
-        window.scrollTo(0,0);
-    }
-</script>
-</body>
-</html>
+                    csv += `="${d.dato || ""}";="${d.kontrollor || ""}";="${d
