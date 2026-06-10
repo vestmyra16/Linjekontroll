@@ -334,7 +334,9 @@
 
     function lastNed() {
         if (data.length === 0) return;
-        let csv = "\ufeffDato;Kontrollør;Netteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
+        
+        // Tvinger Excel til å bruke semikolon som separator for å unngå formatkaos
+        let csv = "sep=;\n\ufeffDato;Kontrollør;Netteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
         
         data.forEach(d => {
             d.punkter.forEach(p => {
@@ -348,7 +350,8 @@
                     }
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
                     
-                    csv += `="${d.dato || ""}";="${d.kontrollor || ""}";="${d.netteier}";="${d.linje}";="${d.mast}";="${d.mastType}";="${d.vertikalkraft}";="${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
+                    // Fjernet den problematiske = foran alle anførselstegnene
+                    csv += `"${d.dato || ""}";"${d.kontrollor || ""}";"${d.netteier}";"${d.linje}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
                 }
             });
         });
