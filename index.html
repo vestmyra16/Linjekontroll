@@ -120,8 +120,16 @@
 </div>
 
 <script>
-    // DATABASEN FOR DEN DIGITALE LÆREBOKA KOBLET TIL PUNKT-INDEKSENE
+    // DATABASEN FOR DEN DIGITALE LÆREBOKA KOBLET TIL PUNKT-INDEKSENE (Oppdatert v28.2)
     const hjelpData = {
+        2: {
+            tittel: "Lærebok: Barduner (Galvanisert Stål)",
+            tekst: "<b>Korrosjon på kritiske bæreelementer:</b><br>Barduner er selve bæresystemet for master som utsettes for store sidekrefter. De er nesten utelukkende laget av galvanisert stål (Fe).<br><br>• <b>Korrosjonsprosessen:</b> Når det beskyttende sinklaget er ofret (galvanisk korrosjon), brytes selve stålet ned. Dette starter som rød/brun *piting* (gropbærende tæring). Denne typen tæring spiser raskt opp trådens tverrsnitt. Siden stållina ikke eser ut som en FeAl-line, skjer bruddet ofte brått uten tydelig buling på forhånd.<br><br><b>Nedsatt mekanisk styrke:</b> Synlig rødbrun gravrust på en bardun er et kritisk avvik. Det betyr at tverrsnittet og bruddstyrken er redusert, og masta er i fare for mekanisk kollaps.",
+            bilder: [
+                { fil: "274 korosjon bardun s1-b (2).jpg", tekst: "Kritisk rødbrun gravrust på barduntråder. Dyp tæring som har redusert tverrsnittet og bruddstyrken betydelig." },
+                { fil: "PA130011re.jpg", tekst: "Avansert rødbrun tæring på galvanisert ståltråd. Overflaten er herjet av gropbærende korrosjon." }
+            ]
+        },
         7: {
             tittel: "Lærebok: Traverser og Reststyrke",
             tekst: "<b>Mekanisk nedbrytning av tretraverser:</b><br>Fuktighet samler seg i sprekker, boltede forbindelser og snekkerforbindelser, noe som gir grobunn for kvit- og brunråte. Råte huler ut innsiden av limtreet eller heltreet mens overflaten utvendig kan se tilsynelatende intakt ut. Sprekker svekker også traversens evne til å motstå torsjon og massive vertikalkrefter fra tung is og vind, noe som krever grundig reststyrkeanalyse i E.T. Travers.",
@@ -145,7 +153,7 @@
         },
         11: {
             tittel: "Lærebok: Liner & Kordelskader (FeAl)",
-            tekst: "<b>Hvorfor verktøyhakk dreper al-tråder:</b><br>Når det oppstår et skarpt hakk i en aluminiumstråd fra verktøy, looplodd eller klemmer, oppstår det <i>spenningskonsentrasjon</i> (kervvirkning) i bunnen av hakket. Under eoliske vibrasjoner (raske mikrobøyninger) samles kreftene i dette sårpunktet. En tretthetssprekk vil starte i bunnen av hakket og spise seg tvers gjennom tråden til den ryker med et skarpt brudd. Monteringsverktøy må derfor ALDRI lage hakk!<br><br><b>Korrosjonsatlas (Trinn 1-4):</b><br>• <b>Trinn 1:</b> Normal/god tilstand. Blank eller matt overflate.<br>• <b>Trinn 2:</b> Begynnende hvitrust (sinkoksid-pulver). Sinken ofrer seg for å beskytte stålkjernen.<br>• <b>Trinn 3:</b> Fremskredet buling. Sinken er oppbrukt, stålkjernen ruster og sveller, og presser aluminiumskordelene utover.<br>• <b>Trinn 4:</b> Kritisk fuglebur. Kordelene har mistet spennet fullstendig og spriker helt. Alvorlig tap av bruddstyrke.",
+            tekst: "<b>Hvorfor verktøyhakk dreper al-tråder:</b><br>Når det oppstår et skarpt hakk i en aluminiumstråd fra verktøy, looplodd eller klemmer, oppstår det <i>spenningskonsentrasjon</i> (kervvirkning) i bunnen av hakket. Under eoliske vibrasjoner (raske mikrobøyninger) samles kreftene i dette sårpunktet. En tretthetssprekk vil starte i bunnen av hakket og spise seg tvers gjennom tråden til den ryker med et skarpt brudd. Monteringsverktøy må derfor ALDRI lager hakk!<br><br><b>Korrosjonsatlas (Trinn 1-4):</b><br>• <b>Trinn 1:</b> Normal/god tilstand. Blank eller matt overflate.<br>• <b>Trinn 2:</b> Begynnende hvitrust (sinkoksid-pulver). Sinken ofrer seg for å beskytte stålkjernen.<br>• <b>Trinn 3:</b> Fremskredet buling. Sinken er oppbrukt, stålkjernen ruster og sveller, og presser aluminiumskordelene utover.<br>• <b>Trinn 4:</b> Kritisk fuglebur. Kordelene har mistet spennet fullstendig og spriker helt. Alvorlig tap av bruddstyrke.",
             bilder: [
                 { fil: "Vibrasjonsbrudd som følge av hakk i lina..jpg", tekst: "Klassisk tretthetsbrudd forårsaket av vibrasjoner. Skarpe, flate bruddflater (ofte initiert av hakk)." },
                 { fil: "Hakk på tvers av linen.png", tekst: "Skarpe hakk fra verktøy eller klemmer. Dette er døden for en aluminiumsline i vibrasjon." },
@@ -155,12 +163,12 @@
             ]
         },
         13: {
-            tittel: "Lærebok: Toppline/Jordline (Galvanisert Stål) & Strekk",
-            tekst: "<b>Korrosjon på galvanisert stålline:</b><br>I motsetning til FeAl-liner, buler ikke rene stålliner når de ruster. Nedbrytningen starter med at det beskyttende sinklaget ofrer seg (galvanisk korrosjon) og danner et grått/hvitt belegg. Når sinken er borte, angripes selve stålet, noe som gir hissig rød/brun gravrust. Dette spiser raskt opp trådens tverrsnitt og reduserer bruddstyrken drastisk.<br><br><b>Mekanisk strekk og seige brudd:</b><br>Når ekstrem islast legger seg på liner i bratte spenn, drar de massive kreftene i trådene år etter år. Dette strekker materialet plastisk over tid (kryp) helt til kordelene kollapser. Ved et slikt seigt strekkbrudd vil endene på kordelene smalne inn og få en form som en <i>blyantspiss</i>.",
+            tittel: "Lærebok: Toppline/Jordline (Galvanisert Stål) & Islast",
+            tekst: "<b>Korrosjonsatlas for galvanisert stål (Grå -> Brun):</b><br>I motsetning til FeAl-liner, buler ikke rene stålliner når de ruster. Nedbrytningen skjer i en tydelig visuell rekkefølge:<br><br>• <b>Normal tilstand (Grå):</b> Blank eller jevnt matte grå overflate.<br>• <b>Galvanisk korrosjon (Grå/Hvit):</b> Sinklaget ofrer seg og danner et hvitt kritt-belegg over metallet. Selve stålet er fortsatt beskyttet.<br>• <b>Rødbrun tæring (Brun/Rød):</b> Sinken er oppbrukt, stålet ruster og det dannes rød/brun *piting* (gravrustflekker). Dette spiser raskt opp tverrsnittet og reduserer bruddstyrken drastisk.<br><br><b>Mekanisk strekk og seige brudd:</b><br>Når ekstrem islast legger seg på liner i bratte spenn, drar de massive kreftene i trådene år etter år. Dette strekker materialet plastisk over tid (kryp) helt til kordelene kollapser. Ved et slikt seigt strekkbrudd vil endene på kordelene smalne inn og få en form som en <i>blyantspiss</i>.",
             bilder: [
                 { fil: "Galvanisk korrosjon.png", tekst: "Galvanisk korrosjon på stålline. Sinken brytes ned." },
-                { fil: "Vekselstrømkorrosjon.png", tekst: "Vekselstrømkorrosjon som tærer hardt på line og kordeler." },
-                { fil: "Islast og linebrudd1 kopia.jpg", tekst: "Ekstrem islast på linje og travers som mangedobler de mekaniske vertikalkreftene." },
+                { fil: "DJI_20251003201920_0510_Dre.jpg", tekst: "Overgangs-fase: Sinklaget er matte og det dannes rødbrune gravrustflekker (piting) på klemmen/lina." },
+                { fil: "PA130018re.jpg", tekst: "Kritisk rødbrun korrosjon på Toppline (Fe). Lina eser ut av rusten og har mistet mekanisk styrke." },
                 { fil: "Seigt brudd.png", tekst: "Seigt brudd (blyantspiss-brudd). Trådene har blitt strukket plastisk av massiv overbelastning (ofte is) til de røk." }
             ]
         }
