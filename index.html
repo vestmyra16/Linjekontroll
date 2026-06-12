@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linjekontroll v28</title>
+    <title>Linjekontroll v28.1 (Med Lærebok)</title>
     <meta name="author" content="Opphavsrett 2026 - vestmyra16">
     <link rel="apple-touch-icon" href="icon-180.png">
     <link rel="manifest" href="manifest.json">
@@ -50,20 +50,26 @@
         .stolpe-grid button { padding: 12px 2px; font-size: 14px; margin-top: 0; background: #eee; color: #000; border: 1px solid #ccc; border-radius: 6px; }
         .stolpe-grid button.aktiv { background: #c62828; color: white; font-weight: bold; border-color: #c62828; }
         .dyplenke-knapp { background: #2e7d32; color: white; text-decoration: none; display: block; text-align: center; padding: 15px; margin-top: 10px; border-radius: 8px; font-weight: bold; font-size: 16px; box-sizing: border-box; }
+        
+        /* INTEGRERTE LÆREBOKSTILER */
+        .kp-rad { display: flex; gap: 6px; margin-top: 10px; width: 100%; box-sizing: border-box; }
+        .kp-rad button.kp { margin-top: 0; flex-grow: 1; width: auto; }
+        .help-btn { margin-top: 0 !important; width: 60px !important; padding: 0 !important; background: #0284c7 !important; color: white !important; border: none !important; border-radius: 12px !important; font-size: 20px !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; flex-shrink: 0; }
+        .help-btn:hover { background: #0369a1 !important; }
     </style>
 </head>
 <body>
 <div class="vannmerke">Kun for autorisert bruk - Vestmyra16</div>
 
 <div id="loginBox">
-    <h3>Logg inn - Linjekontroll v28</h3>
+    <h3>Logg inn - Linjekontroll v28.1</h3>
     <label>Passord</label>
     <input type="password" id="pass" style="text-align: center; margin-bottom: 15px;">
     <button onclick="sjekkPassord()">Logg inn</button>
 </div>
 
 <div id="containerApp" class="container skjult">
-    <h2>Linjekontroll v28</h2>
+    <h2>Linjekontroll v28.1</h2>
     <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
@@ -100,10 +106,64 @@
     <button class="green" onclick="nyMast()">Neste mast</button>
 </div>
 
+<div id="hjelpModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; flex-direction:column; justify-content:center; align-items:center; padding:15px;" onclick="lukkHjelpModal()">
+    <div style="background:white; width:100%; max-width:500px; border-radius:12px; overflow-y:auto; max-height:90vh; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
+        <div style="background:#0284c7; color:white; padding:15px; text-align:center; position:relative;">
+            <h3 id="hjelpModalTittel" style="margin:0; font-size:16px; font-weight:900;">Lærebok</h3>
+            <button onclick="lukkHjelpModal()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); width:35px; height:35px; padding:0; margin:0; line-height:35px; background:#c62828; color:white; border-radius:50%; font-size:16px; border:none; font-weight:bold; cursor:pointer;">X</button>
+        </div>
+        <div style="padding:15px; overflow-y:auto; font-size:14px; line-height:1.5; color:#334155;" id="hjelpModalInnhold">
+        </div>
+        <div id="hjelpModalBilderSone" style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:15px; display:flex; flex-direction:column; gap:10px;">
+        </div>
+    </div>
+</div>
+
 <script>
+    // DATABASEN FOR DEN DIGITALE LÆREBOKA KOBLET TIL PUNKT-INDEKSENE
+    const hjelpData = {
+        7: {
+            tittel: "Lærebok: Traverser og Reststyrke",
+            tekst: "<b>Mekanisk nedbrytning av tretraverser:</b><br>Fuktighet samler seg i sprekker, boltede forbindelser og snekkerforbindelser, noe som gir grobunn for kvit- og brunråte. Råte huler ut innsiden av limtreet eller heltreet mens overflaten utvendig kan se tilsynelatende intakt ut. Sprekker svekker også traversens evne til å motstå torsjon og massive vertikalkrefter fra tung is og vind, noe som krever grundig reststyrkeanalyse i E.T. Travers.",
+            bilder: [
+                { fil: "Limtretravers totalt oppråtnet.png", tekst: "Limtretravers som er fullstendig oppråtnet på innsiden." }
+            ]
+        },
+        9: {
+            tittel: "Lærebok: Isolatorer & Kystklima",
+            tekst: "<b>Krypestrøm, salting og overslag:</b><br>I kystnære strøk eller fuktige dalbunn-mikroklima vil havsalt og forurensning legge seg på glass- eller porselensskålene. Sammen med tåke dannes det et strømførende lag. Dette fører til gnistring (tørrbånds-arcing) og krypestrømmer som gradvis brenner materialet og kan forårsake fullt overslag.<br><br><b>Innvendig punktering:</b><br>Ved lynnedslag kan en isolator punkteres innvendig. Den kan se helt perfekt ut utvendig, men ha mikroskopiske, brente kanaler tvers igjennom som gjør at den i praksis er permanent kortsluttet.",
+            bilder: [
+                { fil: "Herlig bilde av både rust, slitasje og natur.jpg", tekst: "Isolatoroppheng i saltholdig kystmiljø med kraftig overflaterust på metalldeler." }
+            ]
+        },
+        10: {
+            tittel: "Lærebok: Bendsling & Gnag",
+            tekst: "<b>Mekanisk slitasje og gnag:</b><br>Eoliske vibrasjoner og konstante mikrobevegelser fører til mekanisk gnag mellom lina og bendslingstråden dersom bendslingen blir løs. Dette sliper ned aluminiumsoverflaten og lager initieringspunkter for utmatting.",
+            bilder: [
+                { fil: "21 gnag på bendsling.2.JPG", tekst: "Nærbilde av mekanisk gnag på bendslingstråder på grunn av løs forbindelse og vibrasjoner." }
+            ]
+        },
+        11: {
+            tittel: "Lærebok: Liner & Kordelskader (FeAl)",
+            tekst: "<b>Hvorfor verktøyhakk dreper al-tråder:</b><br>Når det oppstår et skarpt hakk i en aluminiumstråd fra verktøy, looplodd eller klemmer, oppstår det <i>spenningskonsentrasjon</i> (kervvirkning) i bunnen av hakket. Under eoliske vibrasjoner (raske mikrobøyninger) samles kreftene i dette sårpunktet. En tretthetssprekk vil starte i bunnen av hakket og spise seg tvers gjennom tråden til den ryker med et skarpt brudd. Monteringsverktøy må derfor ALDRI lage hakk!<br><br><b>Korrosjonsatlas (Trinn 1-4):</b><br>• <b>Trinn 1:</b> Normal/god tilstand. Blank eller matt overflate.<br>• <b>Trinn 2:</b> Begynnende hvitrust (sinkoksid-pulver). Sinken ofrer seg for å beskytte stålkjernen.<br>• <b>Trinn 3:</b> Fremskredet buling. Sinken er oppbrukt, stålkjernen ruster og sveller, og presser aluminiumskordelene utover.<br>• <b>Trinn 4:</b> Kritisk fuglebur. Kordelene har mistet spennet fullstendig og spriker helt. Alvorlig tap av bruddstyrke.",
+            bilder: [
+                { fil: "IMG_0113.JPG", tekst: "Trinn 2: Tydelig hvitrust (sinkoksid-pulver) som har lagt seg tykt mellom kordelene." },
+                { fil: "7 kraftig korrosjon og mulig punktering av stålkjerne.jpg", tekst: "Trinn 3: Fremskredet tæring og begynnende buling hvor rusten presser kordelene ut." },
+                { fil: "1 kordellbrudd1A.JPG", tekst: "Trinn 4: Kritisk mekanisk skade med avrevne kordeler og fullstendig tap av spenn." },
+                { fil: "2 lysbueskade.jpg", tekst: "Ytre traume: Lysbueskade og brennemerker som svekker trådenes krystallstruktur." }
+            ]
+        },
+        13: {
+            tittel: "Lærebok: Toppline / Jordline & Islast",
+            tekst: "<b>Mekanisk strekk og seige brudd vs. vibrasjon:</b><br>Når ekstrem islast legger seg på liner i bratte spenn som faller ned mot lavere høyder, drar de massive kreftene i trådene år etter år. Dette strekker materialet plastisk over tid (kryp) helt til kordelene kollapser. Ved et slikt seigt strekkbrudd vil endene på kordelene smalne inn og få en form som en <i>blyantspiss</i>.<br><br>Ved eoliske vibrasjoner (tretthetsbrudd) vil bruddet derimot skje momentant uten deformasjon, noe som etterlater en helt flat og sylskarp bruddflate.",
+            bilder: [
+                { fil: "Islast og linebrudd1 kopia.jpg", tekst: "Ekstrem islast på linje og travers som mangedobler de mekaniske vertikalkreftene." }
+            ]
+        }
+    };
+
     // 🔒 START SIKKERHETSLÅS
     document.addEventListener("DOMContentLoaded", () => {
-        // Sperr for høyreklikk og kopiering
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => event.preventDefault());
 
@@ -143,11 +203,8 @@
     function visAppen() {
         document.getElementById("loginBox").classList.add("skjult");
         document.getElementById("containerApp").classList.remove("skjult");
-        
-        // Hent lagret kontrollør
         document.getElementById('kontrollor').value = localStorage.getItem('linje_kontrollor') || "";
 
-        // Generer automatisk dagens dato i feltet
         let dagensDato = new Date().toLocaleDateString('no-NO', {day: '2-digit', month: '2-digit', year: 'numeric'});
         document.getElementById('datoKontrollert').value = dagensDato;
 
@@ -213,7 +270,13 @@
             if(status[i] == "ok") cls += " ok";
             if(status[i] && status[i].indexOf("avvik:") === 0) cls += " avvik";
             
+            // RENDRE MED FLEX-RAD HVIS PUNKTET HAR INTEGRERT LÆREBOKINFO
+            html += `<div class="kp-rad">`;
             html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
+            if (hjelpData[i]) {
+                html += `<button type="button" class="help-btn" onclick="aapneHjelpModal(${i}); event.stopPropagation();" title="Åpne digital lærebok">📖</button>`;
+            }
+            html += `</div>`;
             
             if(p.avvik.length > 0 && (status[i] == "vis" || (status[i] && status[i].indexOf("avvik:") === 0))){
                 p.avvik.forEach(a=>{
@@ -272,6 +335,33 @@
             }
         });
         document.getElementById("punkter").innerHTML = html;
+    }
+
+    // MODAL-LOGIKK FOR LÆREBOKA
+    function aapneHjelpModal(i) {
+        const item = hjelpData[i];
+        if(!item) return;
+        
+        document.getElementById("hjelpModalTittel").innerHTML = "📖 " + item.tittel;
+        document.getElementById("hjelpModalInnhold").innerHTML = item.tekst;
+        
+        let bildeHtml = "";
+        if(item.bilder && item.bilder.length > 0) {
+            item.bilder.forEach(b => {
+                bildeHtml += `
+                    <div style="border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; background:black; margin-bottom:5px;">
+                        <img src="${b.fil}" style="width:100%; height:auto; display:block;" onerror="this.style.display='none';">
+                        <div style="background:white; padding:8px; font-size:11px; font-weight:bold; color:#475569; border-top:1px solid #cbd5e1;">📸 ${b.tekst}</div>
+                    </div>
+                `;
+            });
+        }
+        document.getElementById("hjelpModalBilderSone").innerHTML = bildeHtml;
+        document.getElementById("hjelpModal").style.display = "flex";
+    }
+
+    function lukkHjelpModal() {
+        document.getElementById("hjelpModal").style.display = "none";
     }
 
     function velgStolpeForLenke(nr) {
@@ -335,7 +425,6 @@
     function lastNed() {
         if (data.length === 0) return;
         
-        // Tvinger Excel til å bruke semikolon som separator for å unngå formatkaos
         let csv = "sep=;\n\ufeffDato;Kontrollør;Netteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
         
         data.forEach(d => {
@@ -350,7 +439,6 @@
                     }
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
                     
-                    // Fjernet den problematiske = foran alle anførselstegnene
                     csv += `"${d.dato || ""}";"${d.kontrollor || ""}";"${d.netteier}";"${d.linje}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
                 }
             });
