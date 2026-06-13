@@ -121,24 +121,25 @@
 
 <script>
     
-    // DATABASEN FOR DEN DIGITALE LÆREBOKA KOBLET TIL PUNKT-INDEKSENE (Oppdatert v28.4 - FeAl Galvanisk Korreksjon)
+    // DATABASEN FOR DEN DIGITALE VEILEDEREN KOBLET TIL PUNKT-INDEKSENE
     const hjelpData = {
         2: {
-            tittel: "Lærebok: Barduner (Galvanisert Stål)",
-            tekst: "<b>Korrosjon på kritiske bæreelementer:</b><br>Barduner er selve bæresystemet for master som utsettes for store sidekrefter. De er nesten utelukkende laget av galvanisert stål (Fe).<br><br>• <b>Korrosjonsprosessen:</b> Når det beskyttende sinklaget er ofret (galvanisk korrosjon), brytes selve stålet ned. Dette starter som rød/brun *piting* (gropbærende tæring). Denne typen tæring spiser raskt opp trådens tverrsnitt. Siden stållina ikke eser ut som en FeAl-line, skjer bruddet ofte brått uten tydelig buling på forhånd.<br><br><b>Nedsatt mekanisk styrke:</b> Synlig rødbrun gravrust på en bardun er et kritisk avvik. Det betyr at tverrsnittet og bruddstyrken er redusert, og masta er i fare for mekanisk kollaps.",
+            tittel: "Veileder: Barduner (Galvanisert Stål)",
+            tekst: "<b>Korrosjon på kritiske bæreelementer:</b><br>Barduner er selve bæresystemet for master som utsettes for store sidekrefter. De er nesten utelukkende laget av galvanisert stål (Fe).<br><br>• <b>Korrosjonsprosessen:</b> Når det beskyttende sinklaget er ofret (galvanisk korrosjon), brytes selve stålet ned. Dette starter som rød/brun *piting* (gropbærende tæring). Denne typen tæring spiser raskt opp trådens tverrsnitt. Siden stållina ikke eser ut som en FeAl-line, skjer bruddet ofte brått uten tydelig buling på forhånd.<br><br><b>Korrosjon i jordovergangen:</b> Bardunstag ruster ofte aller kraftigst akkurat i overgangen mellom luft og jord. Her er det rikelig med både fuktighet og oksygen, noe som gir optimale forhold for tæring.<br><br><b>Nedsatt mekanisk styrke:</b> Synlig rødbrun gravrust på en bardun eller et bardunstag er et kritisk avvik. Det betyr at tverrsnittet og bruddstyrken er redusert, og masta er i fare for mekanisk kollaps.",
             bilder: [
                 { fil: "274 korosjon bardun s1-b (2).jpg", tekst: "Kritisk rødbrun gravrust på barduntråder. Dyp tæring som har redusert tverrsnittet og bruddstyrken betydelig." },
-                { fil: "PA130011re.jpg", tekst: "Avansert rødbrun tæring på galvanisert ståltråd. Overflaten er herjet av gropbærende korrosjon." }
+                { fil: "PA130011re.jpg", tekst: "Avansert rødbrun tæring på galvanisert ståltråd. Overflaten er herjet av gropbærende korrosjon." },
+                { fil: "Bardunstag og bolt med korrosjon (2).jpg", tekst: "Kraftig korrosjon på bardunstag i overgangen mellom luft og jord. Dette er et typisk farepunkt som kan føre til at forankringen ryker." }
             ]
         },
         7: {
-            tittel: "Lærebok: Traverser og Reststyrke",
+            tittel: "Veileder: Traverser og Reststyrke",
             tekst: "<b>Mekanisk nedbrytning av tretraverser:</b><br>Fuktighet samler seg i sprekker, boltede forbindelser og snekkerforbindelser, noe som gir grobunn for kvit- og brunråte. Råte huler ut innsiden av limtreet eller heltreet mens overflaten utvendig kan se tilsynelatende intakt ut. Sprekker svekker også traversens evne til å motstå torsjon og massive vertikalkrefter fra tung is og vind, noe som krever grundig reststyrkeanalyse i E.T. Travers.",
             bilder: [
                 { fil: "Limtretravers totalt oppråtnet.png", tekst: "Limtretravers som er fullstendig oppråtnet på innsiden." }
             ]
         },
-     8: {
+        8: {
             tittel: "Veileder: Isolatorfeste",
             tekst: "<b>Mekanisk slitasje:</b><br>Kontinuerlig bevegelse fra vind og vibrasjoner fører til mekanisk gnag på sjakler, øyer og bolter. Stål mot stål over tid spiser opp godset og krever utskifting før brudd.<br><br><b>Ulmebrann og Strømtetthet:</b><br>Dersom det oppstår en jordfeil eller et isolatorbrudd/krypestrøm, kan det gå en feilstrøm gjennom beslaget og videre inn i treverket. Selv om selve strømmen er liten, vil <i>strømtettheten</i> bli enorm akkurat i kontaktpunktet mellom bolten og veden. Dette fungerer som et varmeelement som skaper en intens, lokal varmeutvikling. Resultatet er en ulmebrann som spiser opp treet rundt beslaget fra innsiden, og ødelegger masta og den mekaniske innfestingen fullstendig.",
             bilder: [
@@ -146,8 +147,8 @@
             ]
         },
         9: {
-            tittel: "Lærebok: Isolatorer & Oppheng",
-            tekst: "<b>Korrosjon på kule/skål (Rust):</b><br>Når galvaniseringen slites bort, begynner isolatorpinnen å ruste. Rust tar større plass enn stål (det eser ut). Dette skaper et enormt sprengtrykk innvendig som til slutt kan knuse glasset/porselenet, noe som fører til at linja faller ned.<br><br><b>Knust eller Sprukket:</b><br>Avslåtte skåler reduserer isolatorens <i>krypavstand</i> (veien strømmen må krype for å nå jord), noe som øker faren for overslag i regn/tåke. Sprekker landmarkeres som kritiske fordi fukt trekker inn, noe som kan gi frostsprenging eller innvendig overslag.<br><br><b>Krypestrøm, salting og overslag:</b><br>Forurensning og salt legger seg på skålene. Med fukt dannes det et strømførende lag. Dette skaper synlige krypestrømsveier og gnistring (tørrbånds-arcing) som kan brenne glasuren og forårsake fullt overslag.<br><br><b>Punktering:</b><br>Ved lynnedslag eller overspenning kan isolatoren punkteres innvendig (ofte synlig som små brennemerker ved kappen). Den er da i praksis permanent kortsluttet.",
+            tittel: "Veileder: Isolatorer & Oppheng",
+            tekst: "<b>Korrosjon på kule/skål (Rust):</b><br>Når galvaniseringen slites bort, begynner isolatorpinnen å ruste. Rust tar større plass enn stål (det eser ut). Dette skaper et enormt sprengtrykk innvendig som til slutt kan knuse glasset/porselenet, noe som fører til at linja faller ned.<br><br><b>Knust eller Sprukket:</b><br>Avslåtte skåler reduserer isolatorens <i>krypavstand</i> (veien strømmen må krype for å nå jord), noe som øker faren for overslag i regn/tåke. Sprekker er kritiske fordi fukt trekker inn, noe som kan gi frostsprenging eller innvendig overslag.<br><br><b>Krypestrøm, salting og overslag:</b><br>Forurensning og salt legger seg på skålene. Med fukt dannes det et strømførende lag. Dette skaper synlige krypestrømsveier og gnistring (tørrbånds-arcing) som kan brenne glasuren og forårsake fullt overslag.<br><br><b>Punktering:</b><br>Ved lynnedslag eller overspenning kan isolatoren punkteres innvendig (ofte synlig som små brennemerker ved kappen). Den er da i praksis permanent kortsluttet.",
             bilder: [
                 { fil: "Rust på isolator.JPG", tekst: "Kritisk: Kraftig rust på isolatorpinnen. Rusten eser ut og vil til slutt sprenge glasset fra innsiden." },
                 { fil: "302 defekt isolator.JPG", tekst: "Knust/avslått isolatorskål. Dette reduserer krypavstanden betydelig." },
@@ -158,14 +159,14 @@
             ]
         },
         10: {
-            tittel: "Lærebok: Bendsling & Gnag",
+            tittel: "Veileder: Bendsling & Gnag",
             tekst: "<b>Mekanisk slitasje og gnag:</b><br>Eoliske vibrasjoner og konstante mikrobevegelser fører til mekanisk gnag mellom lina og bendslingstråden dersom bendslingen blir løs. Dette sliper ned aluminiumsoverflaten og lager initieringspunkter for utmatting.",
             bilder: [
-                { fil: "21 gnag på bendsling.2.JPG", tekst: "Nærbilde av mekanisk gnag på bendslingstråder på grunn av løs forbindelse og vibrasjoner." }
+                { fil: "bendsling_gnag.jpg", tekst: "Nærbilde av mekanisk gnag på bendslingstråder på grunn av løs forbindelse og vibrasjoner." }
             ]
         },
         11: {
-            tittel: "Lærebok: Liner & Kordelskader (FeAl)",
+            tittel: "Veileder: Liner & Kordelskader (FeAl)",
             tekst: "<b>Verktøyhakk og Vibrasjon (Tretthetsbrudd):</b><br>Når det oppstår et skarpt hakk i aluminiumen fra verktøy, oppstår det <i>spenningskonsentrasjon</i> (kervvirkning). Under eoliske vibrasjoner vil en tretthetssprekk starte i hakket og spise seg tvers gjennom tråden til den ryker med et flatt, skarpt brudd.<br><br><b>Galvanisk korrosjon i FeAl-liner:</b><br>Siden FeAl-liner (f.eks. 50 eller 70 6/1) består av to ulike metaller (aluminium utvendig og galvanisert stål i kjernen), dannes det et galvanisk element hvis fuktighet trenger inn mellom lagene. Det oppstår kraftig tæring i grensesnittet der aluminiumskordelene ligger presset mot stålkjernen.<br><br><b>Ekstremt Strekk og Islast (Seigt brudd):</b><br>Når lina utsettes for massivt, statisk strekk (som ved islast), strekkes aluminiumskordelene plastisk før de ryker. De smalner inn og former en karakteristisk «blyantspiss».<br><br><b>Korrosjonsatlas (Trinn 1-4):</b><br>• <b>Trinn 1:</b> Normal overflate.<br>• <b>Trinn 2:</b> Begynnende hvitrust (sinkoksid).<br>• <b>Trinn 3:</b> Fremskredet buling (stålet ruster og presser aluminiumen ut).<br>• <b>Trinn 4:</b> Kritisk fuglebur.",
             bilder: [
                 { fil: "Vibrasjonsbrudd som følge av hakk i lina..jpg", tekst: "Tretthetsbrudd: Skarpe, flate bruddflater forårsaket av vibrasjoner (ofte initiert av hakk)." },
@@ -178,7 +179,7 @@
             ]
         },
         13: {
-            tittel: "Lærebok: Toppline/Jordline (Galvanisert Stål)",
+            tittel: "Veileder: Toppline/Jordline (Galvanisert Stål)",
             tekst: "<b>Korrosjonsatlas for galvanisert stål (Grå -> Brun):</b><br>I motsetning til FeAl-liner, buler ikke rene stålliner når de ruster. Nedbrytningen skjer i en tydelig visuell rekkefølge:<br><br>• <b>Normal tilstand (Grå):</b> Blank eller jevnt matt grå overflate.<br>• <b>Galvanisk korrosjon (Grå/Hvit):</b> Sinklaget ofrer seg og danner et hvitt kritt-belegg over metallet. Selve stålet er fortsatt beskyttet.<br>• <b>Rødbrun tæring (Brun/Rød):</b> Sinken er oppbrukt, stålet ruster og det dannes rød/brun *piting* (gravrustflekker). Dette spiser raskt opp tverrsnittet og reduserer bruddstyrken drastisk.",
             bilder: [
                 { fil: "DJI_20251003201920_0510_Dre.jpg", tekst: "Overgangs-fase: Sinklaget er matt og det dannes rødbrune gravrustflekker (piting) på klemmen/lina." },
@@ -186,7 +187,6 @@
             ]
         }
     };
-
     // 🔒 START SIKKERHETSLÅS
     document.addEventListener("DOMContentLoaded", () => {
         document.addEventListener('contextmenu', event => event.preventDefault());
