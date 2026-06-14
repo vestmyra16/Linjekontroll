@@ -121,11 +121,19 @@
 
 <script>
     
-    // DATABASEN FOR DEN DIGITALE VEILEDEREN KOBLET TIL PUNKT-INDEKSENE
+   // DATABASEN FOR DEN DIGITALE VEILEDEREN KOBLET TIL PUNKT-INDEKSENE (Oppdatert v28.5)
     const hjelpData = {
+        1: {
+            tittel: "Veileder: Skjev mast & Fundament",
+            tekst: "<b>REN-krav og akseptabel helling:</b><br>I henhold til bransjestandard (REN) skal master i utgangspunktet stå i lodd. For eksisterende anlegg aksepteres det normalt en maksimal helling på <b>1 til 2 % av stolpehøyden</b> over bakken før det registreres som et avvik som krever retting. For en 10 meter høy stolpe utgjør dette 10–20 cm avvik i toppen. For avspenningsmaster er kravene ofte strengere for å ivareta riktig fordeling av strekkrefter.<br><br><b>Helling på langs av linjeretning (LR):</b><br>Oppstår oftest som følge av ulikt strekk i spennene på hver side (f.eks. islast, trefall over linja, eller brudd i ett spenn). Can også skyldes at masta gradvis gir etter for et ensidig strekk som ikke har blitt fanget opp av barduneringen.<br><br><b>Helling på tvers av linjeretning:</b><br>Skyldes ofte langvarig vindbelastning fra én dominerende retning, dårlig fundamentering (f.eks. i myr/bløtt terreng), eller ujevn telehiv. Dette er ekstra kritisk fordi det endrer statikken i masta betraktelig, reduserer faseavstander og frittrom, og kan føre til at masta til slutt velter.",
+            bilder: [
+                { fil: "skjev_langs.jpg", tekst: "Skjev mast på langs av linjeretning (LR). Ofte forårsaket av ulikt strekk i linja." },
+                { fil: "skjev_tvers.jpg", tekst: "Skjev mast på tvers av linjeretning. Ofte forårsaket av langvarig vind eller sviktende fundament." }
+            ]
+        },
         2: {
             tittel: "Veileder: Barduner (Galvanisert Stål)",
-            tekst: "<b>Korrosjon på kritiske bæreelementer:</b><br>Barduner er selve bæresystemet for master som utsettes for store sidekrefter. De er nesten utelukkende laget av galvanisert stål (Fe).<br><br>• <b>Korrosjonsprosessen:</b> Når det beskyttende sinklaget er ofret (galvanisk korrosjon), brytes selve stålet ned. Dette starter som rød/brun *piting* (gropbærende tæring). Denne typen tæring spiser raskt opp trådens tverrsnitt. Siden stållina ikke eser ut som en FeAl-line, skjer bruddet ofte brått uten tydelig buling på forhånd.<br><br><b>Korrosjon i jordovergangen:</b> Bardunstag ruster ofte aller kraftigst akkurat i overgangen mellom luft og jord. Her er det rikelig med både fuktighet og oksygen, noe som gir optimale forhold for tæring.<br><br><b>Nedsatt mekanisk styrke:</b> Synlig rødbrun gravrust på en bardun eller et bardunstag er et kritisk avvik. Det betyr at tverrsnittet og bruddstyrken er redusert, og masta er i fare for mekanisk kollaps.",
+            tekst: "<b>Korrosjon på kritiske bæreelementer:</b><br>Barduner are selve bæresystemet for master som utsettes for store sidekrefter. De er nesten utelukkende laget av galvanisert stål (Fe).<br><br>• <b>Korrosjonsprosessen:</b> Når det beskyttende sinklaget er ofret (galvanisk korrosjon), brytes selve stålet ned. Dette starter som rød/brun *piting* (gropbærende tæring). Denne typen tæring spiser raskt opp trådens tverrsnitt. Siden stållina ikke eser ut som en FeAl-line, skjer bruddet ofte brått uten tydelig buling på forhånd.<br><br><b>Korrosjon i jordovergangen:</b> Bardunstag ruster ofte aller kraftigst akkurat i overgangen mellom luft og jord. Her er det rikelig med både fuktighet og oksygen, noe som gir optimale forhold for tæring.<br><br><b>Nedsatt mekanisk styrke:</b> Synlig rødbrun gravrust på en bardun eller et bardunstag er et kritisk avvik. Det betyr at tverrsnittet og bruddstyrken er redusert, og masta er i fare for mekanisk kollaps.",
             bilder: [
                 { fil: "274 korosjon bardun s1-b (2).jpg", tekst: "Kritisk rødbrun gravrust på barduntråder. Dyp tæring som har redusert tverrsnittet og bruddstyrken betydelig." },
                 { fil: "PA130011re.jpg", tekst: "Avansert rødbrun tæring på galvanisert ståltråd. Overflaten er herjet av gropbærende korrosjon." },
@@ -134,7 +142,7 @@
         },
         7: {
             tittel: "Veileder: Traverser og Reststyrke",
-            tekst: "<b>Biologisk nedbrytning (Mose og vegetasjon):</b><br>Mose og lav på toppen av traversen fungerer som en svamp som holder konstant på fuktigheten. Dette hindrer treverket i å tørke ut og skaper et perfekt mikroklima for råtesopp. Over tid hules traversen ut, og i verste fall slår busker og trær rot direkte i selve treverket. Slike traverser har mistet mesteparten av sin mekaniske bæreevne og er livsfarlige ved store is- eller vindlaster.<br><br><b>Mekanisk nedbrytning og sprekker:</b><br>Vann samler seg også i dype sprekker og ved boltede forbindelser. Dette fører til kvit- og brunråte som spiser opp innsiden av limtreet eller heltreet. En travers kan se intakt ut på utsiden, men være helt hul inni. Dette krever ofte en grundig reststyrkeanalyse i E.T. Travers.",
+            tekst: "<b>Biologisk nedbrytning (Mose og vegetasjon):</b><br>Mose og lav på toppen av traversen fungerer som en svamp som holder konstant på fuktigheten. Dette hindrer treverket i å tørke ut og skaper et perfekt mikroklima for råtesopp. Over tid hules traversen ut, og i verste fall slår busker og trær rot direkte i selve treverket. Slike traverser har mistet mesteparten av sin mekaniske bæreevne og er livsfarlige ved store is- eller vindlaster.<br><br><b>Mekanisk nedbrytning og sprekker:</b><br>Vann samler seg også i dype sprekker og ved boltede forbindelser. Dette fører til kvit- og brunråte som spiser opp innsiden av limtreet eller heltreet. En travers kan se intakt ut på utsiden, men være helt hul inni. Dette krever ofte een grundig reststyrkeanalyse i E.T. Travers.",
             bilder: [
                 { fil: "32267FD2-0DF6-4E2B-BBFA-1DBE6155AF8F.jpeg", tekst: "Mosegrodd travers. Mosen fungerer som en fuktig svamp og er selve katalysatoren for fremtidige råteangrep." },
                 { fil: "Råtetravers re.jpg", tekst: "Ekstrem biologisk nedbrytning: Råten har hulet ut traversen så mye at den fungerer som 'blomsterkasse' for trær. Kritisk tap av reststyrke." },
@@ -144,12 +152,12 @@
         },
         8: {
             tittel: "Veileder: Isolatorfeste",
-            tekst: "<b>Mekanisk slitasje:</b><br>Kontinuerlig bevegelse fra vind og vibrasjoner fører til mekanisk gnag på sjakler, øyer og bolter. Stål mot stål over tid spiser opp godset og krever utskifting lenge før det ryker. Dette er spesielt kritisk i vindutsatte spenn.<br><br><b>Ulmebrann og Strømtetthet:</b><br>Dersom det oppstår en jordfeil eller et isolatorbrudd/krypestrøm, kan det gå en feilstrøm gjennom beslaget og videre inn i treverket. Selv om selve strømmen er liten, vil <i>strømtettheten</i> bli enorm akkurat i kontaktpunktet mellom bolten og veden. Dette fungerer som et varmeelement som skaper en intens, lokal varmeutvikling. Resultatet er en ulmebrann som spiser opp treet rundt beslaget fra innsiden.",
+            tekst: "<b>Mekanisk slitasje:</b><br>Kontinuerlig bevegelse fra vind og vibrasjoner fører til mekanisk gnag på sjakler, øyer og bolter. Stål mot stål over tid spiser opp godset og krever utskifting lenge før det ryker. Dette er spesielt kritisk i vindutsatte spenn.<br><br><b>Ulmebrann og Strømtetthet:</b><br>Dersom det oppstår en jordfeil eller et isolatorbrudd/krypestrøm, kan det gå en feilstrøm gjennom beslaget og videre inn i treverket. Selv om selve strømmen er liten, vil <i>strømtettheten</i> bli enorm akkurat i kontaktpunktet mellom bolten og veden. Dette fungerer som et varmeelement som skaper en intens, lokal varmeutvikling. Resultatet er eine ulmebrann som spiser opp treet rundt beslaget fra innsiden.",
             bilder: [
                 { fil: "373slitasje.jpg", tekst: "Kritisk slitasje på kjettingledd. Stål mot stål har nesten gnagd seg helt gjennom godset på grunn av vibrasjoner." },
                 { fil: "285 slitasje f3 -b.JPG", tekst: "Ekstrem slitasje i sjakkel/øye-forbindelse i silhuett. Tverrsnittet er redusert til et absolutt minimum, med fare for snarlig brudd." },
                 { fil: "5 Slitasje b.JPG", tekst: "Tydelig gnag og materialtretthet i opphenget. Et klassisk punkt for visuell slitasjekontroll." },
-                { fil: "ulmebrann.jpg", tekst: "Ulmebrann i travers rundt isolatorfeste. Forårsaket av enorm lokal strømtetthet gjennom beslaget." }
+                { fil: "ulmebrann.png", tekst: "Ulmebrann i travers rundt isolatorfeste. Forårsaket av enorm lokal strømtetthet gjennom beslaget." }
             ]
         },
         9: {
@@ -187,7 +195,7 @@
         },
         13: {
             tittel: "Veileder: Toppline/Jordline (Galvanisert Stål)",
-            tekst: "<b>Korrosjonsatlas for galvanisert stål (Grå -> Brun):</b><br>I motsetning til FeAl-liner, buler ikke rene stålliner når de ruster. Nedbrytningen skjer i en tydelig visuell rekkefølge:<br><br>• <b>Normal tilstand (Grå):</b> Blank eller jevnt matt grå overflate.<br>• <b>Galvanisk korrosjon (Grå/Hvit):</b> Sinklaget ofrer seg og danner et hvitt kritt-belegg over metallet. Selve stålet er fortsatt beskyttet.<br>• <b>Rødbrun tæring (Brun/Rød):</b> Sinken er oppbrukt, stålet ruster og det dannes rød/brun *piting* (gravrustflekker). Dette spiser raskt opp tverrsnittet og reduserer bruddstyrken drastisk.",
+            tekst: "<b>Korrosjonsatlas for galvanisert stål (Grå -> Brun):</b><br>I motsetning to FeAl-liner, buler ikke rene stålliner når de ruster. Nedbrytningen skjer i en tydelig visuell rekkefølge:<br><br>• <b>Normal tilstand (Grå):</b> Blank eller jevnt matt grå overflate.<br>• <b>Galvanisk korrosjon (Grå/Hvit):</b> Sinklaget ofrer seg og danner et hvitt kritt-belegg over metallet. Selve stålet er fortsatt beskyttet.<br>• <b>Rødbrun tæring (Brun/Rød):</b> Sinken er oppbrukt, stålet ruster og det dannes rød/brun *piting* (gravrustflekker). Dette spiser raskt opp tverrsnittet og reduserer bruddstyrken drastisk.",
             bilder: [
                 { fil: "DJI_20251003201920_0510_Dre.jpg", tekst: "Overgangs-fase: Sinklaget er matt og det dannes rødbrune gravrustflekker (piting) på klemmen/lina." },
                 { fil: "PA130018re.jpg", tekst: "Kritisk rødbrun korrosjon på Toppline (Fe). Lina har mistet mekanisk styrke." }
