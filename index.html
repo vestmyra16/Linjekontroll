@@ -39,6 +39,7 @@
         .green {background:#2e7d32; color:white;}
         .lightgreen {background:#4caf50; color:white; margin-bottom: 20px; border: 3px solid #1b5e20;}
         .darkgreen {background:#1b5e20; color:white;}
+        .report-btn { background:#f57c00; color: white; border: 2px solid #e65100;}
         
         #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; }
         .skjult { display: none !important; }
@@ -56,19 +57,35 @@
         .kp-rad button.kp { margin-top: 0; flex-grow: 1; width: auto; }
         .help-btn { margin-top: 0 !important; width: 60px !important; padding: 0 !important; background: #0284c7 !important; color: white !important; border: none !important; border-radius: 12px !important; font-size: 20px !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; flex-shrink: 0; }
         .help-btn:hover { background: #0369a1 !important; }
+
+        /* UTSKRIFTSLAYOUT (PDF) */
+        #printSone { display: none; }
+        @media print {
+            body { background: white; max-width: 100% !important; width: 100% !important; padding: 0 !important; -webkit-user-select: auto; user-select: auto; }
+            .no-print, #containerApp, #loginBox, .vannmerke, #hjelpModal { display: none !important; }
+            #printSone { display: block !important; }
+            .page { background: white; width: 100%; padding: 20px; box-sizing: border-box; }
+            h2 { color: #2e7d32; border-bottom: 2px solid #2e7d32; padding-bottom: 10px; margin-top: 0; }
+            h3 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+            table { border-collapse: collapse; width: 100%; margin-top: 15px; font-size: 14px; }
+            th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; }
+            th { background: #f8fafc; font-weight: bold; }
+            .status-ok { color: #166534; font-weight: bold; }
+            .status-avvik { color: #b91c1c; font-weight: bold; }
+        }
     </style>
 </head>
 <body>
 <div class="vannmerke">Kun for autorisert bruk - Vestmyra16</div>
 
-<div id="loginBox">
+<div id="loginBox" class="no-print">
     <h3>Logg inn - Linjekontroll v28.1</h3>
     <label>Passord</label>
     <input type="password" id="pass" style="text-align: center; margin-bottom: 15px;">
     <button onclick="sjekkPassord()">Logg inn</button>
 </div>
 
-<div id="containerApp" class="container skjult">
+<div id="containerApp" class="container skjult no-print">
     <h2>Linjekontroll v28.1</h2>
     <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
     <label>Netteier</label> <input id="netteier">
@@ -98,15 +115,23 @@
         <option value="Høy">Høy</option>
     </select>
     <label>GPS</label> <input id="gps">
-    <button class="green" onclick="startGPS()">Slå på GPS</button>
-    <button class="green" onclick="stopGPS()">Slå av GPS</button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="green" onclick="startGPS()" style="margin-top: 5px;">Slå på GPS</button>
+        <button class="green" onclick="stopGPS()" style="margin-top: 5px; background: #555;">Slå av GPS</button>
+    </div>
     <div id="punkter"></div>
-    <button class="darkgreen" onclick="lagre()">Lagre mast</button>
-    <button class="darkgreen" onclick="lastNed()">Last ned Excel</button>
-    <button class="green" onclick="nyMast()">Neste mast</button>
+    
+    <button class="darkgreen" onclick="lagre()" style="margin-top: 25px;">Lagre mast i historikk</button>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
+        <button class="darkgreen" onclick="lastNed()" style="margin-top: 0; background: #1565c0;">Last ned Excel</button>
+        <button class="report-btn" onclick="genererPDF()" style="margin-top: 0;">📄 Lagre PDF</button>
+    </div>
+    
+    <button class="green" onclick="nyMast()" style="margin-top: 15px; background: #c62828;">Neste mast</button>
 </div>
 
-<div id="hjelpModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; flex-direction:column; justify-content:center; align-items:center; padding:15px;" onclick="lukkHjelpModal()">
+<div id="hjelpModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; flex-direction:column; justify-content:center; align-items:center; padding:15px;" onclick="lukkHjelpModal()" class="no-print">
     <div style="background:white; width:100%; max-width:500px; border-radius:12px; overflow-y:auto; max-height:90vh; display:block;" onclick="event.stopPropagation()">
         <div style="background:#0284c7; color:white; padding:15px; text-align:center; position:sticky; top:0; z-index:10;">
             <h3 id="hjelpModalTittel" style="margin:0; font-size:16px; font-weight:900;">Veileder</h3>
@@ -118,6 +143,8 @@
         </div>
     </div>
 </div>
+
+<div id="printSone"></div>
 
 <script>
     
@@ -145,9 +172,9 @@
             tekst: "<b>Biologisk nedbrytning (Mose og vegetasjon):</b><br>Mose og lav på toppen av traversen fungerer som en svamp som holder konstant på fuktigheten. Dette hindrer treverket i å tørke ut og skaper et perfekt mikroklima for råtesopp. Over tid hules traversen ut, og i verste fall slår busker og trær rot direkte i selve treverket. Slike traverser har mistet mesteparten av sin mekaniske bæreevne og er livsfarlige ved store is- eller vindlaster.<br><br><b>Mekanisk nedbrytning og sprekker:</b><br>Vann samler seg også i dype sprekker og ved boltede forbindelser. Dette fører til kvit- og brunråte som spiser opp innsiden av limtreet eller heltreet. En travers kan se intakt ut på utsiden, men være helt hul inni. Dette krever ofte een grundig reststyrkeanalyse i E.T. Travers.",
             bilder: [
                 { fil: "32267FD2-0DF6-4E2B-BBFA-1DBE6155AF8F.jpeg", tekst: "Mosegrodd travers. Mosen fungerer som en fuktig svamp og er selve katalysatoren for fremtidige råteangrep." },
-                { fil: "Råtetravers re.jpg", tekst: "Ekstrem biologisk nedbrytning: Råten har hulet ut traversen så mye at den fungerer som 'blomsterkasse' for trær. Kritisk tap av reststyrke." },
-                { fil: "308 råte i travers.JPG", tekst: "Dyp, åpen råtesprekk langs traversens lengde. Vann og fuktighet renner rett ned i kjernen av treverket." },
-                { fil: "Limtretravers totalt oppråtnet.png", tekst: "Limtretravers som er fullstendig oppråtnet på innsiden på grunn av fuktinntrengning." }
+                { fil: "Råtetravers re.jpg", tekst: "Ekstrem biologisk nedbrytning: Råten har hulet ut traversen så mye at den fungerer som 'blomsterkasse' for trær. Kritisk tap av reststyrke." },
+                { fil: "308 råte i travers.JPG", tekst: "Dyp, åpen råtesprekk langs traversens lengde. Vann og fuktighet renner rett ned i kjernen av treverket." },
+                { fil: "Limtretravers totalt oppråtnet.png", tekst: "Limtretravers som er fullstendig oppråtnet på innsiden på grunn av fuktinntrengning." }
             ]
         },
         8: {
@@ -164,13 +191,13 @@
             tittel: "Veileder: Isolatorer & Oppheng",
             tekst: "<b>Korrosjon på kule/skål (Rust):</b><br>Når galvaniseringen slites bort, begynner isolatorpinnen å ruste. Rust tar større plass enn stål (det eser ut). Dette skaper et enormt sprengtrykk innvendig som til slutt kan knuse glasset/porselenet, noe som fører til at linja faller ned.<br><br><b>Knust eller Sprukket:</b><br>Avslåtte skåler reduserer isolatorens <i>krypavstand</i> (veien strømmen må krype for å nå jord), noe som øker faren for overslag i regn/tåke. Sprekker er kritiske fordi fukt trekker inn, noe som kan gi frostsprenging eller innvendig overslag.<br><br><b>Forurensning og Kreosot:</b><br>Tester fra SINTEF viser at kreosot som svetter fra traversen og legger seg på isolatoren <i>ikke</i> reduserer isolasjonsevnen i seg selv. Problemet oppstår fordi den seige kreosoten fungerer som et fluepapir som tiltrekker seg annen forurensning (havsalt, industristøv, pollen). Det er denne blandingen som sammen med fukt skaper farlige krypestrømsveier og gnistring (tørrbånds-arcing).<br><br><b>Punktering:</b><br>Ved lynnedslag eller overspenning kan isolatoren punkteres innvendig (ofte synlig som små brennemerker ved kappen). Den er da i praksis permanent kortsluttet.",
             bilder: [
-                { fil: "Rust på isolator.JPG", tekst: "Kritisk: Kraftig rust på isolatorpinnen. Rusten eser ut og vil til slutt sprenge glasset fra innsiden." },
+                { fil: "Rust på isolator.JPG", tekst: "Kritisk: Kraftig rust på isolatorpinnen. Rusten eser ut og vil til slutt sprenge glasset fra innsiden." },
                 { fil: "302 defekt isolator.JPG", tekst: "Knust/avslått isolatorskål. Dette reduserer krypavstanden betydelig." },
                 { fil: "332 sprukket isolator F1.jpg", tekst: "Sprekk i porselenet. Fukt vil trenge inn og skape frostsprenging eller innvendig overslag." },
                 { fil: "mulig krypestrømsveier.jpg", tekst: "Tydelige spor etter krypestrømmer og ujevn forurensning på porselenets overflate." },
-                { fil: "60 mye kreosot på isolatorene.JPG", tekst: "Kreosot på glasset reduserer ikke isolasjonsevnen i seg selv, men fungerer som 'fluepapir' for salt og støv som forårsaker krypestrømmer." },
+                { fil: "60 mye kreosot på isolatorene.JPG", tekst: "Kreosot på glasset reduserer ikke isolasjonsevnen i seg selv, men fungerer som 'fluepapir' for salt og støv som forårsaker krypestrømmer." },
                 { fil: "P1020720.JPG", tekst: "Punktering/overslag: Tydelig brennsår ved metallkappen. Isolatoren er defekt." },
-                { fil: "Herlig bilde av både rust, slitasje og natur.jpg", tekst: "Isolatoroppheng i saltholdig kystmiljø med kraftig overflaterust på metalldeler." }
+                { fil: "Herlig bilde av både rust, slitasje og natur.jpg", tekst: "Isolatoroppheng i saltholdig kystmiljø med kraftig overflaterust på metalldeler." }
             ]
         },
         10: {
@@ -187,9 +214,9 @@
                 { fil: "Vibrasjonsbrudd som følge av hakk i lina..jpg", tekst: "Tretthetsbrudd: Skarpe, flate bruddflater forårsaket av vibrasjoner (ofte initiert av hakk)." },
                 { fil: "Seigt brudd.png", tekst: "Seigt brudd: Islast-havari på FeAl 6/1. Aluminiumskordelene har strukket seg til 'blyantspisser' før de røk." },
                 { fil: "Galvanisk korrosjon.png", tekst: "Galvanisk korrosjon på FeAl 6/1: Omfattende tæring i kontaktflaten mellom aluminiumskordelene og den indre stålkjernen." },
-                { fil: "Hakk på tvers av linen.png", tekst: "Skarpe hakk fra verktøy. Dette er døden for en aluminiumsline i vibrasjon." },
+                { fil: "Hakk på tvers av linen.png", tekst: "Skarpe hakk fra verktøy. Dette er døden for en aluminiumsline i vibrasjon." },
                 { fil: "IMG_0113.JPG", tekst: "Trinn 2: Tydelig hvitrust (sinkoksid-pulver) mellom kordelene." },
-                { fil: "7 kraftig korrosjon og mulig punktering av stålkjerne.jpg", tekst: "Trinn 3: Buling. Sinken er borte, og rusten presser kordelene ut." },
+                { fil: "7 kraftig korrosjon og mulig punktering av stålkjerne.jpg", tekst: "Trinn 3: Buling. Sinken er borte, og rusten presser kordelene ut." },
                 { fil: "Burdannelse.png", tekst: "Trinn 4: Kritisk mekanisk skade (Fuglebur)." }
             ]
         },
@@ -202,6 +229,7 @@
             ]
         }
     };
+    
     // 🔒 START SIKKERHETSLÅS
     document.addEventListener("DOMContentLoaded", () => {
         document.addEventListener('contextmenu', event => event.preventDefault());
@@ -310,7 +338,6 @@
             if(status[i] == "ok") cls += " ok";
             if(status[i] && status[i].indexOf("avvik:") === 0) cls += " avvik";
             
-            // RENDRE MED FLEX-RAD HVIS PUNKTET HAR INTEGRERT LÆREBOKINFO
             html += `<div class="kp-rad">`;
             html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
             if (hjelpData[i]) {
@@ -327,7 +354,6 @@
                     html += `<button class="${avvikCls}" onclick="settAvvik(${i}, '${a}')">${a}</button>`;
                 });
 
-                // SPESIALHÅNDTERING: STOLPER
                 if(p.navn === "Stolper" && status[i] && (status[i] === "avvik:Råte" || status[i] === "avvik:Skade")) {
                     html += `<div class="stolpe-valg-boks">`;
                     html += `<label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe (1-12) har råte/skade?</label>`;
@@ -348,7 +374,6 @@
                     html += `</div>`;
                 }
 
-                // SPESIALHÅNDTERING: TRAVERS
                 if(p.navn === "Travers" && status[i]) {
                     let valgtAvvik = status[i].replace("avvik:", "");
                     
@@ -377,7 +402,6 @@
         document.getElementById("punkter").innerHTML = html;
     }
 
-    // MODAL-LOGIKK FOR LÆREBOKA
     function aapneHjelpModal(i) {
         const item = hjelpData[i];
         if(!item) return;
@@ -489,6 +513,85 @@
         a.href = URL.createObjectURL(blob);
         a.download = "linjekontroll_eksport.csv";
         a.click();
+    }
+
+    /* Ny og elegant PDF generering for Linjekontrollen */
+    function genererPDF() {
+        let netteier = document.getElementById("netteier").value || "-";
+        let linje = document.getElementById("linje").value || "-";
+        let mast = document.getElementById("mast").value || "-";
+        let valgtType = document.getElementById("mastType").value;
+        if (valgtType === "Annet") valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
+        let vertikalkraft = document.getElementById("vertikalkraft").value;
+        let gps = document.getElementById("gps").value || "-";
+        let kontrollor = document.getElementById("kontrollor").value || "-";
+        let datoVerdi = document.getElementById("datoKontrollert").value || "-";
+
+        let sjekklisteHtml = "";
+        punkter.forEach((p, i) => {
+            if (status[i] && status[i] !== "vis") {
+                let visStatus = status[i];
+                let statusClass = "status-ok";
+                if(visStatus.indexOf("avvik:") === 0) {
+                    visStatus = visStatus.replace("avvik:", "");
+                    if(visStatus !== "Stolper OK" && visStatus !== "Travers OK") {
+                        statusClass = "status-avvik";
+                    }
+                } else if (visStatus === "ok") {
+                    visStatus = "OK";
+                }
+                let merknad = status["m"+i] ? status["m"+i] : "";
+
+                sjekklisteHtml += `
+                    <tr>
+                        <td><strong>${p.navn}</strong></td>
+                        <td class="${statusClass}">${visStatus}</td>
+                        <td>${merknad}</td>
+                    </tr>
+                `;
+            }
+        });
+
+        if (sjekklisteHtml === "") {
+            sjekklisteHtml = "<tr><td colspan='3' style='text-align:center;'>Ingen punkter vurdert enda.</td></tr>";
+        }
+
+        let printSone = document.getElementById("printSone");
+        printSone.innerHTML = `
+            <div class="page">
+                <h2>Inspeksjonsrapport - Linjekontroll</h2>
+                <p><strong>Dato:</strong> ${datoVerdi} | <strong>Kontrollør:</strong> ${kontrollor}</p>
+                <p><strong>Netteier:</strong> ${netteier} | <strong>LinjeID:</strong> ${linje}</p>
+                
+                <table>
+                    <tr><th>Mast nr</th><td>${mast}</td></tr>
+                    <tr><th>Mast type</th><td>${valgtType}</td></tr>
+                    <tr><th>Vertikalkraft</th><td>${vertikalkraft}</td></tr>
+                    <tr><th>GPS posisjon</th><td>${gps}</td></tr>
+                </table>
+
+                <h3 style="margin-top: 25px;">Sjekkliste og Avvik</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:30%;">Kontrollpunkt</th>
+                            <th style="width:25%;">Status</th>
+                            <th>Merknad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sjekklisteHtml}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        let originalTitle = document.title;
+        document.title = "Linjekontroll_Linje_" + linje + "_Mast_" + mast;
+        
+        window.print();
+        
+        setTimeout(() => { document.title = originalTitle; }, 1000);
     }
 
     function nyMast() {
