@@ -8,6 +8,9 @@
     <link rel="apple-touch-icon" href="icon-180.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
+    
+    <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
     <style>
         /* Sikkerhet: Hindre tekstmarkering og kopiering */
         body {
@@ -78,11 +81,10 @@
 <body>
 <div class="vannmerke">Kun for autorisert bruk - Vestmyra16</div>
 
-<div id="loginBox" class="no-print">
-    <h3>Logg inn - Linjekontroll v28.1</h3>
-    <label>Passord</label>
-    <input type="password" id="pass" style="text-align: center; margin-bottom: 15px;">
-    <button onclick="sjekkPassord()">Logg inn</button>
+<div id="loginBox" class="no-print" style="max-width:400px; margin: 60px auto; padding: 25px; background: #fff; border: 1px solid #ccc; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h3 style="color: #2e7d32; margin-bottom: 10px;">Sikker Sone</h3>
+    <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Vennligst logg inn med din bedriftsbruker for å få tilgang til Linjekontroll.</p>
+    <div data-netlify-identity-button></div>
 </div>
 
 <div id="containerApp" class="container skjult no-print">
@@ -230,7 +232,7 @@
         }
     };
     
-    // 🔒 START SIKKERHETSLÅS
+    // 🔒 EKTE NETLIFY IDENTITY SIKKERHETSLÅS
     document.addEventListener("DOMContentLoaded", () => {
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => event.preventDefault());
@@ -241,28 +243,23 @@
             return; 
         }
 
-        const utlopsDato = new Date("2026-07-13");
-        if (new Date() > utlopsDato) {
-            alert("Testperioden er utløpt.");
-            window.location.href = "about:blank";
-            return;
-        }
-
-        if (localStorage.getItem("linje_innlogget") === "ja") {
-            visAppen();
+        // Sjekk om brukeren er logget inn via Netlify Identity
+        if (window.netlifyIdentity) {
+            window.netlifyIdentity.on("init", user => {
+                if (user) {
+                    visAppen(); // Bruker er logget inn, vis appen!
+                }
+            });
+            window.netlifyIdentity.on("login", user => {
+                visAppen(); // Bruker logget akkurat inn, vis appen!
+                window.netlifyIdentity.close(); // Lukk popup-boksen
+            });
+            window.netlifyIdentity.on("logout", () => {
+                location.reload(); // Bruker logget ut, last siden på nytt for å låse
+            });
         }
     });
     // 🔒 SLUTT SIKKERHETSLÅS
-
-    function sjekkPassord() {
-        const input = document.getElementById("pass").value;
-        if (input === "1234") { 
-            localStorage.setItem("linje_innlogget", "ja");
-            visAppen();
-        } else {
-            alert("Feil passord!");
-        }
-    }
 
     function lagreKontrollor() {
         localStorage.setItem("linje_kontrollor", document.getElementById("kontrollor").value);
