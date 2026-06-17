@@ -44,7 +44,7 @@
         .darkgreen {background:#1b5e20; color:white;}
         .report-btn { background:#f57c00; color: white; border: 2px solid #e65100;}
         
-        #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; }
+        #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .skjult { display: none !important; }
 
         .stolpe-valg-boks {
@@ -81,7 +81,7 @@
 <body>
 <div class="vannmerke">Kun for autorisert bruk - Vestmyra16</div>
 
-<div id="loginBox" class="no-print" style="max-width:400px; margin: 60px auto; padding: 25px; background: #fff; border: 1px solid #ccc; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+<div id="loginBox" class="no-print">
     <h3 style="color: #2e7d32; margin-bottom: 10px;">Sikker Sone</h3>
     <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Vennligst logg inn med din bedriftsbruker for å få tilgang til Linjekontroll.</p>
     <div data-netlify-identity-button></div>
@@ -211,7 +211,7 @@
         },
         11: {
             tittel: "Veileder: Liner & Kordelskader (FeAl)",
-            tekst: "<b>Verktøyhakk og Vibrasjon (Tretthetsbrudd):</b><br>Når det oppstår et skarpt hakk i aluminiumen fra verktøy, oppstår det <i>spenningskonsentrasjon</i> (kervvirkning). Under eoliske vibrasjoner vil en tretthetssprekk starte i hakket og spise seg tvers gjennom tråden til den ryker med et flatt, skarpt brudd.<br><br><b>Galvanisk korrosjon i FeAl-liner:</b><br>Siden FeAl-liner (f.eks. 50 eller 70 6/1) består av to ulike metaller (aluminium utvendig og galvanisert stål i kjernen), dannes det et galvanisk element hvis fuktighet trenger inn mellom lagene. Det oppstår kraftig tæring i grensesnittet der aluminiumskordelene ligger presset mot stålkjernen.<br><br><b>Ekstremt Strekk og Islast (Seigt brudd):</b><br>Når lina utsettes for massivt, statisk strekk (som ved islast), strekkes aluminiumskordelene plastisk før de ryker. De smalner inn og former en karakteristisk «blyantspiss».<br><br><b>Korrosjonsatlas (Trinn 1-4):</b><br>• <b>Trinn 1:</b> Normal overflate.<br>• <b>Trinn 2:</b> Begynnende hvitrust (sinkoksid).<br>• <b>Trinn 3:</b> Fremskredet buling (stålet ruster og presser aluminiumen out).<br>• <b>Trinn 4:</b> Kritisk fuglebur.",
+            tekst: "<b>Verktøyhakk og Vibrasjon (Tretthetsbrudd):</b><br>Når det oppstår et skarpt hakk i aluminiumen fra verktøy, oppstår det <i>spenningskonsentrasjon</i> (kervvirkning). Under eoliske vibrasjoner vil en tretthetssprekk starte i hakket og spise seg tvers gjennom tråden til den ryker med et flatt, skarpt brudd.<br><br><b>Galvanisk korrosjon i FeAl-liner:</b><br>Siden FeAl-liner (f.eks. 50 eller 70 6/1) består av to ulike metaller (aluminium utvendig og galvanisert stål i kjernen), dannes det et galvanisk element hvis fuktighet trenger inn mellom lagene. Det oppstår kraftig tæring i grensesnittet der aluminiumskordelene ligger presset mot stålkjernen.<br><br><b>Ekstremt Strekk og Islast (Seigt brudd):</b><br>Når lina utsettes for massivt, statisk strekk (som ved islast), strekkes aluminiumskordelene plastisk før de ryker. De smalner inn og former en karakteristisk «blyantspiss».<br><br><b>Korrosjonsatlas (Trinn 1-4):</b><br>• <b>Trinn 1:</b> Normal overflate.<br>• <b>Trinn 2:</b> Begynnende hvitrust (sinkoksid).<br>• <b>Trinn 3:</b> Fremskredet buling (stålet ruster og presser aluminiumen ut).<br>• <b>Trinn 4:</b> Kritisk fuglebur.",
             bilder: [
                 { fil: "Vibrasjonsbrudd som følge av hakk i lina..jpg", tekst: "Tretthetsbrudd: Skarpe, flate bruddflater forårsaket av vibrasjoner (ofte initiert av hakk)." },
                 { fil: "Seigt brudd.png", tekst: "Seigt brudd: Islast-havari på FeAl 6/1. Aluminiumskordelene har strukket seg til 'blyantspisser' før de røk." },
@@ -245,6 +245,12 @@
 
         // Sjekk om brukeren er logget inn via Netlify Identity
         if (window.netlifyIdentity) {
+            
+            // Sjekk aller først om vi ALLEREDE er logget inn (løser "Log out"-frys)
+            if (window.netlifyIdentity.currentUser()) {
+                visAppen();
+            }
+
             window.netlifyIdentity.on("init", user => {
                 if (user) {
                     visAppen(); // Bruker er logget inn, vis appen!
