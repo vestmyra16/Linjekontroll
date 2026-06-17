@@ -235,7 +235,7 @@
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => event.preventDefault());
 
-        const gyldigDomene = "vestmyra16.github.io";
+        const gyldigDomene = window.location.hostname;
         if (window.location.hostname !== "" && window.location.hostname !== gyldigDomene) {
             document.body.innerHTML = ""; 
             return; 
@@ -368,7 +368,7 @@
                         let n_eier = encodeURIComponent(document.getElementById("netteier").value || "");
                         let l_id = encodeURIComponent(document.getElementById("linje").value || "");
                         let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
-                        let url = `https://vestmyra16.github.io/stolpekontroll/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&stolpenr=${valgtStolpeNrForRaate}`;
+                        let url = `https://et-stolpekontroll.netlify.app/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&stolpenr=${valgtStolpeNrForRaate}`;
                         html += `<a href="${url}" class="dyplenke-knapp">🚀 Åpne Stolpekontroll for Stolpe ${valgtStolpeNrForRaate}</a>`;
                     }
                     html += `</div>`;
@@ -386,7 +386,7 @@
                         let n_eier = encodeURIComponent(document.getElementById("netteier").value || "");
                         let l_id = encodeURIComponent(document.getElementById("linje").value || "");
                         let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
-                        let url = `https://vestmyra16.github.io/Traverskontroll/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&retur=ja`;
+                        let url = `https://et-traverskontroll.netlify.app/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&retur=ja`;
                         
                         html += `<div style="background:#ffebee; border:2px dashed #c62828; border-radius:8px; padding:15px; margin-top:10px; text-align:center;">`;
                         html += `<p style="margin-top:0; font-size:12px; font-weight:900; color:#c62828; text-transform:uppercase;">Kritisk strukturelt avvik</p>`;
