@@ -392,15 +392,16 @@
                         let n_eier = encodeURIComponent(document.getElementById("netteier").value || "");
                         let l_id = encodeURIComponent(document.getElementById("linje").value || "");
                         let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
-                        let url = `https://et-traverskontroll.netlify.app/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&retur=ja`;
+                        
+                        // NY ADRESSE TIL FELTREGISTRERINGEN:
+                        let url = `https://et-trav-reg-felt.netlify.app/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&retur=ja`;
                         
                         html += `<div style="background:#ffebee; border:2px dashed #c62828; border-radius:8px; padding:15px; margin-top:10px; text-align:center;">`;
-                        html += `<p style="margin-top:0; font-size:12px; font-weight:900; color:#c62828; text-transform:uppercase;">Kritisk strukturelt avvik</p>`;
-                        html += `<p style="font-size:14px; color:#b71c1c; margin-bottom:10px; font-weight:bold;">Krever reststyrkeanalyse i E.T. Travers.</p>`;
-                        html += `<a href="${url}" class="dyplenke-knapp" style="background:#b71c1c;">🚀 ÅPNE E.T. TRAVERS</a>`;
+                        html += `<p style="margin-top:0; font-size:12px; font-weight:900; color:#c62828; text-transform:uppercase;">Feltregistrering påkrevd</p>`;
+                        html += `<p style="font-size:14px; color:#b71c1c; margin-bottom:10px; font-weight:bold;">Registrer mål for råte/sprekk i felt-modulen.</p>`;
+                        html += `<a href="${url}" class="dyplenke-knapp" style="background:#b71c1c;">🪵 ÅPNE TRAVERS FELTREGISTRERING</a>`;
                         html += `</div>`;
                     }
-                }
 
                 html += `<textarea placeholder="📸 Husk bilde! Merknad:" id="m${i}" onblur="lagreMerknad(this, ${i})">${status["m"+i] || ""}</textarea>`;
             }
