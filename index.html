@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linjekontroll v28.1 (Med Veileder)</title>
+    <title>Linjekontroll v28.2 (Med TraversFelt)</title>
     <meta name="author" content="Opphavsrett 2026 - vestmyra16">
     <link rel="apple-touch-icon" href="icon-180.png">
     <link rel="manifest" href="manifest.json">
@@ -42,6 +42,7 @@
         .green {background:#2e7d32; color:white;}
         .lightgreen {background:#4caf50; color:white; margin-bottom: 20px; border: 3px solid #1b5e20;}
         .darkgreen {background:#1b5e20; color:white;}
+        .blue-btn { background:#0284c7; color: white; border: 2px solid #0369a1; } /* NY KNAPP STIL */
         .report-btn { background:#f57c00; color: white; border: 2px solid #e65100;}
         
         #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -88,7 +89,7 @@
 </div>
 
 <div id="containerApp" class="container skjult no-print">
-    <h2>Linjekontroll v28.1</h2>
+    <h2>Linjekontroll v28.2</h2>
     <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
@@ -123,7 +124,9 @@
     </div>
     <div id="punkter"></div>
     
-    <button class="darkgreen" onclick="lagre()" style="margin-top: 25px;">Lagre mast i historikk</button>
+    <button class="blue-btn" onclick="aapneTraversRegistrering()" style="margin-top: 25px;">🪵 Sjekk Travers (Feltregistrering)</button>
+
+    <button class="darkgreen" onclick="lagre()" style="margin-top: 10px;">Lagre mast i historikk</button>
     
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
         <button class="darkgreen" onclick="lastNed()" style="margin-top: 0; background: #1565c0;">Last ned Excel</button>
@@ -467,6 +470,16 @@
 
     function stopGPS() { if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch); }
 
+    // NY FUNKSJON FOR Å SENDE BRUKEREN TIL TRAVERS FELTREGISTRERING MED DATA
+    function aapneTraversRegistrering() {
+        let netteier = document.getElementById('netteier').value || '';
+        let linje = document.getElementById('linjeId') ? document.getElementById('linjeId').value : document.getElementById('linje').value || '';
+        let mast = document.getElementById('mast').value || '';
+        
+        let url = `https://et-trav-reg-felt.netlify.app/?netteier=${encodeURIComponent(netteier)}&linje=${encodeURIComponent(linje)}&mast=${encodeURIComponent(mast)}&retur=ja`;
+        window.location.href = url;
+    }
+
     function lagre() {
         let valgtType = document.getElementById("mastType").value;
         if (valgtType === "Annet") valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
@@ -518,7 +531,6 @@
         a.click();
     }
 
-    /* Ny og elegant PDF generering for Linjekontrollen */
     function genererPDF() {
         let netteier = document.getElementById("netteier").value || "-";
         let linje = document.getElementById("linje").value || "-";
