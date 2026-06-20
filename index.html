@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linjekontroll v28.2 (Med TraversFelt)</title>
+    <title>Linjekontroll v28.3 (Komplett)</title>
     <meta name="author" content="Opphavsrett 2026 - vestmyra16">
     <link rel="apple-touch-icon" href="icon-180.png">
     <link rel="manifest" href="manifest.json">
@@ -12,13 +12,11 @@
     <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
     <style>
-        /* Sikkerhet: Hindre tekstmarkering og kopiering */
         body {
             font-family: Arial, sans-serif; background:#f4f4f4; margin:0;
             -webkit-user-select: none; user-select: none;
         }
         
-        /* Vannmerke */
         .vannmerke {
             position: fixed; top: 10px; right: 10px; z-index: 9999;
             font-size: 10px; color: rgba(0,0,0,0.1); pointer-events: none;
@@ -42,7 +40,7 @@
         .green {background:#2e7d32; color:white;}
         .lightgreen {background:#4caf50; color:white; margin-bottom: 20px; border: 3px solid #1b5e20;}
         .darkgreen {background:#1b5e20; color:white;}
-        .blue-btn { background:#0284c7; color: white; border: 2px solid #0369a1; } /* NY KNAPP STIL */
+        .blue-btn { background:#0284c7; color: white; border: 2px solid #0369a1; }
         .report-btn { background:#f57c00; color: white; border: 2px solid #e65100;}
         
         #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -56,13 +54,11 @@
         .stolpe-grid button.aktiv { background: #c62828; color: white; font-weight: bold; border-color: #c62828; }
         .dyplenke-knapp { background: #2e7d32; color: white; text-decoration: none; display: block; text-align: center; padding: 15px; margin-top: 10px; border-radius: 8px; font-weight: bold; font-size: 16px; box-sizing: border-box; }
         
-        /* INTEGRERTE LÆREBOKSTILER */
         .kp-rad { display: flex; gap: 6px; margin-top: 10px; width: 100%; box-sizing: border-box; }
         .kp-rad button.kp { margin-top: 0; flex-grow: 1; width: auto; }
         .help-btn { margin-top: 0 !important; width: 60px !important; padding: 0 !important; background: #0284c7 !important; color: white !important; border: none !important; border-radius: 12px !important; font-size: 20px !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; flex-shrink: 0; }
         .help-btn:hover { background: #0369a1 !important; }
 
-        /* UTSKRIFTSLAYOUT (PDF) */
         #printSone { display: none; }
         @media print {
             body { background: white; max-width: 100% !important; width: 100% !important; padding: 0 !important; -webkit-user-select: auto; user-select: auto; }
@@ -89,7 +85,7 @@
 </div>
 
 <div id="containerApp" class="container skjult no-print">
-    <h2>Linjekontroll v28.2</h2>
+    <h2>Linjekontroll v28.3</h2>
     <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
@@ -152,8 +148,6 @@
 <div id="printSone"></div>
 
 <script>
-    
-   // DATABASEN FOR DEN DIGITALE VEILEDEREN KOBLET TIL PUNKT-INDEKSENE (Oppdatert v28.5)
     const hjelpData = {
         1: {
             tittel: "Veileder: Skjev mast & Fundament",
@@ -235,7 +229,6 @@
         }
     };
     
-    // 🔒 EKTE NETLIFY IDENTITY SIKKERHETSLÅS
     document.addEventListener("DOMContentLoaded", () => {
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => event.preventDefault());
@@ -246,29 +239,25 @@
             return; 
         }
 
-        // Sjekk om brukeren er logget inn via Netlify Identity
         if (window.netlifyIdentity) {
-            
-            // Sjekk aller først om vi ALLEREDE er logget inn (løser "Log out"-frys)
             if (window.netlifyIdentity.currentUser()) {
                 visAppen();
             }
 
             window.netlifyIdentity.on("init", user => {
                 if (user) {
-                    visAppen(); // Bruker er logget inn, vis appen!
+                    visAppen(); 
                 }
             });
             window.netlifyIdentity.on("login", user => {
-                visAppen(); // Bruker logget akkurat inn, vis appen!
-                window.netlifyIdentity.close(); // Lukk popup-boksen
+                visAppen(); 
+                window.netlifyIdentity.close(); 
             });
             window.netlifyIdentity.on("logout", () => {
-                location.reload(); // Bruker logget ut, last siden på nytt for å låse
+                location.reload(); 
             });
         }
     });
-    // 🔒 SLUTT SIKKERHETSLÅS
 
     function lagreKontrollor() {
         localStorage.setItem("linje_kontrollor", document.getElementById("kontrollor").value);
@@ -393,7 +382,6 @@
                         let l_id = encodeURIComponent(document.getElementById("linje").value || "");
                         let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
                         
-                        // NY ADRESSE TIL FELTREGISTRERINGEN:
                         let url = `https://et-trav-reg-felt.netlify.app/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&retur=ja`;
                         
                         html += `<div style="background:#ffebee; border:2px dashed #c62828; border-radius:8px; padding:15px; margin-top:10px; text-align:center;">`;
@@ -402,6 +390,7 @@
                         html += `<a href="${url}" class="dyplenke-knapp" style="background:#b71c1c;">🪵 ÅPNE TRAVERS FELTREGISTRERING</a>`;
                         html += `</div>`;
                     }
+                }
 
                 html += `<textarea placeholder="📸 Husk bilde! Merknad:" id="m${i}" onblur="lagreMerknad(this, ${i})">${status["m"+i] || ""}</textarea>`;
             }
@@ -471,7 +460,6 @@
 
     function stopGPS() { if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch); }
 
-    // NY FUNKSJON FOR Å SENDE BRUKEREN TIL TRAVERS FELTREGISTRERING MED DATA
     function aapneTraversRegistrering() {
         let netteier = document.getElementById('netteier').value || '';
         let linje = document.getElementById('linjeId') ? document.getElementById('linjeId').value : document.getElementById('linje').value || '';
