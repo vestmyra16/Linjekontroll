@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linjekontroll v28.3 (Komplett)</title>
+    <title>E.T. Hovedkvarter - Linjekontroll</title>
     <meta name="author" content="Opphavsrett 2026 - vestmyra16">
     <link rel="apple-touch-icon" href="icon-180.png">
     <link rel="manifest" href="manifest.json">
@@ -12,43 +12,31 @@
     <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
     <style>
-        body {
-            font-family: Arial, sans-serif; background:#f4f4f4; margin:0;
-            -webkit-user-select: none; user-select: none;
-        }
-        
-        .vannmerke {
-            position: fixed; top: 10px; right: 10px; z-index: 9999;
-            font-size: 10px; color: rgba(0,0,0,0.1); pointer-events: none;
-        }
-
+        body { font-family: Arial, sans-serif; background:#f4f4f4; margin:0; -webkit-user-select: none; user-select: none; }
+        .vannmerke { position: fixed; top: 10px; right: 10px; z-index: 9999; font-size: 10px; color: rgba(0,0,0,0.1); pointer-events: none; }
         .container {max-width:600px; margin:auto; padding:12px;}
-        h2 {text-align:center;}
+        h2 {text-align:center; color: #2e7d32;}
         label {font-weight:bold; display:block; margin-top:10px;}
         input, textarea, select {width:100%; padding:15px; margin-top:5px; font-size:18px; border:1px solid #ccc; border-radius:8px; box-sizing: border-box; background: white;}
+        button { width:100%; padding:20px; margin-top:10px; border:none; border-radius:12px; font-size:18px; font-weight:bold; touch-action: manipulation; cursor: pointer; }
         
-        button {
-            width:100%; padding:20px; margin-top:10px; border:none; border-radius:12px; 
-            font-size:18px; font-weight:bold; touch-action: manipulation; cursor: pointer;
-        }
+        /* Knapper for kontrollpunktene */
         .kp {background:#2e7d32; color:white;}
         .kp.ok { background:#66bb6a; }
         .kp.avvik { background:#c62828; }
         .avvik {background:#ccc; color:#000; margin-top:5px;}
         .avvik.valgt { background:#ef9a9a; border: 2px solid #c62828; font-weight: bold; }
         .avvik.valgt-ok { background:#a5d6a7; border: 2px solid #2e7d32; font-weight: bold; }
+        
         .green {background:#2e7d32; color:white;}
         .lightgreen {background:#4caf50; color:white; margin-bottom: 20px; border: 3px solid #1b5e20;}
         .darkgreen {background:#1b5e20; color:white;}
-        .blue-btn { background:#0284c7; color: white; border: 2px solid #0369a1; }
         .report-btn { background:#f57c00; color: white; border: 2px solid #e65100;}
         
         #loginBox { max-width:400px; margin:60px auto; padding:25px; background:#fff; border:1px solid #ccc; border-radius:12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .skjult { display: none !important; }
-
-        .stolpe-valg-boks {
-            background: #fff; border: 2px dashed #c62828; border-radius: 8px; padding: 10px; margin-top: 5px; box-sizing: border-box;
-        }
+        
+        .stolpe-valg-boks { background: #fff; border: 2px dashed #c62828; border-radius: 8px; padding: 10px; margin-top: 5px; box-sizing: border-box; }
         .stolpe-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-top: 5px; }
         .stolpe-grid button { padding: 12px 2px; font-size: 14px; margin-top: 0; background: #eee; color: #000; border: 1px solid #ccc; border-radius: 6px; }
         .stolpe-grid button.aktiv { background: #c62828; color: white; font-weight: bold; border-color: #c62828; }
@@ -58,8 +46,10 @@
         .kp-rad button.kp { margin-top: 0; flex-grow: 1; width: auto; }
         .help-btn { margin-top: 0 !important; width: 60px !important; padding: 0 !important; background: #0284c7 !important; color: white !important; border: none !important; border-radius: 12px !important; font-size: 20px !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; flex-shrink: 0; }
         .help-btn:hover { background: #0369a1 !important; }
-
+        
+        .kamera-boks { border: 2px dashed #0284c7; border-radius: 12px; padding: 15px; margin-top: 25px; background: #e0f2fe; text-align: center; }
         #printSone { display: none; }
+        
         @media print {
             body { background: white; max-width: 100% !important; width: 100% !important; padding: 0 !important; -webkit-user-select: auto; user-select: auto; }
             .no-print, #containerApp, #loginBox, .vannmerke, #hjelpModal { display: none !important; }
@@ -79,20 +69,90 @@
 <div class="vannmerke">Kun for autorisert bruk - Vestmyra16</div>
 
 <div id="loginBox" class="no-print">
+    <img src="ikon.png" alt="App Ikon" style="width: 100px; height: 100px; display: block; margin: 0 auto 15px auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); object-fit: cover; border: 1px solid #ddd;" onerror="this.style.display='none'">
+    
     <h3 style="color: #2e7d32; margin-bottom: 10px;">Sikker Sone</h3>
-    <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Vennligst logg inn med din bedriftsbruker for å få tilgang til Linjekontroll.</p>
+    <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Vennligst logg inn for å få tilgang til E.T. Hovedkvarter.</p>
     <div data-netlify-identity-button></div>
 </div>
 
 <div id="containerApp" class="container skjult no-print">
-    <h2>Linjekontroll v28.3</h2>
+    <h2>Linje- og Tilstandskontroll</h2>
     <button class="lightgreen" onclick="nyttAnlegg()">➕ NYTT ANLEGG / ENDRE ANLEGG</button>
+    
     <label>Netteier</label> <input id="netteier">
     <label>LinjeID</label> <input id="linje">
-    <label>Kontrollert av:</label> <input id="kontrollor" oninput="lagreKontrollor()" placeholder="F.eks. Ola Nordmann">
+    
+    <label>Inspeksjonsmetode</label>
+    <select id="metode" onchange="lagreMetode()">
+        <option value="Tilstandskontroll (Bakke/Klatring)">🧗‍♂️ Tilstandskontroll (Bakke/Klatring)</option>
+        <option value="Helikopterbefaring">🚁 Helikopterbefaring</option>
+        <option value="Dronebefaring">🛸 Dronebefaring</option>
+        <option value="Visuell befaring">🚶‍♂️ Visuell befaring (Gange/Snøscooter)</option>
+    </select>
+
+    <label>Kontrollert av (Navn/Initialer):</label> 
+    <input id="kontrollor" style="background: #e2e8f0; border: 1px solid #cbd5e1; color: #334155; font-weight: bold; text-align: center;" placeholder="F.eks. Ola Nordmann eller ON">
+    
     <label>Dato kontrollert:</label> <input type="text" id="datoKontrollert" readonly style="background: #eec; font-weight: bold; text-align: center; color: #333;">
     <hr style="margin:20px 0;">
-    <label>Mast nr</label> <input id="mast">
+    <label>Mast nr (Påkrevd)</label> <input id="mast">
+    
+    <label>Linedimensjon / Type</label>
+    <select id="linedimensjon" onchange="settLinestrekk()">
+        <option value="0">-- Velg Linetype --</option>
+        <option value="1.86">FeAl 16 6/1 (MBL 9.3 kN -> R3: 1.86 kN)</option>
+        <option value="2.84">FeAl 25 6/1 (MBL 14.2 kN -> R3: 2.84 kN)</option>
+        <option value="3.88">FeAl 35 6/1 (MBL 19.4 kN -> R3: 3.88 kN)</option>
+        <option value="5.46">FeAl 50 6/1 (MBL 27.3 kN -> R3: 5.46 kN)</option>
+        <option value="7.62">FeAl 70 6/1 (MBL 38.1 kN -> R3: 7.62 kN)</option>
+        <option value="8.22">FeAl 70 26/7 (MBL 41.1 kN -> R3: 8.22 kN)</option>
+        <option value="11.00">FeAl 95 26/7 (MBL 55.0 kN -> R3: 11.00 kN)</option>
+        <option value="13.24">FeAl 95 30/7 (MBL 66.2 kN -> R3: 13.24 kN)</option>
+        <option value="9.48">FeAl 120 22/7 (MBL 47.4 kN -> R3: 9.48 kN)</option>
+        <option value="13.42">FeAl 120 26/7 (MBL 67.1 kN -> R3: 13.42 kN)</option>
+        <option value="16.62">FeAl 120 30/7 (MBL 83.1 kN -> R3: 16.62 kN)</option>
+        <option value="11.82">FeAl 150 22/7 (MBL 59.1 kN -> R3: 11.82 kN)</option>
+        <option value="16.68">FeAl 150 26/7 (MBL 83.4 kN -> R3: 16.68 kN)</option>
+        <option value="20.16">FeAl 150 30/7 (MBL 100.8 kN -> R3: 20.16 kN)</option>
+        <option value="20.26">FeAl 185 26/7 (MBL 101.3 kN -> R3: 20.26 kN)</option>
+        <option value="24.58">FeAl 185 30/7 (MBL 122.9 kN -> R3: 24.58 kN)</option>
+        <option value="25.90">FeAl 240 26/7 (MBL 129.5 kN -> R3: 25.90 kN)</option>
+        <option value="31.90">FeAl 240 30/19 (MBL 159.5 kN -> R3: 31.90 kN)</option>
+        <option value="24.18">FeAl 240 54/7 (MBL 120.9 kN -> R3: 24.18 kN)</option>
+    </select>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+            <label>Antall faser</label>
+            <input type="number" id="antall_faser" value="3" oninput="oppdaterVkDisplay()">
+        </div>
+        <div>
+            <label>Linestrekk (kN)</label>
+            <input type="number" id="linestrekk_kn" value="20" oninput="oppdaterVkDisplay()">
+        </div>
+    </div>
+
+    <div style="border: 2px solid #0284c7; border-radius: 12px; padding: 15px; margin-top: 15px; background: #f0f9ff;">
+        <label style="margin-top: 0; color: #0369a1;">Vertikalkraft Kalkulator (Roaldmetoden)</label>
+        <p style="font-size: 13px; color: #475569; font-weight: normal; margin-top: 5px; margin-bottom: 10px;">Fyll inn S3 og D, eller Vinkel direkte. Vertikalkraft i kN basert på linetype.</p>
+        
+        <div style="text-align: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px dashed #94a3b8;">
+            <p style="font-size: 11px; color: #64748b; font-weight: bold; margin-top: 0; margin-bottom: 5px; text-transform: uppercase;">Måleveileder</p>
+            <img src="vinkel.png" alt="Illustrasjon av vinkelmåling" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onerror="this.style.display='none'">
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+            <input type="number" step="0.1" id="vk_s3" placeholder="S3 (cm)" style="margin-top: 0; font-size: 15px;" oninput="oppdaterVkDisplay(true)">
+            <input type="number" step="0.1" id="vk_d" placeholder="D (cm)" style="margin-top: 0; font-size: 15px;" oninput="oppdaterVkDisplay(true)">
+            <input type="number" step="0.1" id="vk_vinkel" placeholder="Vinkel (°)" style="margin-top: 0; font-size: 15px;" oninput="oppdaterVkDisplay(false)">
+        </div>
+        
+        <div style="margin-top: 10px; font-size: 14px; font-weight: bold; color: #334155; text-align: center; background: white; padding: 8px; border-radius: 6px; border: 1px dashed #cbd5e1;" id="vk_resultat">
+            Gjeldende last: <span style="color:#2e7d32;">Normal (0 kN Vertikalkraft)</span>
+        </div>
+    </div>
+
     <label>Mast type</label>
     <select id="mastType" onchange="sjekkMastType(this.value)">
         <option value="E">E</option>
@@ -107,29 +167,38 @@
         <label>Skriv inn mast type</label>
         <input id="egenMastType" placeholder="F.eks. Portal, Gitter...">
     </div>
-    <label>Vertikalkrefter</label>
-    <select id="vertikalkraft">
-        <option value="Lav">Lav</option>
-        <option value="Normal" selected>Normal</option>
-        <option value="Høy">Høy</option>
-    </select>
+    
     <label>GPS</label> <input id="gps">
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <button class="green" onclick="startGPS()" style="margin-top: 5px;">Slå på GPS</button>
         <button class="green" onclick="stopGPS()" style="margin-top: 5px; background: #555;">Slå av GPS</button>
     </div>
+    
+    <h3 style="margin-top: 30px; margin-bottom: 5px;">Kontrollpunkter</h3>
     <div id="punkter"></div>
     
-    <button class="blue-btn" onclick="aapneTraversRegistrering()" style="margin-top: 25px;">🪵 Sjekk Travers (Feltregistrering)</button>
+    <div class="kamera-boks">
+        <h3 style="margin-top:0; color:#0369a1;">📸 Fotodokumentasjon</h3>
+        <p style="font-size: 13px; color: #334155; margin-bottom: 15px;">Knytt et bilde til denne masten. Info blir brent direkte inn i bildet!</p>
+        
+        <input type="file" id="kameraInput" accept="image/*" capture="environment" style="display:none;" onchange="behandleBilde(event)">
+        <button style="background:#0284c7; color: white; margin-top:0;" onclick="sjekkFeltOgTaBilde()">📷 Ta bilde med mobilkamera</button>
+        
+        <div id="bildeForhandsvisning" style="margin-top: 15px; display: none;">
+            <img id="valgtBilde" style="width: 100%; border-radius: 8px; border: 2px solid #94a3b8; margin-bottom: 10px;">
+            <button style="background:#1b5e20; color: white; margin-top:0;" onclick="lagreBildeLokalt()">💾 Lagre bilde på telefonen</button>
+            <p id="opplastingStatus" style="font-size: 14px; font-weight: bold; margin-top: 10px;"></p>
+        </div>
+    </div>
 
-    <button class="darkgreen" onclick="lagre()" style="margin-top: 10px;">Lagre mast i historikk</button>
+    <button class="darkgreen" onclick="lagre()" style="margin-top: 25px;">💾 Lagre mast i historikk</button>
     
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
-        <button class="darkgreen" onclick="lastNed()" style="margin-top: 0; background: #1565c0;">Last ned Excel</button>
+        <button class="darkgreen" onclick="lastNed()" style="margin-top: 0; background: #1565c0;">📊 Last ned Excel</button>
         <button class="report-btn" onclick="genererPDF()" style="margin-top: 0;">📄 Lagre PDF</button>
     </div>
     
-    <button class="green" onclick="nyMast()" style="margin-top: 15px; background: #c62828;">Neste mast</button>
+    <button class="green" onclick="nyMast()" style="margin-top: 15px; background: #c62828;">➕ Neste mast</button>
 </div>
 
 <div id="hjelpModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; flex-direction:column; justify-content:center; align-items:center; padding:15px;" onclick="lukkHjelpModal()" class="no-print">
@@ -148,137 +217,38 @@
 <div id="printSone"></div>
 
 <script>
+    // --- VEILEDER-DATA ---
     const hjelpData = {
-        1: {
-            tittel: "Veileder: Skjev mast & Fundament",
-            tekst: "<b>REN-krav og akseptabel helling:</b><br>I henhold til bransjestandard (REN) skal master i utgangspunktet stå i lodd. For eksisterende anlegg aksepteres det normalt en maksimal helling på <b>1 til 2 % av stolpehøyden</b> over bakken før det registreres som et avvik som krever retting. For en 10 meter høy stolpe utgjør dette 10–20 cm avvik i toppen. For avspenningsmaster er kravene ofte strengere for å ivareta riktig fordeling av strekkrefter.<br><br><b>Helling på langs av linjeretning (LR):</b><br>Oppstår oftest som følge av ulikt strekk i spennene på hver side (f.eks. islast, trefall over linja, eller brudd i ett spenn). Can også skyldes at masta gradvis gir etter for et ensidig strekk som ikke har blitt fanget opp av barduneringen.<br><br><b>Helling på tvers av linjeretning:</b><br>Skyldes ofte langvarig vindbelastning fra én dominerende retning, dårlig fundamentering (f.eks. i myr/bløtt terreng), eller ujevn telehiv. Dette er ekstra kritisk fordi det endrer statikken i masta betraktelig, reduserer faseavstander og frittrom, og kan føre til at masta til slutt velter.",
-            bilder: [
-                { fil: "skjev_langs.jpg", tekst: "Skjev mast på langs av linjeretning (LR). Ofte forårsaket av ulikt strekk i linja." },
-                { fil: "skjev_tvers.jpg", tekst: "Skjev mast på tvers av linjeretning. Ofte forårsaket av langvarig vind eller sviktende fundament." }
-            ]
-        },
-        2: {
-            tittel: "Veileder: Barduner (Galvanisert Stål)",
-            tekst: "<b>Korrosjon på kritiske bæreelementer:</b><br>Barduner are selve bæresystemet for master som utsettes for store sidekrefter. De er nesten utelukkende laget av galvanisert stål (Fe).<br><br>• <b>Korrosjonsprosessen:</b> Når det beskyttende sinklaget er ofret (galvanisk korrosjon), brytes selve stålet ned. Dette starter som rød/brun *piting* (gropbærende tæring). Denne typen tæring spiser raskt opp trådens tverrsnitt. Siden stållina ikke eser ut som en FeAl-line, skjer bruddet ofte brått uten tydelig buling på forhånd.<br><br><b>Korrosjon i jordovergangen:</b> Bardunstag ruster ofte aller kraftigst akkurat i overgangen mellom luft og jord. Her er det rikelig med både fuktighet og oksygen, noe som gir optimale forhold for tæring.<br><br><b>Nedsatt mekanisk styrke:</b> Synlig rødbrun gravrust på en bardun eller et bardunstag er et kritisk avvik. Det betyr at tverrsnittet og bruddstyrken er redusert, og masta er i fare for mekanisk kollaps.",
-            bilder: [
-                { fil: "274 korosjon bardun s1-b (2).jpg", tekst: "Kritisk rødbrun gravrust på barduntråder. Dyp tæring som har redusert tverrsnittet og bruddstyrken betydelig." },
-                { fil: "PA130011re.jpg", tekst: "Avansert rødbrun tæring på galvanisert ståltråd. Overflaten er herjet av gropbærende korrosjon." },
-                { fil: "Bardunstag og bolt med korrosjon (2).jpg", tekst: "Kraftig korrosjon på bardunstag i overgangen mellom luft og jord. Dette er et typisk farepunkt som kan føre til at forankringen ryker." }
-            ]
-        },
-        7: {
-            tittel: "Veileder: Traverser og Reststyrke",
-            tekst: "<b>Biologisk nedbrytning (Mose og vegetasjon):</b><br>Mose og lav på toppen av traversen fungerer som en svamp som holder konstant på fuktigheten. Dette hindrer treverket i å tørke ut og skaper et perfekt mikroklima for råtesopp. Over tid hules traversen ut, og i verste fall slår busker og trær rot direkte i selve treverket. Slike traverser har mistet mesteparten av sin mekaniske bæreevne og er livsfarlige ved store is- eller vindlaster.<br><br><b>Mekanisk nedbrytning og sprekker:</b><br>Vann samler seg også i dype sprekker og ved boltede forbindelser. Dette fører til kvit- og brunråte som spiser opp innsiden av limtreet eller heltreet. En travers kan se intakt ut på utsiden, men være helt hul inni. Dette krever ofte een grundig reststyrkeanalyse i E.T. Travers.",
-            bilder: [
-                { fil: "32267FD2-0DF6-4E2B-BBFA-1DBE6155AF8F.jpeg", tekst: "Mosegrodd travers. Mosen fungerer som en fuktig svamp og er selve katalysatoren for fremtidige råteangrep." },
-                { fil: "Råtetravers re.jpg", tekst: "Ekstrem biologisk nedbrytning: Råten har hulet ut traversen så mye at den fungerer som 'blomsterkasse' for trær. Kritisk tap av reststyrke." },
-                { fil: "308 råte i travers.JPG", tekst: "Dyp, åpen råtesprekk langs traversens lengde. Vann og fuktighet renner rett ned i kjernen av treverket." },
-                { fil: "Limtretravers totalt oppråtnet.png", tekst: "Limtretravers som er fullstendig oppråtnet på innsiden på grunn av fuktinntrengning." }
-            ]
-        },
-        8: {
-            tittel: "Veileder: Isolatorfeste",
-            tekst: "<b>Mekanisk slitasje:</b><br>Kontinuerlig bevegelse fra vind og vibrasjoner fører til mekanisk gnag på sjakler, øyer og bolter. Stål mot stål over tid spiser opp godset og krever utskifting lenge før det ryker. Dette er spesielt kritisk i vindutsatte spenn.<br><br><b>Ulmebrann og Strømtetthet:</b><br>Dersom det oppstår en jordfeil eller et isolatorbrudd/krypestrøm, kan det gå en feilstrøm gjennom beslaget og videre inn i treverket. Selv om selve strømmen er liten, vil <i>strømtettheten</i> bli enorm akkurat i kontaktpunktet mellom bolten og veden. Dette fungerer som et varmeelement som skaper en intens, lokal varmeutvikling. Resultatet er eine ulmebrann som spiser opp treet rundt beslaget fra innsiden.",
-            bilder: [
-                { fil: "373slitasje.jpg", tekst: "Kritisk slitasje på kjettingledd. Stål mot stål har nesten gnagd seg helt gjennom godset på grunn av vibrasjoner." },
-                { fil: "285 slitasje f3 -b.JPG", tekst: "Ekstrem slitasje i sjakkel/øye-forbindelse i silhuett. Tverrsnittet er redusert til et absolutt minimum, med fare for snarlig brudd." },
-                { fil: "5 Slitasje b.JPG", tekst: "Tydelig gnag og materialtretthet i opphenget. Et klassisk punkt for visuell slitasjekontroll." },
-                { fil: "ulmebrann.jpg", tekst: "Ulmebrann i travers rundt isolatorfeste. Forårsaket av enorm lokal strømtetthet gjennom beslaget." }
-            ]
-        },
-        9: {
-            tittel: "Veileder: Isolatorer & Oppheng",
-            tekst: "<b>Korrosjon på kule/skål (Rust):</b><br>Når galvaniseringen slites bort, begynner isolatorpinnen å ruste. Rust tar større plass enn stål (det eser ut). Dette skaper et enormt sprengtrykk innvendig som til slutt kan knuse glasset/porselenet, noe som fører til at linja faller ned.<br><br><b>Knust eller Sprukket:</b><br>Avslåtte skåler reduserer isolatorens <i>krypavstand</i> (veien strømmen må krype for å nå jord), noe som øker faren for overslag i regn/tåke. Sprekker er kritiske fordi fukt trekker inn, noe som kan gi frostsprenging eller innvendig overslag.<br><br><b>Forurensning og Kreosot:</b><br>Tester fra SINTEF viser at kreosot som svetter fra traversen og legger seg på isolatoren <i>ikke</i> reduserer isolasjonsevnen i seg selv. Problemet oppstår fordi den seige kreosoten fungerer som et fluepapir som tiltrekker seg annen forurensning (havsalt, industristøv, pollen). Det er denne blandingen som sammen med fukt skaper farlige krypestrømsveier og gnistring (tørrbånds-arcing).<br><br><b>Punktering:</b><br>Ved lynnedslag eller overspenning kan isolatoren punkteres innvendig (ofte synlig som små brennemerker ved kappen). Den er da i praksis permanent kortsluttet.",
-            bilder: [
-                { fil: "Rust på isolator.JPG", tekst: "Kritisk: Kraftig rust på isolatorpinnen. Rusten eser ut og vil til slutt sprenge glasset fra innsiden." },
-                { fil: "302 defekt isolator.JPG", tekst: "Knust/avslått isolatorskål. Dette reduserer krypavstanden betydelig." },
-                { fil: "332 sprukket isolator F1.jpg", tekst: "Sprekk i porselenet. Fukt vil trenge inn og skape frostsprenging eller innvendig overslag." },
-                { fil: "mulig krypestrømsveier.jpg", tekst: "Tydelige spor etter krypestrømmer og ujevn forurensning på porselenets overflate." },
-                { fil: "60 mye kreosot på isolatorene.JPG", tekst: "Kreosot på glasset reduserer ikke isolasjonsevnen i seg selv, men fungerer som 'fluepapir' for salt og støv som forårsaker krypestrømmer." },
-                { fil: "P1020720.JPG", tekst: "Punktering/overslag: Tydelig brennsår ved metallkappen. Isolatoren er defekt." },
-                { fil: "Herlig bilde av både rust, slitasje og natur.jpg", tekst: "Isolatoroppheng i saltholdig kystmiljø med kraftig overflaterust på metalldeler." }
-            ]
-        },
-        10: {
-            tittel: "Veileder: Bendsling & Gnag",
-            tekst: "<b>Mekanisk slitasje og gnag:</b><br>Eoliske vibrasjoner og konstante mikrobevegelser fører til mekanisk gnag mellom lina og bendslingstråden dersom bendslingen blir løs. Dette sliper ned aluminiumsoverflaten og lager initieringspunkter for utmatting.",
-            bilder: [
-                { fil: "bendsling_gnag.jpg", tekst: "Nærbilde av mekanisk gnag på bendslingstråder på grunn av løs forbindelse og vibrasjoner." }
-            ]
-        },
-        11: {
-            tittel: "Veileder: Liner & Kordelskader (FeAl)",
-            tekst: "<b>Verktøyhakk og Vibrasjon (Tretthetsbrudd):</b><br>Når det oppstår et skarpt hakk i aluminiumen fra verktøy, oppstår det <i>spenningskonsentrasjon</i> (kervvirkning). Under eoliske vibrasjoner vil en tretthetssprekk starte i hakket og spise seg tvers gjennom tråden til den ryker med et flatt, skarpt brudd.<br><br><b>Galvanisk korrosjon i FeAl-liner:</b><br>Siden FeAl-liner (f.eks. 50 eller 70 6/1) består av to ulike metaller (aluminium utvendig og galvanisert stål i kjernen), dannes det et galvanisk element hvis fuktighet trenger inn mellom lagene. Det oppstår kraftig tæring i grensesnittet der aluminiumskordelene ligger presset mot stålkjernen.<br><br><b>Ekstremt Strekk og Islast (Seigt brudd):</b><br>Når lina utsettes for massivt, statisk strekk (som ved islast), strekkes aluminiumskordelene plastisk før de ryker. De smalner inn og former en karakteristisk «blyantspiss».<br><br><b>Korrosjonsatlas (Trinn 1-4):</b><br>• <b>Trinn 1:</b> Normal overflate.<br>• <b>Trinn 2:</b> Begynnende hvitrust (sinkoksid).<br>• <b>Trinn 3:</b> Fremskredet buling (stålet ruster og presser aluminiumen ut).<br>• <b>Trinn 4:</b> Kritisk fuglebur.",
-            bilder: [
-                { fil: "Vibrasjonsbrudd som følge av hakk i lina..jpg", tekst: "Tretthetsbrudd: Skarpe, flate bruddflater forårsaket av vibrasjoner (ofte initiert av hakk)." },
-                { fil: "Seigt brudd.png", tekst: "Seigt brudd: Islast-havari på FeAl 6/1. Aluminiumskordelene har strukket seg til 'blyantspisser' før de røk." },
-                { fil: "Galvanisk korrosjon.png", tekst: "Galvanisk korrosjon på FeAl 6/1: Omfattende tæring i kontaktflaten mellom aluminiumskordelene og den indre stålkjernen." },
-                { fil: "Hakk på tvers av linen.png", tekst: "Skarpe hakk fra verktøy. Dette er døden for en aluminiumsline i vibrasjon." },
-                { fil: "IMG_0113.JPG", tekst: "Trinn 2: Tydelig hvitrust (sinkoksid-pulver) mellom kordelene." },
-                { fil: "7 kraftig korrosjon og mulig punktering av stålkjerne.jpg", tekst: "Trinn 3: Buling. Sinken er borte, og rusten presser kordelene ut." },
-                { fil: "Burdannelse.png", tekst: "Trinn 4: Kritisk mekanisk skade (Fuglebur)." }
-            ]
-        },
-        13: {
-            tittel: "Veileder: Toppline/Jordline (Galvanisert Stål)",
-            tekst: "<b>Korrosjonsatlas for galvanisert stål (Grå -> Brun):</b><br>I motsetning to FeAl-liner, buler ikke rene stålliner når de ruster. Nedbrytningen skjer i en tydelig visuell rekkefølge:<br><br>• <b>Normal tilstand (Grå):</b> Blank eller jevnt matt grå overflate.<br>• <b>Galvanisk korrosjon (Grå/Hvit):</b> Sinklaget ofrer seg og danner et hvitt kritt-belegg over metallet. Selve stålet er fortsatt beskyttet.<br>• <b>Rødbrun tæring (Brun/Rød):</b> Sinken er oppbrukt, stålet ruster og det dannes rød/brun *piting* (gravrustflekker). Dette spiser raskt opp tverrsnittet og reduserer bruddstyrken drastisk.",
-            bilder: [
-                { fil: "DJI_20251003201920_0510_Dre.jpg", tekst: "Overgangs-fase: Sinklaget er matt og det dannes rødbrune gravrustflekker (piting) på klemmen/lina." },
-                { fil: "PA130018re.jpg", tekst: "Kritisk rødbrun korrosjon på Toppline (Fe). Lina har mistet mekanisk styrke." }
-            ]
-        }
+        0: { tittel: "Veileder: Mast OK", tekst: "Trykk her dersom hele masten er i tilfredsstillende stand uten avvik.", bilder: [] },
+        1: { tittel: "Veileder: Skjev mast & Fundament", tekst: "<b>REN-krav og akseptabel helling:</b><br>For eksisterende anlegg aksepteres det normalt en maksimal helling på <b>1 til 2 % av stolpehøyden</b> over bakken.", bilder: [{ fil: "skjev_langs.jpg", tekst: "Skjev mast på langs av linjeretning (LR)." }, { fil: "skjev_tvers.jpg", tekst: "Skjev mast på tvers av linjeretning." }] },
+        2: { tittel: "Veileder: Barduner", tekst: "Synlig rødbrun gravrust er et kritisk avvik.", bilder: [{ fil: "274_korrosjon_bardun_s1-b.jpg", tekst: "Kritisk rødbrun gravrust." }, { fil: "PA130011re.jpg", tekst: "Avansert rødbrun tæring." }, { fil: "Bardunstag og bolt med korrosjon (2).jpg", tekst: "Kraftig korrosjon på bardunstag." }] },
+        3: { tittel: "Veileder: Tremaster & Råte (Stolper)", tekst: "Softråte i overgangen mellom luft og jord. Råte i stolpetopp.", bilder: [{ fil: "isskade.jpg", tekst: "Mekanisk skade / fiberbrudd." }, { fil: "raate i stolpetopp.jpg", tekst: "Kritisk råte i stolpetoppen." }, { fil: "softraate.jpg", tekst: "Klassisk softråte i jordbåndet." }] },
+        4: { tittel: "Veileder: Stålmast & Fundament", tekst: "Defekt forgitring, oppsmuldret betong, rustutslag eller kalkutslag.", bilder: [{ fil: "defekt forgitring.jpg", tekst: "Mekanisk skade på forgitring." }, { fil: "oppsmuldret betong.jpg", tekst: "Frostsprengning og avskalling." }, { fil: "rustutslag_paa_fundament.jpg", tekst: "Rustutslag." }, { fil: "kalkutslag_fundament.jpg", tekst: "Kalkutslag." }] },
+        5: { tittel: "Veileder: Topphette", tekst: "Manglende, elendig tilpasset, sprukket eller hullet.", bilder: [{ fil: "elendig_tilpasset_og_manglende_topphette.jpg", tekst: "Dårlig tilpasset eller helt manglende topphette." }, { fil: "sprukket_og_hullet_topphette.jpg", tekst: "Defekt topphette." }] },
+        6: { tittel: "Veileder: Traversfeste", tekst: "Sprekk i klave eller brudd på innfesting.", bilder: [{ fil: "sprekk i klave.jpg", tekst: "Sprekkdannelse i traversklave." }, { fil: "brudd_innfesting.jpg", tekst: "Brudd på innfesting av travers." }] },
+        7: { tittel: "Veileder: Traverser og Reststyrke", tekst: "Biologisk nedbrytning, sprekker, råte.", bilder: [{ fil: "limtretravers totalt oppraatnet.jpg", tekst: "Limtretravers fullstendig oppråtnet." }, { fil: "raate i sprekk.jpg", tekst: "Dyp råte etablert i sprekk." }, { fil: "raate ved innspenningspunkt.jpg", tekst: "Råte ved innfestingspunkt." }, { fil: "raatetravers.jpg", tekst: "Ekstrem biologisk nedbrytning." }] },
+        8: { tittel: "Veileder: Isolatorfeste", tekst: "Mekanisk slitasje og ulmebrann.", bilder: [{ fil: "373_slitasje.jpg", tekst: "Kritisk slitasje på sjakkel/øye." }, { fil: "ulmebrann.jpg", tekst: "Ulmebrann i travers." }] },
+        9: { tittel: "Veileder: Isolatorer", tekst: "Korrosjon, forurensning og kreosot.", bilder: [{ fil: "rust_paa_isolator.jpg", tekst: "Kritisk rust." }, { fil: "isolatorglass_rust.jpg", tekst: "Rustdannelse på glass." }, { fil: "302_defekt_isolator.jpg", tekst: "Knust isolator." }, { fil: "332_sprukket_isolator_f1.jpg", tekst: "Sprekk i porselen." }, { fil: "mulig krypestrømsveier.jpg", tekst: "Krypestrømmer." }, { fil: "60_mye_kreosot_paa_isolatorene.jpg", tekst: "Mye kreosot." }, { fil: "P1020720.JPG", tekst: "Punktering/overslag." }, { fil: "Herlig bilde av både rust, slitasje og natur.jpg", tekst: "Oppheng i kystmiljø." }, { fil: "kraftig_rust_og_slitasje.jpg", tekst: "Kraftig rust/slitasje." }] },
+        10: { tittel: "Veileder: Bendsling & Gnag", tekst: "Dårlig utført bendsling.", bilder: [{ fil: "daarlig_bendsel.jpg", tekst: "Løs bendsel." }, { fil: "bendsling_gnag.jpg", tekst: "Direkte mekanisk gnag." }] },
+        11: { tittel: "Veileder: Liner (FeAl)", tekst: "Vibrasjon, tretthetsbrudd, galvanisk korrosjon.", bilder: [{ fil: "korrosjon under looplodd.jpg", tekst: "Fukt under looplodd." }, { fil: "hoyfrekvent vibrasjonsbrudd.jpg", tekst: "Vibrasjonsbrudd." }, { fil: "korrosjon_paa_line_ved_ak_klemme.jpg", tekst: "Korrosjon ved klemme." }, { fil: "kraftig korrosjon og mulig punktering av staalkjerne.jpg", tekst: "Kritisk buling." }, { fil: "skade_paa_line.jpg", tekst: "Mekanisk skade." }, { fil: "kordel_ute_av_posisjon.jpg", tekst: "Kordel ute av posisjon." }] },
+        12: { tittel: "Veileder: Strekking & Islast", tekst: "Ekstrem islast og saging.", bilder: [{ fil: "ising.jpg", tekst: "Tung ising." }, { fil: "ising1.jpg", tekst: "Kritisk islast." }, { fil: "ising2.jpg", tekst: "Massiv isoppbygging." }, { fil: "islast.jpg", tekst: "Ekstrem islast." }] },
+        13: { tittel: "Veileder: Topp/Jordline", tekst: "Hvitrust til rødbrun tæring.", bilder: [{ fil: "PA130018re.jpg", tekst: "Rødbrun korrosjon." }] },
+        14: { tittel: "Veileder: Merking", tekst: "Vandalisme og fargeløse skilt.", bilder: [{ fil: "beskutt stolpe og hoyspentskilt.jpg", tekst: "Beskutt skilt." }, { fil: "fargeløst hoyspentskilt.jpg", tekst: "Utvasket skilt." }] },
+        15: { tittel: "Veileder: Trase", tekst: "Sideskog og trefall.", bilder: [{ fil: "sideskog.jpg", tekst: "Sideskog." }, { fil: "trefall_paa_linje.jpg", tekst: "Kritisk trefall." }] }
     };
-    
+
+    // --- HOVED-APP LOGIKK ---
     document.addEventListener("DOMContentLoaded", () => {
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => event.preventDefault());
 
-        const gyldigDomene = window.location.hostname;
-        if (window.location.hostname !== "" && window.location.hostname !== gyldigDomene) {
-            document.body.innerHTML = ""; 
-            return; 
-        }
-
         if (window.netlifyIdentity) {
-            if (window.netlifyIdentity.currentUser()) {
-                visAppen();
-            }
-
-            window.netlifyIdentity.on("init", user => {
-                if (user) {
-                    visAppen(); 
-                }
-            });
-            window.netlifyIdentity.on("login", user => {
-                visAppen(); 
-                window.netlifyIdentity.close(); 
-            });
-            window.netlifyIdentity.on("logout", () => {
-                location.reload(); 
-            });
+            if (window.netlifyIdentity.currentUser()) visAppen();
+            window.netlifyIdentity.on("init", user => { if (user) visAppen(); });
+            window.netlifyIdentity.on("login", user => { visAppen(); window.netlifyIdentity.close(); });
+            window.netlifyIdentity.on("logout", () => { location.reload(); });
         }
     });
-
-    function lagreKontrollor() {
-        localStorage.setItem("linje_kontrollor", document.getElementById("kontrollor").value);
-    }
-
-    function visAppen() {
-        document.getElementById("loginBox").classList.add("skjult");
-        document.getElementById("containerApp").classList.remove("skjult");
-        document.getElementById('kontrollor').value = localStorage.getItem('linje_kontrollor') || "";
-
-        let dagensDato = new Date().toLocaleDateString('no-NO', {day: '2-digit', month: '2-digit', year: 'numeric'});
-        document.getElementById('datoKontrollert').value = dagensDato;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('retur') === 'ja') {
-            if (urlParams.get('netteier')) document.getElementById('netteier').value = urlParams.get('netteier');
-            if (urlParams.get('linje')) document.getElementById('linje').value = urlParams.get('linje');
-            if (urlParams.get('mast')) document.getElementById('mast').value = urlParams.get('mast');
-        }
-        render();
-    }
 
     let gpsWatch = null;
     let data = JSON.parse(localStorage.getItem('linjekontroll_data')) || [];
@@ -289,8 +259,8 @@
         {navn:"Mast OK", avvik:[]},
         {navn:"Skjev mast/fundament", avvik:["Skjev","Fundament feil"]},
         {navn:"Barduner", avvik:["Løs","Brudd","Korrosjon"]},
-        {navn:"Stolper", avvik:["Stolper OK","Råte","Skade"]},
-        {navn:"Stålmast", avvik:["Rust","Skade"]},
+        {navn:"Stolper", avvik:["Stolper OK","Råte","Skade", "Sprekk"]},
+        {navn:"Stålmast/Fundament", avvik:["Avvik fundament","Avvik Stålmast"]},
         {navn:"Topphette", avvik:["Mangler","Defekt"]},
         {navn:"Traversfeste", avvik:["Bruddanvisning","Skade"]},
         {navn:"Travers", avvik:["Travers OK","Mosegrodd","Annen skade","Råte","Sprekk"]},
@@ -304,26 +274,119 @@
         {navn:"Trase", avvik:["Skog","Kratt"]}
     ];
 
+    function lagreMetode() { localStorage.setItem("linje_metode", document.getElementById("metode").value); }
+
+    function visAppen() {
+        document.getElementById("loginBox").classList.add("skjult");
+        document.getElementById("containerApp").classList.remove("skjult");
+        
+        let user = window.netlifyIdentity.currentUser();
+        if (user) {
+            document.getElementById('kontrollor').value = user.user_metadata?.full_name || "";
+        }
+
+        document.getElementById('metode').value = localStorage.getItem('linje_metode') || "Tilstandskontroll (Bakke/Klatring)";
+        let dagensDato = new Date().toLocaleDateString('no-NO', {day: '2-digit', month: '2-digit', year: 'numeric'});
+        document.getElementById('datoKontrollert').value = dagensDato;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('retur') === 'ja') {
+            if (urlParams.get('netteier')) document.getElementById('netteier').value = urlParams.get('netteier');
+            if (urlParams.get('linje')) document.getElementById('linje').value = urlParams.get('linje');
+            if (urlParams.get('mast')) document.getElementById('mast').value = urlParams.get('mast');
+        }
+        render();
+    }
+
+    function settLinestrekk() {
+        let verdi = document.getElementById("linedimensjon").value;
+        if(verdi !== "0") {
+            document.getElementById("linestrekk_kn").value = verdi;
+        }
+        oppdaterVkDisplay();
+    }
+
+    let gjeldendeVertikalkraft_kN = 0;
+
+    function oppdaterVkDisplay(fraRoald = false) {
+        let s3 = parseFloat(document.getElementById("vk_s3").value);
+        let d = parseFloat(document.getElementById("vk_d").value);
+        let vinkelInput = document.getElementById("vk_vinkel");
+        
+        let linestrekk = parseFloat(document.getElementById("linestrekk_kn").value) || 0;
+        let faser = parseFloat(document.getElementById("antall_faser").value) || 3;
+        
+        let beregnetVinkel = parseFloat(vinkelInput.value) || 0;
+
+        if (fraRoald && !isNaN(s3) && !isNaN(d) && s3 > 0 && d <= s3) {
+            beregnetVinkel = Math.asin(d / s3) * (180 / Math.PI);
+            vinkelInput.value = beregnetVinkel.toFixed(1);
+        }
+
+        let fv = 0;
+        if (beregnetVinkel > 0) {
+            let vinkelRad = beregnetVinkel * (Math.PI / 180);
+            fv = linestrekk * Math.sin(vinkelRad) * faser; 
+        }
+
+        gjeldendeVertikalkraft_kN = fv;
+        let resultatDiv = document.getElementById("vk_resultat");
+        
+        if (fv > 0) {
+            resultatDiv.innerHTML = `Vinkel: <span style="color:#0284c7;">${beregnetVinkel.toFixed(1)}°</span> | Nedoverkraft:<br><span style="color:#c62828; font-size:18px; font-weight:900;">${fv.toFixed(1)} kN</span>`;
+        } else {
+            resultatDiv.innerHTML = `Gjeldende last: <span style="color:#2e7d32;">Normal (0 kN Vertikalkraft)</span>`;
+        }
+    }
+    
+    function getVkTotal() {
+        if (gjeldendeVertikalkraft_kN > 0) {
+            return `Vertikalkraft: ${gjeldendeVertikalkraft_kN.toFixed(1)} kN`;
+        }
+        return "Normal (0 kN)";
+    }
+
+    function byggLenkeParams(stolpenr = "") {
+        let p = `retur=ja`;
+        p += `&netteier=${encodeURIComponent(document.getElementById('netteier').value || '')}`;
+        p += `&linje=${encodeURIComponent(document.getElementById('linje').value || '')}`;
+        p += `&mast=${encodeURIComponent(document.getElementById('mast').value || '')}`;
+        if (stolpenr) p += `&stolpenr=${stolpenr}`;
+        p += `&mtype=${encodeURIComponent(document.getElementById('mastType').value || 'H')}`;
+        p += `&linedim=${encodeURIComponent(document.getElementById('linedimensjon').value || '0')}`;
+        p += `&faser=${encodeURIComponent(document.getElementById('antall_faser').value || '3')}`;
+        p += `&vks3=${encodeURIComponent(document.getElementById('vk_s3').value || '')}`;
+        p += `&vkd=${encodeURIComponent(document.getElementById('vk_d').value || '')}`;
+        p += `&vkvinkel=${encodeURIComponent(document.getElementById('vk_vinkel').value || '')}`;
+        return p;
+    }
+
     function nyttAnlegg() {
         if(confirm("Vil du starte et nytt anlegg? Dette tømmer Netteier og LinjeID.")) {
             document.getElementById("netteier").value = "";
             document.getElementById("linje").value = "";
             document.getElementById("mast").value = "";
-            status = {};
-            valgtStolpeNrForRaate = "";
-            render();
-            window.scrollTo(0,0);
+            
+            document.getElementById("vk_s3").value = "";
+            document.getElementById("vk_d").value = "";
+            document.getElementById("vk_vinkel").value = "";
+            oppdaterVkDisplay();
+            
+            status = {}; valgtStolpeNrForRaate = "";
+            
+            document.getElementById("kameraInput").value = "";
+            document.getElementById("bildeForhandsvisning").style.display = "none";
+            document.getElementById("opplastingStatus").innerText = "";
+            valgtBildeBase64 = "";
+
+            render(); window.scrollTo(0,0);
         }
     }
 
     function sjekkMastType(verdi) {
         let egenDiv = document.getElementById("egendefinertMastDiv");
-        if (verdi === "Annet") {
-            egenDiv.classList.remove("skjult");
-        } else {
-            egenDiv.classList.add("skjult");
-            document.getElementById("egenMastType").value = "";
-        }
+        if (verdi === "Annet") { egenDiv.classList.remove("skjult"); } 
+        else { egenDiv.classList.add("skjult"); document.getElementById("egenMastType").value = ""; }
     }
 
     function render(){
@@ -333,8 +396,8 @@
             if(status[i] == "ok") cls += " ok";
             if(status[i] && status[i].indexOf("avvik:") === 0) cls += " avvik";
             
-            html += `<div class="kp-rad">`;
-            html += `<button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
+            html += `<div class="kp-rad"><button class="${cls}" onclick="toggle(${i})">${p.navn}</button>`;
+            
             if (hjelpData[i]) {
                 html += `<button type="button" class="help-btn" onclick="aapneHjelpModal(${i}); event.stopPropagation();" title="Åpne digital lærebok">📖</button>`;
             }
@@ -349,50 +412,27 @@
                     html += `<button class="${avvikCls}" onclick="settAvvik(${i}, '${a}')">${a}</button>`;
                 });
 
-                if(p.navn === "Stolper" && status[i] && (status[i] === "avvik:Råte" || status[i] === "avvik:Skade")) {
-                    html += `<div class="stolpe-valg-boks">`;
-                    html += `<label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe (1-12) har råte/skade?</label>`;
-                    html += `<div class="stolpe-grid">`;
+                if(p.navn === "Stolper" && status[i] && (status[i] === "avvik:Råte" || status[i] === "avvik:Skade" || status[i] === "avvik:Sprekk")) {
+                    html += `<div class="stolpe-valg-boks"><label style="margin-top:0; font-size:14px; color:#c62828;">Hvilken stolpe (1-12)?</label><div class="stolpe-grid">`;
                     for(let s=1; s<=12; s++) {
-                        let aktivCls = (valgtStolpeNrForRaate == s) ? "aktiv" : "";
-                        html += `<button class="${aktivCls}" onclick="velgStolpeForLenke(${s})">${s}</button>`;
+                        html += `<button class="${(valgtStolpeNrForRaate == s) ? "aktiv" : ""}" onclick="velgStolpeForLenke(${s})">${s}</button>`;
                     }
                     html += `</div>`;
-                    
                     if(valgtStolpeNrForRaate !== "") {
-                        let n_eier = encodeURIComponent(document.getElementById("netteier").value || "");
-                        let l_id = encodeURIComponent(document.getElementById("linje").value || "");
-                        let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
-                        let url = `https://et-stolpekontroll.netlify.app/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&stolpenr=${valgtStolpeNrForRaate}`;
-                        html += `<a href="${url}" class="dyplenke-knapp">🚀 Åpne Stolpekontroll for Stolpe ${valgtStolpeNrForRaate}</a>`;
+                        html += `<a href="stolpe.html?${byggLenkeParams(valgtStolpeNrForRaate)}" class="dyplenke-knapp">🪵 Åpne Stolpekontroll</a>`;
                     }
                     html += `</div>`;
                 }
 
                 if(p.navn === "Travers" && status[i]) {
                     let valgtAvvik = status[i].replace("avvik:", "");
-                    
                     if(valgtAvvik === "Mosegrodd" || valgtAvvik === "Annen skade") {
-                        html += `<div style="background:#fff3e0; border:1px dashed #ff9800; border-radius:6px; padding:10px; margin-top:5px; text-align:center;">`;
-                        html += `<p style="margin:0; font-size:12px; font-weight:bold; color:#e65100;">📸 Dokumentasjon påkrevd: Ta bilde av skaden og beskriv den i merknadsfeltet under.</p>`;
-                        html += `</div>`;
-                    } 
-                    else if(valgtAvvik === "Råte" || valgtAvvik === "Sprekk") {
-                        let n_eier = encodeURIComponent(document.getElementById("netteier").value || "");
-                        let l_id = encodeURIComponent(document.getElementById("linje").value || "");
-                        let m_nr = encodeURIComponent(document.getElementById("mast").value || "");
-                        
-                        let url = `https://et-trav-reg-felt.netlify.app/?netteier=${n_eier}&linje=${l_id}&mast=${m_nr}&retur=ja`;
-                        
-                        html += `<div style="background:#ffebee; border:2px dashed #c62828; border-radius:8px; padding:15px; margin-top:10px; text-align:center;">`;
-                        html += `<p style="margin-top:0; font-size:12px; font-weight:900; color:#c62828; text-transform:uppercase;">Feltregistrering påkrevd</p>`;
-                        html += `<p style="font-size:14px; color:#b71c1c; margin-bottom:10px; font-weight:bold;">Registrer mål for råte/sprekk i felt-modulen.</p>`;
-                        html += `<a href="${url}" class="dyplenke-knapp" style="background:#b71c1c;">🪵 ÅPNE TRAVERS FELTREGISTRERING</a>`;
-                        html += `</div>`;
+                        html += `<div style="background:#fff3e0; border:1px dashed #ff9800; border-radius:6px; padding:10px; margin-top:5px; text-align:center;"><p style="margin:0; font-size:12px; font-weight:bold; color:#e65100;">📸 Ta bilde av skaden og legg ved i bunnen av appen.</p></div>`;
+                    } else if(valgtAvvik === "Råte" || valgtAvvik === "Sprekk") {
+                        html += `<div style="background:#ffebee; border:2px dashed #c62828; border-radius:8px; padding:15px; margin-top:10px; text-align:center;"><p style="margin-top:0; font-size:12px; font-weight:900; color:#c62828;">Feltregistrering påkrevd</p><a href="travers.html?${byggLenkeParams()}" class="dyplenke-knapp" style="background:#b71c1c;">🪵 Åpne Traverskontroll</a></div>`;
                     }
                 }
-
-                html += `<textarea placeholder="📸 Husk bilde! Merknad:" id="m${i}" onblur="lagreMerknad(this, ${i})">${status["m"+i] || ""}</textarea>`;
+                html += `<textarea placeholder="📝 Merknad til dette punktet:" id="m${i}" onblur="lagreMerknad(this, ${i})">${status["m"+i] || ""}</textarea>`;
             }
         });
         document.getElementById("punkter").innerHTML = html;
@@ -401,40 +441,25 @@
     function aapneHjelpModal(i) {
         const item = hjelpData[i];
         if(!item) return;
-        
         document.getElementById("hjelpModalTittel").innerHTML = "📖 " + item.tittel;
         document.getElementById("hjelpModalInnhold").innerHTML = item.tekst;
-        
         let bildeHtml = "";
         if(item.bilder && item.bilder.length > 0) {
             item.bilder.forEach(b => {
-                bildeHtml += `
-                    <div style="border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; background:black; margin-bottom:5px;">
-                        <img src="${b.fil}" style="width:100%; height:auto; display:block;" onerror="this.style.display='none';">
-                        <div style="background:white; padding:8px; font-size:11px; font-weight:bold; color:#475569; border-top:1px solid #cbd5e1;">📸 ${b.tekst}</div>
-                    </div>
-                `;
+                bildeHtml += `<div style="border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; background:black; margin-bottom:5px;"><img src="${b.fil}" style="width:100%; height:auto; display:block;" onerror="this.style.display='none';"><div style="background:white; padding:8px; font-size:11px; font-weight:bold; color:#475569; border-top:1px solid #cbd5e1;">📸 ${b.tekst}</div></div>`;
             });
         }
         document.getElementById("hjelpModalBilderSone").innerHTML = bildeHtml;
         document.getElementById("hjelpModal").style.display = "flex";
     }
 
-    function lukkHjelpModal() {
-        document.getElementById("hjelpModal").style.display = "none";
-    }
-
-    function velgStolpeForLenke(nr) {
-        valgtStolpeNrForRaate = nr;
-        render(); 
-    }
-
+    function lukkHjelpModal() { document.getElementById("hjelpModal").style.display = "none"; }
+    function velgStolpeForLenke(nr) { valgtStolpeNrForRaate = nr; render(); }
     function lagreMerknad(el, i) { status["m"+i] = el.value; }
 
     function toggle(i) {
         if (status[i] === "vis" || status[i] === "ok" || (status[i] && status[i].indexOf("avvik:") === 0)) {
-            delete status[i];
-            delete status["m"+i];
+            delete status[i]; delete status["m"+i]; 
             if(punkter[i].navn === "Stolper") valgtStolpeNrForRaate = ""; 
         } else {
             status[i] = (punkter[i].navn === "Mast OK") ? "ok" : "vis";
@@ -444,168 +469,208 @@
 
     function settAvvik(i, avviksTekst) { 
         status[i] = "avvik:" + avviksTekst; 
-        if(punkter[i].navn === "Stolper" && avviksTekst !== "Råte" && avviksTekst !== "Skade") {
-            valgtStolpeNrForRaate = ""; 
-        }
+        if(punkter[i].navn === "Stolper" && avviksTekst !== "Råte" && avviksTekst !== "Skade" && avviksTekst !== "Sprekk") { valgtStolpeNrForRaate = ""; }
         render(); 
     }
 
-    function startGPS() {
+    function startGPS() { 
         if (navigator.geolocation) {
-            gpsWatch = navigator.geolocation.watchPosition(p => {
-                document.getElementById("gps").value = p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6);
-            }, e => alert("GPS-feil"), {enableHighAccuracy: true});
+            gpsWatch = navigator.geolocation.watchPosition(p => { 
+                document.getElementById("gps").value = p.coords.latitude.toFixed(6)+", "+p.coords.longitude.toFixed(6); 
+            }, e => alert("GPS-feil"), {enableHighAccuracy: true}); 
         }
     }
-
     function stopGPS() { if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch); }
 
-    function aapneTraversRegistrering() {
-        let netteier = document.getElementById('netteier').value || '';
-        let linje = document.getElementById('linjeId') ? document.getElementById('linjeId').value : document.getElementById('linje').value || '';
-        let mast = document.getElementById('mast').value || '';
+    let valgtBildeBase64 = "";
+
+    function sjekkFeltOgTaBilde() {
+        let mast = document.getElementById("mast").value;
+        if(!mast) {
+            alert("Du må fylle inn Mast nr. før du kan ta bilde, slik at bildet blir merket riktig!");
+            return;
+        }
+        document.getElementById('kameraInput').click();
+    }
+
+    function behandleBilde(event) {
+        let fil = event.target.files[0];
+        if (!fil) return;
         
-        let url = `https://et-trav-reg-felt.netlify.app/?netteier=${encodeURIComponent(netteier)}&linje=${encodeURIComponent(linje)}&mast=${encodeURIComponent(mast)}&retur=ja`;
-        window.location.href = url;
+        let reader = new FileReader();
+        reader.onload = function(e) { lagStempelPaaBilde(e.target.result); };
+        reader.readAsDataURL(fil);
+    }
+
+    function lagStempelPaaBilde(imgDataSrc) {
+        let img = new Image();
+        img.onload = function() {
+            let canvas = document.createElement("canvas");
+            let ctx = canvas.getContext("2d");
+            
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            let mast = document.getElementById("mast").value || "Ukjent";
+            let netteier = document.getElementById("netteier").value || "Ukjent";
+            let linje = document.getElementById("linje").value || "Ukjent";
+            let dato = document.getElementById("datoKontrollert").value || "";
+            
+            let stampText = `Dato: ${dato} | Netteier: ${netteier} | Linje: ${linje} | Mast: ${mast}`;
+            
+            let fontSize = Math.max(30, canvas.width / 40); 
+            let padding = 20;
+            let barHeight = fontSize + (padding * 2);
+            
+            ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+            ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
+            
+            ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+            ctx.fillStyle = "white";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            ctx.fillText(stampText, padding, canvas.height - (barHeight / 2));
+            
+            valgtBildeBase64 = canvas.toDataURL("image/jpeg", 0.85);
+            
+            document.getElementById("valgtBilde").src = valgtBildeBase64;
+            document.getElementById("bildeForhandsvisning").style.display = "block";
+            document.getElementById("opplastingStatus").innerText = "✅ Bildet er vannmerket med info!";
+            document.getElementById("opplastingStatus").style.color = "#2e7d32";
+        };
+        img.src = imgDataSrc;
+    }
+
+    async function lagreBildeLokalt() {
+        let mast = document.getElementById("mast").value;
+        let netteier = document.getElementById("netteier").value || "UkjentNetteier";
+        let linje = document.getElementById("linje").value || "UkjentLinje";
+        
+        let filnavn = `${netteier}_${linje}_Mast${mast}_Linjekontroll.jpg`;
+        let statusFelt = document.getElementById("opplastingStatus");
+
+        try {
+            const fetchRes = await fetch(valgtBildeBase64);
+            const blob = await fetchRes.blob();
+            const file = new File([blob], filnavn, { type: "image/jpeg" });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: filnavn, text: 'Dokumentasjon Linjekontroll' });
+                statusFelt.innerText = `✅ Lagret! Info er brent inn.`;
+                statusFelt.style.color = "#2e7d32";
+            } else {
+                let a = document.createElement("a");
+                a.href = valgtBildeBase64;
+                a.download = filnavn;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                statusFelt.innerText = `✅ Bildet er lastet ned.`;
+                statusFelt.style.color = "#2e7d32";
+            }
+        } catch (error) { console.log("Deling avbrutt eller feilet", error); }
     }
 
     function lagre() {
         let valgtType = document.getElementById("mastType").value;
         if (valgtType === "Annet") valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
         
-        let datoVerdi = document.getElementById("datoKontrollert").value;
-
-        let rad = {
-            dato: datoVerdi,
-            kontrollor: document.getElementById("kontrollor").value,
-            netteier: document.getElementById("netteier").value,
-            linje: document.getElementById("linje").value,
-            mast: document.getElementById("mast").value,
-            mastType: valgtType,
-            vertikalkraft: document.getElementById("vertikalkraft").value,
-            gps: document.getElementById("gps").value,
-            punkter: punkter.map((p,i) => ({navn:p.navn, status:status[i]||"", merknad:status["m"+i]||""}))
+        let vkTotal = getVkTotal();
+        
+        let rad = { 
+            dato: document.getElementById("datoKontrollert").value, 
+            kontrollor: document.getElementById("kontrollor").value, 
+            netteier: document.getElementById("netteier").value, 
+            linje: document.getElementById("linje").value, 
+            metode: document.getElementById("metode").value, 
+            mast: document.getElementById("mast").value, 
+            mastType: valgtType, 
+            vertikalkraft: vkTotal, 
+            gps: document.getElementById("gps").value, 
+            punkter: punkter.map((p,i) => ({navn:p.navn, status:status[i]||"", merknad:status["m"+i]||""})) 
         };
-        data.push(rad);
-        localStorage.setItem('linjekontroll_data', JSON.stringify(data));
-        alert("Mast " + rad.mast + " lagret!");
+        data.push(rad); 
+        localStorage.setItem('linjekontroll_data', JSON.stringify(data)); 
+        alert("Mast " + rad.mast + " lagret i historikk!");
     }
 
     function lastNed() {
         if (data.length === 0) return;
-        
-        let csv = "sep=;\n\ufeffDato;Kontrollør;Netteier;Linje;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
-        
+        // Fix for ÆØÅ i Excel (BOM \ufeff må ligge HELT forrest)
+        let csv = "\ufeffsep=;\nDato;Kontrollør;Netteier;Linje;Inspeksjonsmetode;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
         data.forEach(d => {
             d.punkter.forEach(p => {
                 if (p.status !== "") {
-                    let visStatus = p.status;
-                    if(visStatus.indexOf("avvik:") === 0) {
-                        visStatus = visStatus.replace("avvik:", "");
-                    }
-                    if(visStatus === "Stolper OK" || visStatus === "Travers OK") {
-                        visStatus = "OK";
-                    }
+                    let visStatus = p.status.indexOf("avvik:") === 0 ? p.status.replace("avvik:", "") : p.status;
+                    if(visStatus === "Stolper OK" || visStatus === "Travers OK") visStatus = "OK";
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
-                    
-                    csv += `"${d.dato || ""}";"${d.kontrollor || ""}";"${d.netteier}";"${d.linje}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
+                    csv += `"${d.dato || ""}";"${d.kontrollor || ""}";"${d.netteier}";"${d.linje}";"${d.metode || "Uoppgitt"}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
                 }
             });
         });
-        
-        let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "linjekontroll_eksport.csv";
+        let a = document.createElement("a"); 
+        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); 
+        a.download = "linjekontroll_eksport.csv"; 
         a.click();
     }
 
     function genererPDF() {
-        let netteier = document.getElementById("netteier").value || "-";
-        let linje = document.getElementById("linje").value || "-";
-        let mast = document.getElementById("mast").value || "-";
-        let valgtType = document.getElementById("mastType").value;
-        if (valgtType === "Annet") valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
-        let vertikalkraft = document.getElementById("vertikalkraft").value;
-        let gps = document.getElementById("gps").value || "-";
-        let kontrollor = document.getElementById("kontrollor").value || "-";
-        let datoVerdi = document.getElementById("datoKontrollert").value || "-";
-
         let sjekklisteHtml = "";
         punkter.forEach((p, i) => {
             if (status[i] && status[i] !== "vis") {
-                let visStatus = status[i];
-                let statusClass = "status-ok";
-                if(visStatus.indexOf("avvik:") === 0) {
-                    visStatus = visStatus.replace("avvik:", "");
-                    if(visStatus !== "Stolper OK" && visStatus !== "Travers OK") {
-                        statusClass = "status-avvik";
-                    }
-                } else if (visStatus === "ok") {
-                    visStatus = "OK";
-                }
-                let merknad = status["m"+i] ? status["m"+i] : "";
-
-                sjekklisteHtml += `
-                    <tr>
-                        <td><strong>${p.navn}</strong></td>
-                        <td class="${statusClass}">${visStatus}</td>
-                        <td>${merknad}</td>
-                    </tr>
-                `;
+                let visStatus = status[i].indexOf("avvik:") === 0 ? status[i].replace("avvik:", "") : (status[i] === "ok" ? "OK" : status[i]);
+                let statusClass = (visStatus !== "OK" && visStatus !== "Stolper OK" && visStatus !== "Travers OK") ? "status-avvik" : "status-ok";
+                sjekklisteHtml += `<tr><td><strong>${p.navn}</strong></td><td class="${statusClass}">${visStatus}</td><td>${status["m"+i] || ""}</td></tr>`;
             }
         });
+        
+        if (sjekklisteHtml === "") { sjekklisteHtml = "<tr><td colspan='3' style='text-align:center;'>Ingen punkter vurdert enda.</td></tr>"; }
 
-        if (sjekklisteHtml === "") {
-            sjekklisteHtml = "<tr><td colspan='3' style='text-align:center;'>Ingen punkter vurdert enda.</td></tr>";
-        }
+        let valgtType = document.getElementById("mastType").value === "Annet" ? (document.getElementById("egenMastType").value || "Uoppgitt") : document.getElementById("mastType").value;
+        let vkTotal = getVkTotal();
 
-        let printSone = document.getElementById("printSone");
-        printSone.innerHTML = `
+        document.getElementById("printSone").innerHTML = `
             <div class="page">
                 <h2>Inspeksjonsrapport - Linjekontroll</h2>
-                <p><strong>Dato:</strong> ${datoVerdi} | <strong>Kontrollør:</strong> ${kontrollor}</p>
-                <p><strong>Netteier:</strong> ${netteier} | <strong>LinjeID:</strong> ${linje}</p>
-                
+                <p><strong>Dato:</strong> ${document.getElementById("datoKontrollert").value || "-"} | <strong>Kontrollør:</strong> ${document.getElementById("kontrollor").value || "-"}</p>
+                <p><strong>Netteier:</strong> ${document.getElementById("netteier").value || "-"} | <strong>LinjeID:</strong> ${document.getElementById("linje").value || "-"}</p>
+                <p><strong>Inspeksjonsmetode:</strong> ${document.getElementById("metode").value || "-"}</p>
                 <table>
-                    <tr><th>Mast nr</th><td>${mast}</td></tr>
+                    <tr><th>Mast nr</th><td>${document.getElementById("mast").value || "-"}</td></tr>
                     <tr><th>Mast type</th><td>${valgtType}</td></tr>
-                    <tr><th>Vertikalkraft</th><td>${vertikalkraft}</td></tr>
-                    <tr><th>GPS posisjon</th><td>${gps}</td></tr>
+                    <tr><th>Vertikalkraft</th><td>${vkTotal}</td></tr>
+                    <tr><th>GPS posisjon</th><td>${document.getElementById("gps").value || "-"}</td></tr>
                 </table>
-
                 <h3 style="margin-top: 25px;">Sjekkliste og Avvik</h3>
                 <table>
-                    <thead>
-                        <tr>
-                            <th style="width:30%;">Kontrollpunkt</th>
-                            <th style="width:25%;">Status</th>
-                            <th>Merknad</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${sjekklisteHtml}
-                    </tbody>
+                    <thead><tr><th style="width:30%;">Kontrollpunkt</th><th style="width:25%;">Status</th><th>Merknad</th></tr></thead>
+                    <tbody>${sjekklisteHtml}</tbody>
                 </table>
-            </div>
-        `;
-
-        let originalTitle = document.title;
-        document.title = "Linjekontroll_Linje_" + linje + "_Mast_" + mast;
-        
-        window.print();
-        
-        setTimeout(() => { document.title = originalTitle; }, 1000);
+            </div>`;
+            
+        let originalTitle = document.title; 
+        document.title = "Linjekontroll_Mast_" + document.getElementById("mast").value;
+        setTimeout(() => { window.print(); setTimeout(() => { document.title = originalTitle; }, 1000); }, 300);
     }
 
-    function nyMast() {
-        document.getElementById("mast").value = "";
-        document.getElementById("mastType").value = "H";
-        sjekkMastType("H");
-        status = {};
-        valgtStolpeNrForRaate = ""; 
-        render();
-        window.scrollTo(0,0);
+    function nyMast() { 
+        document.getElementById("mast").value = ""; 
+        
+        document.getElementById("vk_s3").value = "";
+        document.getElementById("vk_d").value = "";
+        document.getElementById("vk_vinkel").value = "";
+        oppdaterVkDisplay();
+        
+        document.getElementById("mastType").value = "H"; sjekkMastType("H"); 
+        status = {}; valgtStolpeNrForRaate = ""; 
+        
+        document.getElementById("kameraInput").value = "";
+        document.getElementById("bildeForhandsvisning").style.display = "none";
+        document.getElementById("opplastingStatus").innerText = "";
+        valgtBildeBase64 = "";
+
+        render(); window.scrollTo(0,0); 
     }
 </script>
 </body>
