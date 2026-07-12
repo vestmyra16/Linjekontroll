@@ -98,60 +98,67 @@
     <hr style="margin:20px 0;">
     <label>Mast nr (Påkrevd)</label> <input id="mast">
     
-    <label>Linedimensjon / Type</label>
-    <select id="linedimensjon" onchange="settLinestrekk()">
-        <option value="0">-- Velg Linetype --</option>
-        <option value="1.86">FeAl 16 6/1 (MBL 9.3 kN -> R3: 1.86 kN)</option>
-        <option value="2.84">FeAl 25 6/1 (MBL 14.2 kN -> R3: 2.84 kN)</option>
-        <option value="3.88">FeAl 35 6/1 (MBL 19.4 kN -> R3: 3.88 kN)</option>
-        <option value="5.46">FeAl 50 6/1 (MBL 27.3 kN -> R3: 5.46 kN)</option>
-        <option value="7.62">FeAl 70 6/1 (MBL 38.1 kN -> R3: 7.62 kN)</option>
-        <option value="8.22">FeAl 70 26/7 (MBL 41.1 kN -> R3: 8.22 kN)</option>
-        <option value="11.00">FeAl 95 26/7 (MBL 55.0 kN -> R3: 11.00 kN)</option>
-        <option value="13.24">FeAl 95 30/7 (MBL 66.2 kN -> R3: 13.24 kN)</option>
-        <option value="9.48">FeAl 120 22/7 (MBL 47.4 kN -> R3: 9.48 kN)</option>
-        <option value="13.42">FeAl 120 26/7 (MBL 67.1 kN -> R3: 13.42 kN)</option>
-        <option value="16.62">FeAl 120 30/7 (MBL 83.1 kN -> R3: 16.62 kN)</option>
-        <option value="11.82">FeAl 150 22/7 (MBL 59.1 kN -> R3: 11.82 kN)</option>
-        <option value="16.68">FeAl 150 26/7 (MBL 83.4 kN -> R3: 16.68 kN)</option>
-        <option value="20.16">FeAl 150 30/7 (MBL 100.8 kN -> R3: 20.16 kN)</option>
-        <option value="20.26">FeAl 185 26/7 (MBL 101.3 kN -> R3: 20.26 kN)</option>
-        <option value="24.58">FeAl 185 30/7 (MBL 122.9 kN -> R3: 24.58 kN)</option>
-        <option value="25.90">FeAl 240 26/7 (MBL 129.5 kN -> R3: 25.90 kN)</option>
-        <option value="31.90">FeAl 240 30/19 (MBL 159.5 kN -> R3: 31.90 kN)</option>
-        <option value="24.18">FeAl 240 54/7 (MBL 120.9 kN -> R3: 24.18 kN)</option>
-    </select>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <div>
-            <label>Antall faser</label>
-            <input type="number" id="antall_faser" value="3" oninput="oppdaterVkDisplay()">
-        </div>
-        <div>
-            <label>Linestrekk (kN)</label>
-            <input type="number" id="linestrekk_kn" value="20" oninput="oppdaterVkDisplay()">
-        </div>
-    </div>
-
-    <div style="border: 2px solid #0284c7; border-radius: 12px; padding: 15px; margin-top: 15px; background: #f0f9ff;">
-        <label style="margin-top: 0; color: #0369a1;">Vertikalkraft Kalkulator (Roaldmetoden)</label>
-        <p style="font-size: 13px; color: #475569; font-weight: normal; margin-top: 5px; margin-bottom: 10px;">Fyll inn S3 og D, eller Vinkel direkte. Vertikalkraft i kN basert på linetype.</p>
+    <!-- NY VERTIKALKRAFT KALKULATOR IDENTISK MED STOLPE & TRAVERS -->
+    <div style="border: 2px solid #2563eb; border-radius: 12px; padding: 16px; background-color: #eff6ff; margin-top: 15px;">
+        <label style="display: block; font-size: 12px; font-weight: bold; color: #1e3a8a; margin-top: 0; margin-bottom: 4px; text-transform: uppercase;">Vertikalkraft Kalkulator (Roaldmetoden)</label>
+        <p style="font-size: 10px; color: #1d4ed8; margin-top: 0; margin-bottom: 12px; line-height: 1.2;">Fyll inn S3 og D, eller Vinkel direkte. Vertikalkraft i kN basert på linetype.</p>
         
-        <div style="text-align: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px dashed #94a3b8;">
-            <p style="font-size: 11px; color: #64748b; font-weight: bold; margin-top: 0; margin-bottom: 5px; text-transform: uppercase;">Måleveileder</p>
-            <img src="vinkel.png" alt="Illustrasjon av vinkelmåling" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onerror="this.style.display='none'">
+        <div style="text-align: center; margin-bottom: 12px; background-color: white; padding: 8px; border-radius: 8px; border: 1px dashed #93c5fd; cursor: pointer; transition: background-color 0.2s;" onclick="apneHjelpeBilde('IMG_4834.jpg')" onmouseover="this.style.backgroundColor='#eff6ff'" onmouseout="this.style.backgroundColor='white'">
+            <span style="display: block; font-size: 9px; font-weight: bold; color: #1e40af; text-transform: uppercase; margin-bottom: 4px;">👆 Trykk for å se illustrasjon av måling</span>
+            <img src="IMG_4834.jpg" alt="Illustrasjon av vinkelmåling" style="max-width: 100%; height: auto; max-height: 140px; margin: 0 auto; border-radius: 4px;" onerror="this.src='vinkel.png'">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div style="grid-column: span 2;">
+                <label style="display: block; font-size: 10px; font-weight: bold; color: #1e40af; margin-top: 0; margin-bottom: 4px;">Linedimensjon / Type</label>
+                <select id="linedimensjon" onchange="settLinestrekk()" style="width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 8px; background-color: white; font-size: 12px; font-weight: bold; color: #1e3a8a; margin-top: 0;">
+                    <option value="0">-- Velg Linetype (Montasjestrekk R3) --</option>
+                    <option value="1.86">FeAl 16 6/1 (R3: 1.86 kN)</option>
+                    <option value="2.84">FeAl 25 6/1 (R3: 2.84 kN)</option>
+                    <option value="3.88">FeAl 35 6/1 (R3: 3.88 kN)</option>
+                    <option value="5.46">FeAl 50 6/1 (R3: 5.46 kN)</option>
+                    <option value="7.62">FeAl 70 6/1 (R3: 7.62 kN)</option>
+                    <option value="8.22">FeAl 70 26/7 (R3: 8.22 kN)</option>
+                    <option value="11.00">FeAl 95 26/7 (R3: 11.00 kN)</option>
+                    <option value="13.24">FeAl 95 30/7 (R3: 13.24 kN)</option>
+                    <option value="9.48">FeAl 120 22/7 (R3: 9.48 kN)</option>
+                    <option value="13.42">FeAl 120 26/7 (R3: 13.42 kN)</option>
+                    <option value="16.62">FeAl 120 30/7 (R3: 16.62 kN)</option>
+                    <option value="11.82">FeAl 150 22/7 (R3: 11.82 kN)</option>
+                    <option value="16.68">FeAl 150 26/7 (R3: 16.68 kN)</option>
+                    <option value="20.16">FeAl 150 30/7 (R3: 20.16 kN)</option>
+                    <option value="20.26">FeAl 185 26/7 (R3: 20.26 kN)</option>
+                    <option value="24.58">FeAl 185 30/7 (R3: 24.58 kN)</option>
+                    <option value="25.90">FeAl 240 26/7 (R3: 25.90 kN)</option>
+                    <option value="31.90">FeAl 240 30/19 (R3: 31.90 kN)</option>
+                    <option value="24.18">FeAl 240 54/7 (R3: 24.18 kN)</option>
+                    <option value="20.00">Manuelt strekk (20 kN)</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div>
+                <label style="display: block; font-size: 10px; font-weight: bold; color: #1e40af; margin-top: 0; margin-bottom: 4px;">Antall faser</label>
+                <input type="number" id="antall_faser" placeholder="Faser (eks. 3)" value="3" oninput="oppdaterVkDisplay()" style="width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 8px; background-color: white; font-size: 12px; font-weight: bold; text-align: center; margin-top: 0;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 10px; font-weight: bold; color: #1e40af; margin-top: 0; margin-bottom: 4px;">Linestrekk (kN)</label>
+                <input type="number" id="linestrekk_kn" value="0" oninput="oppdaterVkDisplay()" style="width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 8px; background-color: white; font-size: 12px; font-weight: bold; text-align: center; margin-top: 0;">
+            </div>
         </div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-            <input type="number" step="0.1" id="vk_s3" placeholder="S3 (cm)" style="margin-top: 0; font-size: 15px;" oninput="oppdaterVkDisplay(true)">
-            <input type="number" step="0.1" id="vk_d" placeholder="D (cm)" style="margin-top: 0; font-size: 15px;" oninput="oppdaterVkDisplay(true)">
-            <input type="number" step="0.1" id="vk_vinkel" placeholder="Vinkel (°)" style="margin-top: 0; font-size: 15px;" oninput="oppdaterVkDisplay(false)">
+            <input type="number" step="0.1" id="vk_s3" placeholder="S3 (cm)" oninput="oppdaterVkDisplay(true)" style="width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 8px; background-color: white; font-size: 12px; font-weight: bold; text-align: center; margin-top: 0;">
+            <input type="number" step="0.1" id="vk_d" placeholder="D (cm)" oninput="oppdaterVkDisplay(true)" style="width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 8px; background-color: white; font-size: 12px; font-weight: bold; text-align: center; margin-top: 0;">
+            <input type="number" step="0.1" id="vk_vinkel" placeholder="Vinkel (°)" oninput="oppdaterVkDisplay(false)" style="width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 8px; background-color: white; font-size: 12px; font-weight: bold; text-align: center; margin-top: 0;">
         </div>
         
-        <div style="margin-top: 10px; font-size: 14px; font-weight: bold; color: #334155; text-align: center; background: white; padding: 8px; border-radius: 6px; border: 1px dashed #cbd5e1;" id="vk_resultat">
-            Gjeldende last: <span style="color:#2e7d32;">Normal (0 kN Vertikalkraft)</span>
+        <div id="vk_resultat_txt" style="margin-top: 16px; font-size: 11px; font-weight: 900; color: #b91c1c; text-align: center; background-color: white; padding: 8px; border-radius: 6px; border: 1px solid #fecaca;">
+            Beregnet P-Delta: 0.0 kN
         </div>
     </div>
+    <!-- SLUTT NY KALKULATOR -->
 
     <label>Mast type</label>
     <select id="mastType" onchange="sjekkMastType(this.value)">
@@ -217,6 +224,27 @@
 <div id="printSone"></div>
 
 <script>
+    // --- UTLOPSDATO (KILL-SWITCH) ---
+    function sjekkUtlopsdato() {
+        // Sett dato her (ÅÅÅÅ-MM-DDTHH:MM:SS)
+        const utlopsdato = new Date("2026-08-31T23:59:59");
+        const iDag = new Date();
+        
+        if (iDag > utlopsdato) {
+            document.body.innerHTML = `
+                <div style="display:flex; justify-content:center; align-items:center; height:100vh; background-color:#f4f4f4; font-family:Arial, sans-serif; text-align:center; padding:20px;">
+                    <div style="background:white; padding:40px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); max-width:400px; border-top: 4px solid #c62828;">
+                        <h1 style="color:#c62828; margin-top:0;">Prøveperiode utløpt</h1>
+                        <p style="color:#555; font-size:16px;">Testperioden for E.T. Systemet utløp 31. august 2026.</p>
+                        <p style="color:#555; font-size:14px; margin-top: 20px;">Vennligst kontakt systemansvarlig for videre bruk.</p>
+                    </div>
+                </div>
+            `;
+            return true; // Prøveperioden er utløpt
+        }
+        return false; // Prøveperioden er fortsatt gyldig
+    }
+
     // --- VEILEDER-DATA ---
     const hjelpData = {
         0: { tittel: "Veileder: Mast OK", tekst: "Trykk her dersom hele masten er i tilfredsstillende stand uten avvik.", bilder: [] },
@@ -226,7 +254,7 @@
         4: { tittel: "Veileder: Stålmast & Fundament", tekst: "Defekt forgitring, oppsmuldret betong, rustutslag eller kalkutslag.", bilder: [{ fil: "defekt forgitring.jpg", tekst: "Mekanisk skade på forgitring." }, { fil: "oppsmuldret betong.jpg", tekst: "Frostsprengning og avskalling." }, { fil: "rustutslag_paa_fundament.jpg", tekst: "Rustutslag." }, { fil: "kalkutslag_fundament.jpg", tekst: "Kalkutslag." }] },
         5: { tittel: "Veileder: Topphette", tekst: "Manglende, elendig tilpasset, sprukket eller hullet.", bilder: [{ fil: "elendig_tilpasset_og_manglende_topphette.jpg", tekst: "Dårlig tilpasset eller helt manglende topphette." }, { fil: "sprukket_og_hullet_topphette.jpg", tekst: "Defekt topphette." }] },
         6: { tittel: "Veileder: Traversfeste", tekst: "Sprekk i klave eller brudd på innfesting.", bilder: [{ fil: "sprekk i klave.jpg", tekst: "Sprekkdannelse i traversklave." }, { fil: "brudd_innfesting.jpg", tekst: "Brudd på innfesting av travers." }] },
-        7: { tittel: "Veileder: Traverser og Reststyrke", tekst: "Biologisk nedbrytning, sprekker, råte.", bilder: [{ fil: "limtretravers totalt oppraatnet.jpg", tekst: "Limtretravers fullstendig oppråtnet." }, { fil: "raate i sprekk.jpg", tekst: "Dyp råte etablert i sprekk." }, { fil: "raate ved innspenningspunkt.jpg", tekst: "Råte ved innfestingspunkt." }, { fil: "raatetravers.jpg", tekst: "Ekstrem biologisk nedbrytning." }] },
+        7: { tittel: "Veileder: Traverser og Reststyrke", tekst: "<b>Viktig for Sammenskrudde Traverser:</b> Sjekk spesielt det 'geometriske spranget' hvor traversen trappes ned. Dette er traversens absolutte svakeste ledd (Akilles). Se etter glipper mellom plankene, råte i skjøten og nedbøying.<br><br>Biologisk nedbrytning, sprekker, råte og delaminering er andre typiske avvik.", bilder: [{ fil: "delt.png", tekst: "Kritisk inspeksjonssone på sammenskrudde traverser." }, { fil: "limtretravers totalt oppraatnet.jpg", tekst: "Limtretravers fullstendig oppråtnet." }, { fil: "raate i sprekk.jpg", tekst: "Dyp råte etablert i sprekk." }, { fil: "raate ved innspenningspunkt.jpg", tekst: "Råte ved innfestingspunkt." }, { fil: "Gjennomsiktig råtetravers.png", tekst: "Ekstremtilfelle: Massiv råte/sprekk der dagslyset skinner rett gjennom." }] },
         8: { tittel: "Veileder: Isolatorfeste", tekst: "Mekanisk slitasje og ulmebrann.", bilder: [{ fil: "373_slitasje.jpg", tekst: "Kritisk slitasje på sjakkel/øye." }, { fil: "ulmebrann.jpg", tekst: "Ulmebrann i travers." }] },
         9: { tittel: "Veileder: Isolatorer", tekst: "Korrosjon, forurensning og kreosot.", bilder: [{ fil: "rust_paa_isolator.jpg", tekst: "Kritisk rust." }, { fil: "isolatorglass_rust.jpg", tekst: "Rustdannelse på glass." }, { fil: "302_defekt_isolator.jpg", tekst: "Knust isolator." }, { fil: "332_sprukket_isolator_f1.jpg", tekst: "Sprekk i porselen." }, { fil: "mulig krypestrømsveier.jpg", tekst: "Krypestrømmer." }, { fil: "60_mye_kreosot_paa_isolatorene.jpg", tekst: "Mye kreosot." }, { fil: "P1020720.JPG", tekst: "Punktering/overslag." }, { fil: "Herlig bilde av både rust, slitasje og natur.jpg", tekst: "Oppheng i kystmiljø." }, { fil: "kraftig_rust_og_slitasje.jpg", tekst: "Kraftig rust/slitasje." }] },
         10: { tittel: "Veileder: Bendsling & Gnag", tekst: "Dårlig utført bendsling.", bilder: [{ fil: "daarlig_bendsel.jpg", tekst: "Løs bendsel." }, { fil: "bendsling_gnag.jpg", tekst: "Direkte mekanisk gnag." }] },
@@ -239,6 +267,9 @@
 
     // --- HOVED-APP LOGIKK ---
     document.addEventListener("DOMContentLoaded", () => {
+        // Kaller Kill-switch funksjonen det første som skjer
+        if (sjekkUtlopsdato()) return; 
+
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => event.preventDefault());
 
@@ -263,7 +294,7 @@
         {navn:"Stålmast/Fundament", avvik:["Avvik fundament","Avvik Stålmast"]},
         {navn:"Topphette", avvik:["Mangler","Defekt"]},
         {navn:"Traversfeste", avvik:["Bruddanvisning","Skade"]},
-        {navn:"Travers", avvik:["Travers OK","Mosegrodd","Annen skade","Råte","Sprekk"]},
+        {navn:"Travers", avvik:["Travers OK","Mosegrodd","Annen skade","Råte","Sprekk","Svik skjøt"]},
         {navn:"Isolatorfeste", avvik:["Slitasje"]},
         {navn:"Isolator", avvik:["Knust","Krypestrøm"]},
         {navn:"Bendsling", avvik:["Løs","Brudd"]},
@@ -330,12 +361,12 @@
         }
 
         gjeldendeVertikalkraft_kN = fv;
-        let resultatDiv = document.getElementById("vk_resultat");
+        let resultatDiv = document.getElementById("vk_resultat_txt");
         
         if (fv > 0) {
-            resultatDiv.innerHTML = `Vinkel: <span style="color:#0284c7;">${beregnetVinkel.toFixed(1)}°</span> | Nedoverkraft:<br><span style="color:#c62828; font-size:18px; font-weight:900;">${fv.toFixed(1)} kN</span>`;
+            resultatDiv.innerHTML = `Vinkel: ${beregnetVinkel.toFixed(1)}° | P-Delta: <span style="font-size:20px; color:#b91c1c;">${fv.toFixed(1)} kN</span>`;
         } else {
-            resultatDiv.innerHTML = `Gjeldende last: <span style="color:#2e7d32;">Normal (0 kN Vertikalkraft)</span>`;
+            resultatDiv.innerHTML = `Beregnet P-Delta: 0.0 kN`;
         }
     }
     
@@ -428,7 +459,7 @@
                     let valgtAvvik = status[i].replace("avvik:", "");
                     if(valgtAvvik === "Mosegrodd" || valgtAvvik === "Annen skade") {
                         html += `<div style="background:#fff3e0; border:1px dashed #ff9800; border-radius:6px; padding:10px; margin-top:5px; text-align:center;"><p style="margin:0; font-size:12px; font-weight:bold; color:#e65100;">📸 Ta bilde av skaden og legg ved i bunnen av appen.</p></div>`;
-                    } else if(valgtAvvik === "Råte" || valgtAvvik === "Sprekk") {
+                    } else if(valgtAvvik === "Råte" || valgtAvvik === "Sprekk" || valgtAvvik === "Svik skjøt") {
                         html += `<div style="background:#ffebee; border:2px dashed #c62828; border-radius:8px; padding:15px; margin-top:10px; text-align:center;"><p style="margin-top:0; font-size:12px; font-weight:900; color:#c62828;">Feltregistrering påkrevd</p><a href="travers.html?${byggLenkeParams()}" class="dyplenke-knapp" style="background:#b71c1c;">🪵 Åpne Traverskontroll</a></div>`;
                     }
                 }
@@ -450,6 +481,13 @@
             });
         }
         document.getElementById("hjelpModalBilderSone").innerHTML = bildeHtml;
+        document.getElementById("hjelpModal").style.display = "flex";
+    }
+
+    function apneHjelpeBilde(src) {
+        document.getElementById("hjelpModalTittel").innerHTML = "📸 Illustrasjon av måling";
+        document.getElementById("hjelpModalInnhold").innerHTML = "";
+        document.getElementById("hjelpModalBilderSone").innerHTML = `<div style="border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; background:black; margin-bottom:5px;"><img src="${src}" style="width:100%; height:auto; display:block;" onerror="this.style.display='none';"></div>`;
         document.getElementById("hjelpModal").style.display = "flex";
     }
 
@@ -551,25 +589,19 @@
         let statusFelt = document.getElementById("opplastingStatus");
 
         try {
-            const fetchRes = await fetch(valgtBildeBase64);
-            const blob = await fetchRes.blob();
-            const file = new File([blob], filnavn, { type: "image/jpeg" });
-
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: filnavn, text: 'Dokumentasjon Linjekontroll' });
-                statusFelt.innerText = `✅ Lagret! Info er brent inn.`;
-                statusFelt.style.color = "#2e7d32";
-            } else {
-                let a = document.createElement("a");
-                a.href = valgtBildeBase64;
-                a.download = filnavn;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                statusFelt.innerText = `✅ Bildet er lastet ned.`;
-                statusFelt.style.color = "#2e7d32";
-            }
-        } catch (error) { console.log("Deling avbrutt eller feilet", error); }
+            // Tvinger ren nedlasting for å unngå at Apple stjeler filnavnet i Bilder-appen
+            let a = document.createElement("a");
+            a.href = valgtBildeBase64;
+            a.download = filnavn;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            statusFelt.innerText = `✅ Bildet er lastet ned og lagret i "Filer" (Nedlastinger).`;
+            statusFelt.style.color = "#2e7d32";
+        } catch (error) { 
+            console.log("Nedlasting feilet", error); 
+        }
     }
 
     function lagre() {
