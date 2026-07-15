@@ -97,15 +97,44 @@
     <label>Dato kontrollert:</label> <input type="text" id="datoKontrollert" readonly style="background: #eec; font-weight: bold; text-align: center; color: #333;">
     <hr style="margin:20px 0;">
     <label>Mast nr (Påkrevd)</label> <input id="mast">
+
+    <!-- FUKTIGHET KALKULATOR -->
+    <div style="border: 2px solid #0284c7; border-radius: 12px; padding: 16px; background-color: #f0f9ff; margin-top: 15px;">
+        <label style="display: block; font-size: 12px; font-weight: bold; color: #0369a1; margin-top: 0; margin-bottom: 8px; text-transform: uppercase;">Fuktighet i treverk</label>
+        
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal; font-size: 12px; color: #0f172a; margin-bottom: 10px;">
+            <input type="checkbox" id="chk_avansert_fukt" style="width: 18px; height: 18px; margin: 0;" onchange="toggleAvansertFukt()">
+            Aktiver avansert fuktmåling (Temp/RH)
+        </label>
+
+        <!-- Enkel Modus -->
+        <div id="fukt_enkel_div">
+            <select id="fuktighet_enkel" style="width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 8px; background-color: white; font-size: 12px; font-weight: bold; color: #1e3a8a; margin-top: 0;">
+                <option value="1.0" selected>Tørr (< 20% fukt) - Full styrke</option>
+                <option value="0.85">Fuktig (20-28% fukt) - Redusert styrke</option>
+                <option value="0.60">Mettet / Våt (> 28% fukt) - Fibermetning</option>
+            </select>
+        </div>
+
+        <!-- Avansert Modus -->
+        <div id="fukt_avansert_div" class="skjult" style="margin-top: 10px;">
+            <p style="font-size: 10px; color: #1d4ed8; margin-top: 0; margin-bottom: 8px; line-height: 1.2; font-style: italic;">Måling av ytterskall og klima for reell styrkereduksjon.</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <div><label style="font-size:10px; margin:0; color:#1e40af;">Temp (°C)</label><input type="number" id="fukt_temp" value="15" style="padding: 10px; font-size:12px; text-align:center; margin-top:4px;"></div>
+                <div><label style="font-size:10px; margin:0; color:#1e40af;">RH (%)</label><input type="number" id="fukt_rh" value="60" style="padding: 10px; font-size:12px; text-align:center; margin-top:4px;"></div>
+                <div><label style="font-size:10px; margin:0; color:#1e40af;">Ytterskall (%)</label><input type="number" id="fukt_ytter" value="18" style="padding: 10px; font-size:12px; font-weight:bold; background:#e0f2fe; text-align:center; margin-top:4px;"></div>
+            </div>
+        </div>
+    </div>
     
-    <!-- NY VERTIKALKRAFT KALKULATOR IDENTISK MED STOLPE & TRAVERS -->
+    <!-- VERTIKALKRAFT KALKULATOR -->
     <div style="border: 2px solid #2563eb; border-radius: 12px; padding: 16px; background-color: #eff6ff; margin-top: 15px;">
         <label style="display: block; font-size: 12px; font-weight: bold; color: #1e3a8a; margin-top: 0; margin-bottom: 4px; text-transform: uppercase;">Vertikalkraft Kalkulator (Roaldmetoden)</label>
         <p style="font-size: 10px; color: #1d4ed8; margin-top: 0; margin-bottom: 12px; line-height: 1.2;">Fyll inn S3 og D, eller Vinkel direkte. Vertikalkraft i kN basert på linetype.</p>
         
         <div style="text-align: center; margin-bottom: 12px; background-color: white; padding: 8px; border-radius: 8px; border: 1px dashed #93c5fd; cursor: pointer; transition: background-color 0.2s;" onclick="apneHjelpeBilde('IMG_4834.jpg')" onmouseover="this.style.backgroundColor='#eff6ff'" onmouseout="this.style.backgroundColor='white'">
             <span style="display: block; font-size: 9px; font-weight: bold; color: #1e40af; text-transform: uppercase; margin-bottom: 4px;">👆 Trykk for å se illustrasjon av måling</span>
-            <img src="IMG_4834.jpg" alt="Illustrasjon av vinkelmåling" style="max-width: 100%; height: auto; max-height: 140px; margin: 0 auto; border-radius: 4px;" onerror="this.src='vinkel.png'">
+            <img src="IMG_4834.jpg" alt="Illustrasjon av vinkelmåling" style="max-width: 100%; height: auto; max-height: 140px; margin: 0 auto; border-radius: 4px;" onerror="if(!this.dataset.fb1){this.dataset.fb1=true; this.src='vinkel.PNG';} else if(!this.dataset.fb2){this.dataset.fb2=true; this.src='IMG_4834.JPG';} else {this.style.display='none';}">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
@@ -158,7 +187,6 @@
             Beregnet P-Delta: 0.0 kN
         </div>
     </div>
-    <!-- SLUTT NY KALKULATOR -->
 
     <label>Mast type</label>
     <select id="mastType" onchange="sjekkMastType(this.value)">
@@ -226,7 +254,6 @@
 <script>
     // --- UTLOPSDATO (KILL-SWITCH) ---
     function sjekkUtlopsdato() {
-        // Sett dato her (ÅÅÅÅ-MM-DDTHH:MM:SS)
         const utlopsdato = new Date("2026-08-31T23:59:59");
         const iDag = new Date();
         
@@ -240,9 +267,9 @@
                     </div>
                 </div>
             `;
-            return true; // Prøveperioden er utløpt
+            return true; 
         }
-        return false; // Prøveperioden er fortsatt gyldig
+        return false; 
     }
 
     // --- VEILEDER-DATA ---
@@ -267,7 +294,6 @@
 
     // --- HOVED-APP LOGIKK ---
     document.addEventListener("DOMContentLoaded", () => {
-        // Kaller Kill-switch funksjonen det første som skjer
         if (sjekkUtlopsdato()) return; 
 
         document.addEventListener('contextmenu', event => event.preventDefault());
@@ -327,6 +353,27 @@
             if (urlParams.get('mast')) document.getElementById('mast').value = urlParams.get('mast');
         }
         render();
+    }
+
+    // --- FUKT UI ---
+    function toggleAvansertFukt() {
+        let isAvansert = document.getElementById('chk_avansert_fukt').checked;
+        if (isAvansert) {
+            document.getElementById('fukt_enkel_div').classList.add('skjult');
+            document.getElementById('fukt_avansert_div').classList.remove('skjult');
+        } else {
+            document.getElementById('fukt_enkel_div').classList.remove('skjult');
+            document.getElementById('fukt_avansert_div').classList.add('skjult');
+        }
+    }
+    
+    function getFuktInfo() {
+        if(document.getElementById('chk_avansert_fukt').checked) {
+            return `Avansert: ${document.getElementById('fukt_ytter').value}% (Temp: ${document.getElementById('fukt_temp').value}°C, RH: ${document.getElementById('fukt_rh').value}%)`;
+        } else {
+            let sel = document.getElementById("fuktighet_enkel");
+            return sel.options[sel.selectedIndex].text;
+        }
     }
 
     function settLinestrekk() {
@@ -402,6 +449,13 @@
             document.getElementById("vk_d").value = "";
             document.getElementById("vk_vinkel").value = "";
             oppdaterVkDisplay();
+
+            document.getElementById("chk_avansert_fukt").checked = false;
+            toggleAvansertFukt();
+            document.getElementById("fuktighet_enkel").selectedIndex = 0;
+            document.getElementById("fukt_temp").value = "15";
+            document.getElementById("fukt_rh").value = "60";
+            document.getElementById("fukt_ytter").value = "18";
             
             status = {}; valgtStolpeNrForRaate = "";
             
@@ -589,7 +643,6 @@
         let statusFelt = document.getElementById("opplastingStatus");
 
         try {
-            // Tvinger ren nedlasting for å unngå at Apple stjeler filnavnet i Bilder-appen
             let a = document.createElement("a");
             a.href = valgtBildeBase64;
             a.download = filnavn;
@@ -609,6 +662,7 @@
         if (valgtType === "Annet") valgtType = document.getElementById("egenMastType").value || "Uoppgitt";
         
         let vkTotal = getVkTotal();
+        let fuktTotal = getFuktInfo();
         
         let rad = { 
             dato: document.getElementById("datoKontrollert").value, 
@@ -619,6 +673,7 @@
             mast: document.getElementById("mast").value, 
             mastType: valgtType, 
             vertikalkraft: vkTotal, 
+            fuktighet: fuktTotal,
             gps: document.getElementById("gps").value, 
             punkter: punkter.map((p,i) => ({navn:p.navn, status:status[i]||"", merknad:status["m"+i]||""})) 
         };
@@ -629,15 +684,14 @@
 
     function lastNed() {
         if (data.length === 0) return;
-        // Fix for ÆØÅ i Excel (BOM \ufeff må ligge HELT forrest)
-        let csv = "\ufeffsep=;\nDato;Kontrollør;Netteier;Linje;Inspeksjonsmetode;Mast;Masttype;Vertikalkrefter;GPS;Kontrollpunkt;Status;Merknad\n";
+        let csv = "\ufeffsep=;\nDato;Kontrollør;Netteier;Linje;Inspeksjonsmetode;Mast;Masttype;Vertikalkrefter;Fuktighet;GPS;Kontrollpunkt;Status;Merknad\n";
         data.forEach(d => {
             d.punkter.forEach(p => {
                 if (p.status !== "") {
                     let visStatus = p.status.indexOf("avvik:") === 0 ? p.status.replace("avvik:", "") : p.status;
                     if(visStatus === "Stolper OK" || visStatus === "Travers OK") visStatus = "OK";
                     let merknadRenset = (p.merknad || "").replace(/(\r\n|\n|\r|;)/gm, " ");
-                    csv += `"${d.dato || ""}";"${d.kontrollor || ""}";"${d.netteier}";"${d.linje}";"${d.metode || "Uoppgitt"}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
+                    csv += `"${d.dato || ""}";"${d.kontrollor || ""}";"${d.netteier}";"${d.linje}";"${d.metode || "Uoppgitt"}";"${d.mast}";"${d.mastType}";"${d.vertikalkraft}";"${d.fuktighet || ""}";"${d.gps}";"${p.navn}";"${visStatus}";"${merknadRenset}"\n`;
                 }
             });
         });
@@ -672,6 +726,7 @@
                     <tr><th>Mast nr</th><td>${document.getElementById("mast").value || "-"}</td></tr>
                     <tr><th>Mast type</th><td>${valgtType}</td></tr>
                     <tr><th>Vertikalkraft</th><td>${vkTotal}</td></tr>
+                    <tr><th>Fuktighet i treverk</th><td style="color:#0284c7; font-weight:bold;">${getFuktInfo()}</td></tr>
                     <tr><th>GPS posisjon</th><td>${document.getElementById("gps").value || "-"}</td></tr>
                 </table>
                 <h3 style="margin-top: 25px;">Sjekkliste og Avvik</h3>
@@ -693,6 +748,13 @@
         document.getElementById("vk_d").value = "";
         document.getElementById("vk_vinkel").value = "";
         oppdaterVkDisplay();
+
+        document.getElementById("chk_avansert_fukt").checked = false;
+        toggleAvansertFukt();
+        document.getElementById("fuktighet_enkel").selectedIndex = 0;
+        document.getElementById("fukt_temp").value = "15";
+        document.getElementById("fukt_rh").value = "60";
+        document.getElementById("fukt_ytter").value = "18";
         
         document.getElementById("mastType").value = "H"; sjekkMastType("H"); 
         status = {}; valgtStolpeNrForRaate = ""; 
